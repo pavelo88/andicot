@@ -81,6 +81,15 @@ export function Cotizador({ services, business, preSelectedId }: { services: Ser
     document.getElementById("contacto")?.scrollIntoView({ behavior: "smooth" })
   }
 
+  const handleJumpToSummary = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const element = document.getElementById("detalle-proforma");
+    if (element) {
+      // The scroll-mt-32 on the target element should handle the offset
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   const proformaPreview = cart.map(i => i.t || i.titulo).join(", ")
 
   return (
@@ -137,6 +146,13 @@ export function Cotizador({ services, business, preSelectedId }: { services: Ser
             className="w-full mt-8 bg-cyan-500 text-black font-black uppercase py-4 rounded tracking-widest transition-all disabled:opacity-50 hover:brightness-110"
           >
             Añadir a Proforma
+          </button>
+
+          <button
+            onClick={handleJumpToSummary}
+            className="lg:hidden mt-6 text-emerald-400 font-mono text-xs uppercase tracking-widest flex items-center justify-center gap-2 animate-pulse"
+          >
+            Ver Resumen de Costos <ArrowDownCircle className="w-4 h-4" />
           </button>
         </div>
 
