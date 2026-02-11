@@ -1,9 +1,7 @@
 "use client"
 
-// 1. Importamos el "Mensajero" que conecta con Firebase/Datos
+import Image from "next/image"
 import { useSystemData } from "@/hooks/useStarkData"
-
-// 2. Importamos todos tus componentes visuales
 import { Nav } from "@/components/nav"
 import { Hero } from "@/components/hero"
 import { Marcas } from "@/components/marcas"
@@ -27,8 +25,40 @@ export default function Home() {
   // 4. Pantalla de carga (Mientras conecta con el satélite)
   if (loading) {
     return (
-      <div className="h-screen bg-black text-cyan-500 font-mono flex items-center justify-center animate-pulse tracking-widest">
-        CONECTANDO AL SISTEMA...
+      <div className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center p-6 text-center">
+        
+        <div className="relative mb-8">
+            <div className="absolute inset-0 bg-cyan-500/20 blur-xl rounded-full animate-pulse"></div>
+            
+            <Image 
+              src="https://picsum.photos/seed/logo/96/96"
+              alt="Logo Andicot"
+              width={96}
+              height={96}
+              priority
+              className="relative z-10 drop-shadow-[0_0_10px_rgba(0,242,255,0.8)] animate-pulse object-contain rounded-full"
+            />
+        </div>
+
+        {/* TÍTULO DE BIENVENIDA */}
+        <h1 className="text-2xl md:text-4xl font-black text-white font-orbitron tracking-widest uppercase mb-4">
+          BIENVENIDO A ANDICOT
+        </h1>
+
+        {/* DESCRIPCIÓN DE LA EMPRESA */}
+        <p className="text-cyan-500 font-mono text-sm md:text-base max-w-xl leading-relaxed mx-auto">
+          Expertos en Infraestructura, Cableado Estructurado y Soluciones Tecnológicas de Alta Gama.
+        </p>
+
+        {/* INDICADOR DE CARGA INFERIOR */}
+        <div className="mt-12 flex flex-col items-center gap-3">
+            {/* Spinner simple */}
+            <div className="w-6 h-6 border-2 border-cyan-900 border-t-cyan-500 rounded-full animate-spin"></div>
+            <span className="text-[10px] text-gray-600 font-mono tracking-[0.2em] uppercase animate-pulse">
+              Sincronizando Sistema...
+            </span>
+        </div>
+
       </div>
     )
   }

@@ -172,8 +172,8 @@ body.light-mode textarea {
 /* Título Principal (INFRAESTRUCTURA) */
 h1 { 
     /* Mínimo 2rem (móvil) -> Máximo 6rem (PC gigante) */
-    font-size: clamp(2rem, 5vw, 6rem) !important; 
-    line-height: 1.1 !important;
+    font-size: clamp(2rem, 5vw, 6rem); 
+    line-height: 1.1;
     word-break: break-word; 
     hyphens: auto; 
     margin-bottom: 1.5rem;

@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Trash2, FileText, Send, Plus, Minus, MousePointer2, ArrowDownCircle, MessageCircle, Tag } from "lucide-react"
+// Agregué 'Check' a los iconos importados
+import { Trash2, FileText, Send, Plus, Minus, MousePointer2, ArrowDownCircle, MessageCircle, Tag, Check } from "lucide-react"
 
 interface Service {
   id: string
@@ -19,6 +20,9 @@ export function Cotizador({ services, business, preSelectedId }: { services: Ser
   const [selectedId, setSelectedId] = useState("")
   const [qty, setQty] = useState(1)
   const [cart, setCart] = useState<any[]>([])
+  
+  // NUEVO ESTADO PARA LA ALERTA
+  const [showToast, setShowToast] = useState(false)
 
   const selectedService = services.find(s => s.id === selectedId)
 
@@ -42,6 +46,13 @@ export function Cotizador({ services, business, preSelectedId }: { services: Ser
       }
       setCart([...cart, newItem])
       setQty(1)
+      
+      // --- NUEVA LÓGICA DE ALERTA ---
+      setShowToast(true)
+      // Desaparece automáticamente después de 2.5 segundos
+      setTimeout(() => {
+        setShowToast(false)
+      }, 2500)
     }
   }
 
@@ -67,17 +78,11 @@ export function Cotizador({ services, business, preSelectedId }: { services: Ser
   }
 
   const sendToForm = () => {
-    // 1. Crear el mensaje bonito
     const detalle = cart.map(i => `- ${i.qty}x ${i.t || i.titulo}`).join("\n")
     const msg = `SOLICITUD DE PROFORMA WEB:\n\n${detalle}\n\nSubtotal: $${subtotal.toFixed(2)}\nDescuento: -$${discountVal.toFixed(2)}\nIVA (${ivaPercent}%): $${ivaVal.toFixed(2)}\nTOTAL ESTIMADO: $${total.toFixed(2)}`
     
-    // 2. Guardar en memoria
     localStorage.setItem("system_quote_msg", msg)
-    
-    // 3. Avisar al formulario
     window.dispatchEvent(new Event("updateContactForm"))
-    
-    // 4. Bajar al contacto
     document.getElementById("contacto")?.scrollIntoView({ behavior: "smooth" })
   }
 
@@ -85,16 +90,33 @@ export function Cotizador({ services, business, preSelectedId }: { services: Ser
     e.preventDefault();
     const element = document.getElementById("detalle-proforma");
     if (element) {
-      // The scroll-mt-32 on the target element should handle the offset
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
-  const proformaPreview = cart.map(i => i.t || i.titulo).join(", ")
-
   return (
     <section id="cotizador" className="py-20 px-6 max-w-7xl mx-auto relative z-10 scroll-mt-24">
       
+      {/* --- NUEVA ALERTA FLOTANTE (TOAST) --- */}
+      <div 
+        className={`fixed top-24 left-1/2 -translate-x-1/2 z-[100] w-[90%] max-w-sm transition-all duration-500 ease-in-out ${
+          showToast ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-10 pointer-events-none'
+        }`}
+      >
+        <div className="bg-black/90 backdrop-blur-md border border-emerald-500/50 shadow-[0_0_30px_rgba(16,185,129,0.3)] rounded-lg p-4 flex items-center gap-4">
+            <div className="bg-emerald-500/20 p-2 rounded-full">
+                <Check className="w-6 h-6 text-emerald-400" />
+            </div>
+            <div>
+                <p className="text-emerald-400 font-bold font-orbitron text-sm uppercase">¡Servicio Agregado!</p>
+                <p className="text-gray-300 text-[10px] leading-tight mt-1">
+                    Verifica tu proforma abajo o sigue agregando.
+                </p>
+            </div>
+        </div>
+      </div>
+      {/* ------------------------------------- */}
+
       <div className="text-center mb-12">
         <h2 className="text-3xl md:text-5xl font-black italic uppercase text-white light:text-black font-orbitron">
           Configurador de <span className="text-cyan-500">Proforma</span>
@@ -143,14 +165,14 @@ export function Cotizador({ services, business, preSelectedId }: { services: Ser
           <button 
             onClick={addToCart}
             disabled={!selectedId}
-            className="w-full mt-8 bg-cyan-500 text-black font-black uppercase py-4 rounded tracking-widest transition-all disabled:opacity-50 hover:brightness-110"
+            className="w-full mt-8 bg-cyan-500 text-black font-black uppercase py-4 rounded tracking-widest transition-all disabled:opacity-50 hover:brightness-110 active:scale-[0.98]"
           >
             Añadir a Proforma
           </button>
 
           <button
             onClick={handleJumpToSummary}
-            className="lg:hidden mt-6 text-emerald-400 font-mono text-xs uppercase tracking-widest flex items-center justify-center gap-2 animate-pulse"
+            className="lg:hidden mt-6 text-emerald-400 font-mono text-xs uppercase tracking-widest flex items-center justify-center gap-2 animate-pulse hover:text-emerald-300"
           >
             Ver Resumen de Costos <ArrowDownCircle className="w-4 h-4" />
           </button>

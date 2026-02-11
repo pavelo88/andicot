@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useState, useEffect, useRef } from "react"
 import { 
   Camera, Flame, ShieldCheck, Zap, Wifi, Server, Lock, 
@@ -152,7 +153,7 @@ function ServiceCard({ service, onClick, isActive, isMobile }: { service: Servic
       `}>
         {img ? (
           <>
-            <img src={img} alt={title} className="w-full h-full object-contain p-2 drop-shadow-xl group-hover:scale-105 transition-transform duration-700" />
+            <Image src={img} alt={title} fill className="object-contain p-2 drop-shadow-xl group-hover:scale-105 transition-transform duration-700" />
             <div className="absolute top-2 right-2 bg-black/60 backdrop-blur px-2 py-1 rounded text-[8px] text-cyan-400 font-mono border border-cyan-500/30">LIVE ●</div>
           </>
         ) : (

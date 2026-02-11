@@ -6,6 +6,7 @@ import { VariantProps, cva } from "class-variance-authority"
 import { PanelLeft } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useIsMounted } from "@/hooks/use-is-mounted"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -176,6 +177,21 @@ const Sidebar = React.forwardRef<
     ref
   ) => {
     const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+    const isMounted = useIsMounted()
+
+    if (!isMounted) {
+      if (collapsible === "none") {
+        return (
+          <div
+            className={cn(
+              "flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground",
+              className
+            )}
+          />
+        )
+      }
+      return null
+    }
 
     if (collapsible === "none") {
       return (

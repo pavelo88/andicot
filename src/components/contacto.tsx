@@ -1,13 +1,20 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, type ChangeEvent, type FormEvent } from "react"
 import { MapPin, Mail, Phone, Facebook, Instagram, Music2, X, Send } from "lucide-react"
+import { addDoc, collection } from "firebase/firestore"
+import { db } from "@/lib/firebase"
+
 
 export function Contacto({ info, redes, garantia }: { info: any, redes: any, garantia: any }) {
   const [showModal, setShowModal] = useState(false)
   const msgRef = useRef<HTMLTextAreaElement>(null)
 
-  // --- CONEXIÓN CON COTIZADOR (NUEVO) ---
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | null>(null);
+
+  // --- CONEXIÓN CON COTIZADOR ---
   useEffect(() => {
     const loadMessage = () => {
       const msg = localStorage.getItem("system_quote_msg")
@@ -22,11 +29,50 @@ export function Contacto({ info, redes, garantia }: { info: any, redes: any, gar
     return () => window.removeEventListener("updateContactForm", loadMessage)
   }, [])
 
-  // Función para que el cuadro de texto crezca solo
-  const handleAutoResize = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  // --- MANEJADORES DEL FORMULARIO ---
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleAutoResize = (e: ChangeEvent<HTMLTextAreaElement>) => {
     e.target.style.height = 'auto'; 
     e.target.style.height = `${e.target.scrollHeight}px`; 
   }
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+    try {
+      const message = msgRef.current?.value;
+      if (!formData.name || !formData.email || !message) {
+        throw new Error("Por favor complete los campos requeridos.");
+      }
+      await addDoc(collection(db, "contact_messages"), {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        message: message,
+        createdAt: new Date().toISOString(),
+        read: false,
+      });
+      setSubmitStatus('success');
+      setFormData({ name: '', email: '', phone: '' });
+      if (msgRef.current) {
+        msgRef.current.value = '';
+        msgRef.current.style.height = 'auto';
+      }
+    } catch (error) {
+      console.error("Form submission error:", error);
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => setSubmitStatus(null), 6000);
+    }
+  };
 
   return (
     <>
@@ -40,16 +86,22 @@ export function Contacto({ info, redes, garantia }: { info: any, redes: any, gar
           
           {/* === FORMULARIO === */}
           <div className="tech-glass rounded-xl p-5 md:p-8 flex flex-col h-full border-cyan-500/20 bg-black/40">
-            <form className="space-y-3 md:space-y-6 flex-1 flex flex-col">
+            <form onSubmit={handleSubmit} className="space-y-3 md:space-y-6 flex-1 flex flex-col">
               <div className="grid grid-cols-2 gap-3">
                 <input 
-                  type="text" 
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
                   placeholder="NOMBRE" 
                   className="w-full bg-black/20 border border-cyan-500/30 text-white p-3 text-xs md:text-sm font-mono outline-none focus:border-cyan-400 focus:bg-cyan-950/20 transition-all rounded" 
                   required 
                 />
                 <input 
-                  type="email" 
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
                   placeholder="EMAIL" 
                   className="w-full bg-black/20 border border-cyan-500/30 text-white p-3 text-xs md:text-sm font-mono outline-none focus:border-cyan-400 focus:bg-cyan-950/20 transition-all rounded" 
                   required 
@@ -58,14 +110,17 @@ export function Contacto({ info, redes, garantia }: { info: any, redes: any, gar
               
               <input 
                 type="tel" 
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
                 placeholder="WHATSAPP / TELÉFONO" 
                 className="w-full bg-black/20 border border-cyan-500/30 text-white p-3 text-xs md:text-sm font-mono outline-none focus:border-cyan-400 focus:bg-cyan-950/20 transition-all rounded" 
-                required 
               />
               
               <textarea 
                 id="message-area"
-                ref={msgRef} // Referencia conectada
+                ref={msgRef}
+                name="message"
                 placeholder="DESCRIBA SU REQUERIMIENTO..." 
                 rows={3}
                 onInput={handleAutoResize}
@@ -73,9 +128,15 @@ export function Contacto({ info, redes, garantia }: { info: any, redes: any, gar
                 required
               ></textarea>
               
+              {submitStatus && (
+                <div className={`p-3 rounded text-center text-xs font-mono ${submitStatus === 'success' ? 'bg-emerald-900/50 text-emerald-300 border border-emerald-500/30' : 'bg-red-900/50 text-red-300 border border-red-500/30'}`}>
+                  {submitStatus === 'success' ? '¡Mensaje enviado! Nos pondremos en contacto pronto.' : 'Error al enviar. Por favor, intente de nuevo.'}
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3 mt-auto pt-2">
-                <button type="submit" className="bg-cyan-500 text-black font-black py-3 md:py-4 text-xs md:text-sm uppercase hover:brightness-125 transition-all font-orbitron flex items-center justify-center gap-2 rounded hover:shadow-[0_0_20px_rgba(0,242,255,0.4)]">
-                  <Send className="w-4 h-4" /> Enviar
+                <button type="submit" disabled={isSubmitting} className="bg-cyan-500 text-black font-black py-3 md:py-4 text-xs md:text-sm uppercase hover:brightness-125 transition-all font-orbitron flex items-center justify-center gap-2 rounded hover:shadow-[0_0_20px_rgba(0,242,255,0.4)] disabled:opacity-50 disabled:cursor-not-allowed">
+                  <Send className="w-4 h-4" /> {isSubmitting ? 'ENVIANDO...' : 'Enviar'}
                 </button>
                 
                 <button 

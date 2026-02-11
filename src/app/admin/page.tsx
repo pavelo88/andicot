@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useState, useEffect } from "react"
 import { useSystemData } from "@/hooks/useStarkData"
 import { db, storage } from "@/lib/firebase"
@@ -145,8 +146,40 @@ export default function AdminPage() {
     </div>
   )
 
-  if (loading || !configForm) return <div className="h-screen bg-black flex items-center justify-center text-cyan-500 font-mono text-lg animate-pulse">SINCRONIZANDO SISTEMA...</div>
+  if (loading || !configForm) {
+    return (
+      <div className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center p-6 text-center">
+        
+        <div className="relative mb-8">
+            <div className="absolute inset-0 bg-cyan-500/20 blur-xl rounded-full animate-pulse"></div>
+            <Image 
+              src="https://picsum.photos/seed/logo/96/96"
+              alt="Logo Andicot"
+              width={96}
+              height={96}
+              priority 
+              className="relative z-10 drop-shadow-[0_0_10px_rgba(0,242,255,0.8)] animate-pulse object-contain rounded-full"
+            />
+        </div>
 
+        <h1 className="text-2xl md:text-4xl font-black text-white font-orbitron tracking-widest uppercase mb-4">
+          BIENVENIDO A ANDICOT
+        </h1>
+
+        <p className="text-cyan-500 font-mono text-sm md:text-base max-w-xl leading-relaxed mx-auto">
+          Expertos en Infraestructura, Cableado Estructurado y Soluciones Tecnológicas de Alta Gama.
+        </p>
+
+        <div className="mt-12 flex flex-col items-center gap-3">
+            <div className="w-6 h-6 border-2 border-cyan-900 border-t-cyan-500 rounded-full animate-spin"></div>
+            <span className="text-[10px] text-gray-600 font-mono tracking-[0.2em] uppercase animate-pulse">
+              Sincronizando Sistema...
+            </span>
+        </div>
+
+      </div>
+    )
+  }
   return (
     <main className="min-h-screen bg-black text-white p-6 md:p-12 pb-40 font-sans">
       
@@ -252,7 +285,7 @@ export default function AdminPage() {
                 <Label text="Lista de Marcas (Separar por comas)" />
                 <TextArea 
                     value={configForm.marcasString || ""} 
-                    onChange={(e) => handleConfigChange("root", "marcasString", e.target.value)} 
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleConfigChange("root", "marcasString", e.target.value)} 
                     rows={4}
                     placeholder="Ej: BOSCH, SAMSUNG, HIKVISION, PELCO, DSC..."
                 />
@@ -278,7 +311,7 @@ export default function AdminPage() {
 
                         {/* Imagen */}
                         <div className="relative aspect-video mb-5 bg-zinc-900 rounded-lg overflow-hidden border border-white/10 group-hover:border-cyan-500/30 transition-colors">
-                            <img src={s.previewUrl || s.img || "/placeholder.jpg"} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
+                            <img src={s.previewUrl || s.img || "/placeholder.jpg"} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500" alt={s.t || s.titulo} />
                             <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 bg-black/70 transition-all duration-300">
                                 <Upload className="w-8 h-8 text-cyan-400 mb-2" />
                                 <span className="text-[10px] uppercase font-bold text-white tracking-widest">Cambiar Imagen</span>
@@ -297,7 +330,7 @@ export default function AdminPage() {
                             
                             <div>
                                 <Label text="Descripción Corta" />
-                                <TextArea value={s.d} onChange={(e) => handleServiceChange(i, "d", e.target.value)} rows={3} />
+                                <TextArea value={s.d} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleServiceChange(i, "d", e.target.value)} rows={3} />
                             </div>
                             
                             <div>
