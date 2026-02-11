@@ -3,27 +3,22 @@ import "./globals.css";
 // Importamos el fondo animado (El cerebro)
 import { BrainBg } from "@/components/brain-bg";
 
-// 1. CONFIGURACIÓN DE VISTA (IMPORTANTE PARA CELULARES)
+// 1. IMPORTANTE: Conexión con Firebase para extraer los Tags
+import { db } from "@/lib/firebase";
+import { collection, getDocs } from "firebase/firestore";
+
+// CONFIGURACIÓN DE VISTA
 export const viewport: Viewport = {
-  themeColor: "#000000", // La barra del navegador en Android se verá negra
+  themeColor: "#000000",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1, // Evita zoom accidental que rompe el diseño
+  maximumScale: 1,
 };
 
-// 2. METADATOS MAESTROS (SEO)
-export const metadata: Metadata = {
-  // Título dinámico: Se verá "Andicot Solutions | Stark OS"
-  title: {
-    template: '%s | Andicot Solutions',
-    default: 'Andicot Solutions | Ingeniería de Seguridad y Automatización',
-  },
-  
-  // Descripción extraída de tu texto corporativo (Optimizada para Google)
-  description: "Líderes en consultoría, diseño y puesta en marcha de sistemas electrónicos. Especialistas en CCTV con IA, Detección de Incendios, Control de Acceso, Fibra Óptica y Domótica. Cumplimos normas internacionales.",
-  
-  // Palabras clave exactas basadas en tus servicios
-  keywords: [
+// 2. FUNCIÓN MAESTRA: UNE TUS PALABRAS CLAVE CON LOS TAGS DE FIREBASE
+export async function generateMetadata(): Promise<Metadata> {
+  // Esta es tu lista original de palabras clave (Keywords estáticas)
+  const staticKeywords = [
     "Andicot Solutions",
     "CCTV Inteligencia Artificial Ecuador",
     "Control de Acceso y Asistencia",
@@ -35,51 +30,64 @@ export const metadata: Metadata = {
     "Domótica e Inmótica",
     "Instalaciones Eléctricas Ecuador",
     "Ingeniería de Seguridad"
-  ],
+  ];
 
-  // Autor y Creador
-  authors: [{ name: "Andicot Solutions Team", url: "https://andicot.com" }],
-  creator: "Andicot Engineering",
+  let dynamicTags: string[] = [];
 
-  // 3. OPEN GRAPH (CÓMO SE VE AL COMPARTIR EN WHATSAPP/FACEBOOK)
-  openGraph: {
-    type: "website",
-    locale: "es_EC", // Español - Ecuador
-    url: "https://andicot.com",
-    siteName: "Andicot Solutions",
-    title: "Andicot Solutions | Seguridad Electrónica Avanzada",
-    description: "Monitoreo con IA, Automatización Industrial y Seguridad Electrónica. Proyectos de renombre a nivel nacional.",
-    // Recuerda subir una imagen llamada 'og-image.jpg' a la carpeta 'public'
-    images: [
-      {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Andicot Solutions - Ingeniería de Seguridad",
-      },
-    ],
-  },
+  try {
+    // Consultamos la colección 'servicios' en Firebase
+    const querySnapshot = await getDocs(collection(db, "servicios"));
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      if (data.tags) {
+        // Limpiamos y separamos los tags (ej: "camara, cctv") convirtiéndolos en lista
+        const tagsArray = data.tags.split(",").map((t: string) => t.trim());
+        dynamicTags = [...dynamicTags, ...tagsArray];
+      }
+    });
+  } catch (error) {
+    console.error("Error obteniendo tags dinámicos:", error);
+  }
 
-  // 4. ICONOS
-  icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon-16x16.png",
-    apple: "/apple-touch-icon.png",
-  },
+  // UNIÓN FINAL: Combinamos ambas listas y eliminamos duplicados con 'Set'
+  const finalKeywords = Array.from(new Set([...staticKeywords, ...dynamicTags]));
 
-  // 5. ROBOTS (Para que Google te indexe correctamente)
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+  return {
+    title: {
+      template: '%s | Andicot Solutions',
+      default: 'Andicot Solutions | Ingeniería de Seguridad y Automatización',
+    },
+    description: "Líderes en consultoría, diseño y puesta en marcha de sistemas electrónicos. Especialistas en CCTV con IA, Detección de Incendios, Control de Acceso, Fibra Óptica y Domótica. Cumplimos normas internacionales.",
+    keywords: finalKeywords, // <--- Aquí se inyecta la unión de ambas listas
+    authors: [{ name: "Andicot Solutions Team", url: "https://andicot.com" }],
+    creator: "Andicot Engineering",
+    openGraph: {
+      type: "website",
+      locale: "es_EC",
+      url: "https://andicot.com",
+      siteName: "Andicot Solutions",
+      title: "Andicot Solutions | Seguridad Electrónica Avanzada",
+      description: "Monitoreo con IA, Automatización Industrial y Seguridad Electrónica. Proyectos de renombre a nivel nacional.",
+      images: [
+        {
+          url: "/og-image.jpg",
+          width: 1200,
+          height: 630,
+          alt: "Andicot Solutions - Ingeniería de Seguridad",
+        },
+      ],
+    },
+    icons: {
+      icon: "/favicon.ico",
+      shortcut: "/favicon-16x16.png",
+      apple: "/apple-touch-icon.png",
+    },
+    robots: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
     },
-  },
-};
+  };
+}
 
 export default function RootLayout({
   children,
@@ -99,10 +107,10 @@ export default function RootLayout({
               "name": "Andicot Solutions",
               "url": "https://andicot.com",
               "logo": "https://andicot.com/logo.png",
-              "description": "Consultoría, análisis, diseño y puesta en marcha de sistemas eléctricos y electrónicos.",
+              "description": "Consultoría, análisis, diseño y puesta en marcha de sistemas electrónicos y electrónicos.",
               "address": {
                 "@type": "PostalAddress",
-                "addressCountry": "EC" // Ecuador
+                "addressCountry": "EC"
               },
               "priceRange": "$$",
               "knowsAbout": [

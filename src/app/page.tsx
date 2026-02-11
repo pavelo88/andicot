@@ -1,6 +1,7 @@
 "use client"
 
 import Image from "next/image"
+import logoImg from "./icon.png"
 import { useSystemData } from "@/hooks/useStarkData"
 import { Nav } from "@/components/nav"
 import { Hero } from "@/components/hero"
@@ -31,12 +32,10 @@ export default function Home() {
             <div className="absolute inset-0 bg-cyan-500/20 blur-xl rounded-full animate-pulse"></div>
             
             <Image 
-              src="https://picsum.photos/seed/logo/96/96"
-              alt="Logo Andicot"
-              width={96}
-              height={96}
-              priority
-              className="relative z-10 drop-shadow-[0_0_10px_rgba(0,242,255,0.8)] animate-pulse object-contain rounded-full"
+              src={logoImg}    // <--- Usamos la variable importada (sin comillas)
+              alt="Logo Andicot" 
+              priority         // <--- Carga instantánea (elimina el parpadeo)
+              className="w-24 h-auto relative z-10 drop-shadow-[0_0_10px_rgba(0,242,255,0.8)] animate-pulse object-contain"
             />
         </div>
 
