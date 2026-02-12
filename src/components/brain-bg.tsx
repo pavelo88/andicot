@@ -36,8 +36,8 @@ export function BrainBg() {
       const coreGeo = new THREE.IcosahedronGeometry(10, 1) 
       const edges = new THREE.EdgesGeometry(coreGeo)
       const coreMat = new THREE.LineBasicMaterial({ 
-        color: darkColor, // Color inicial
-        linewidth: 2.5, // Aquí puedes ajustar el grosor
+        color: darkColor,
+        linewidth: 2.5, 
         transparent: true,
         opacity: 0.7 
       }) 
@@ -45,7 +45,7 @@ export function BrainBg() {
       mainGroup.add(coreLines)
 
       // --- 3. LA ATMÓSFERA (Puntos) ---
-      const particleCount = 200 // Menos puntos para que el cerebro sea el protagonista
+      const particleCount = 200
       const particlesGeo = new THREE.BufferGeometry()
       const posArray = new Float32Array(particleCount * 3)
       
@@ -57,7 +57,7 @@ export function BrainBg() {
       
       const particlesMat = new THREE.PointsMaterial({
         size: 0.25,
-        color: darkColor, // Color inicial
+        color: darkColor, 
         transparent: true,
         opacity: 0.4,
       })
@@ -88,7 +88,7 @@ export function BrainBg() {
       // --- 5. Lógica de Tamaño (PC/Móvil) ---
       const updateCameraPosition = () => {
         // En móvil (menos de 768px), alejamos la cámara para que el cerebro se vea más pequeño
-        camera.position.z = window.innerWidth < 768 ? 40 : 25;
+        camera.position.z = window.innerWidth < 768 ? 40 : 22;
       }
       
       // Llamadas iniciales
