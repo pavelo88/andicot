@@ -41,7 +41,7 @@ export function BrainBg() {
         color: 0x00f2ff, 
         wireframe: true, 
         transparent: true, 
-        opacity: 0.3 
+        opacity: 0.4 
       })
       const coreSphere = new THREE.Mesh(coreGeo, coreMat)
       mainGroup.add(coreSphere)
@@ -59,7 +59,7 @@ export function BrainBg() {
       particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3))
       
       const particlesMat = new THREE.PointsMaterial({
-        size: 0.15,
+        size: 0.19,
         color: 0x00f2ff,
         transparent: true,
         opacity: 0.8,
@@ -120,7 +120,7 @@ export function BrainBg() {
     }
 
     // ==========================================
-    // MODO MÓVIL: "RED NEURONAL LIGERA" (Canvas 2D)
+    // MODO MÓVIL: "RED DE PLEXO DINÁMICA" (Canvas 2D)
     // ==========================================
     const initMobile = () => {
       const ctx = canvas.getContext("2d")
@@ -131,21 +131,17 @@ export function BrainBg() {
       canvas.width = width
       canvas.height = height
 
-      const globeRadius = width * 0.35 
-      const rotationSpeed = 0.003
-      let angleTicker = 0
-
-      // Puntos 3D simulados
       const particles: any[] = []
-      const particleCount = 100 // Optimizado para batería
+      const particleCount = 60 // Optimizado para móviles
+      const maxDistance = Math.min(width, height) / 5;
 
       for (let i = 0; i < particleCount; i++) {
-        const theta = Math.random() * 2 * Math.PI
-        const phi = Math.acos((Math.random() * 2) - 1)
         particles.push({
-          baseX: globeRadius * Math.sin(phi) * Math.cos(theta),
-          baseY: globeRadius * Math.sin(phi) * Math.sin(theta),
-          baseZ: globeRadius * Math.cos(phi)
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: (Math.random() - 0.5) * 0.4, // Velocidad reducida
+          vy: (Math.random() - 0.5) * 0.4,
+          radius: Math.random() * 1.5 + 0.5
         })
       }
 
@@ -153,37 +149,52 @@ export function BrainBg() {
       const animate = () => {
         animationId = requestAnimationFrame(animate)
         ctx.clearRect(0, 0, width, height)
-        
-        const cx = width / 2
-        const cy = height / 2
-        angleTicker += rotationSpeed
 
-        // Estilo Cyan Stark
-        ctx.strokeStyle = "rgba(0, 242, 255, 0.15)"
-        ctx.lineWidth = 0.5
+        particles.forEach(p => {
+          p.x += p.vx
+          p.y += p.vy
 
-        const projected = particles.map(p => {
-          const cosY = Math.cos(angleTicker)
-          const sinY = Math.sin(angleTicker)
-          let x = p.baseX * cosY - p.baseZ * sinY
-          let z = p.baseZ * cosY + p.baseX * sinY
-          const perspective = 300 / (300 + z)
-          return { x: cx + x * perspective, y: cy + p.baseY * perspective, scale: perspective }
-        })
+          if (p.x < 0 || p.x > width) p.vx *= -1
+          if (p.y < 0 || p.y > height) p.vy *= -1
 
-        // Dibujar Puntos y Líneas (Solo vecinos cercanos)
-        for (let i = 0; i < particleCount; i++) {
-          const p = projected[i]
-          const alpha = Math.max(0.1, (p.scale - 0.5) * 1.5)
-          ctx.fillStyle = `rgba(0, 242, 255, ${alpha})`
           ctx.beginPath()
-          ctx.arc(p.x, p.y, 1.5 * p.scale, 0, Math.PI * 2)
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2)
+          ctx.fillStyle = "rgba(0, 242, 255, 0.7)"
           ctx.fill()
+        });
+
+        ctx.lineWidth = 0.3
+        for (let i = 0; i < particleCount; i++) {
+          for (let j = i + 1; j < particleCount; j++) {
+            const p1 = particles[i]
+            const p2 = particles[j]
+            const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y)
+
+            if (dist < maxDistance) {
+              const opacity = 1 - (dist / maxDistance)
+              ctx.beginPath()
+              ctx.moveTo(p1.x, p1.y)
+              ctx.lineTo(p2.x, p2.y)
+              ctx.strokeStyle = `rgba(0, 242, 255, ${opacity * 0.4})`
+              ctx.stroke()
+            }
+          }
         }
       }
       animate()
 
-      cleanup = () => cancelAnimationFrame(animationId)
+      const handleResize = () => {
+          width = window.innerWidth
+          height = window.innerHeight
+          canvas.width = width
+          canvas.height = height
+      }
+      window.addEventListener("resize", handleResize)
+
+      cleanup = () => {
+        cancelAnimationFrame(animationId)
+        window.removeEventListener("resize", handleResize)
+      }
     }
 
     // --- EJECUTAR SEGÚN DISPOSITIVO ---

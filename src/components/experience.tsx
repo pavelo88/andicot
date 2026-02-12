@@ -10,7 +10,7 @@ export function Experience({ stats }: { stats: any }) {
           {Object.entries(stats).map(([key, value]) => (
             <div 
               key={key} 
-              className="p-6 border border-cyan-500/20 bg-cyan-500/5 backdrop-blur-md hover:bg-cyan-500/10 transition-colors group"
+              className="p-6 border border-cyan-500/20 bg-gradient-to-b from-cyan-500/15 to-transparent backdrop-blur-md hover:from-cyan-500/25 transition-all duration-300 group"
             >
               <div className="text-3xl font-black mb-1 italic text-white group-hover:text-cyan-400 transition-colors font-orbitron">
                 {value as string}
