@@ -29,7 +29,7 @@ export function BrainBg() {
       scene.add(mainGroup)
 
       // --- 1. Definir colores para los temas ---
-      const darkColor = new THREE.Color(0x00f2ff); // El cian brillante original
+      const darkColor = new THREE.Color(0x00f2ff); // El cian brillante original que te gusta
       const lightColor = new THREE.Color(0x00cccc); // Un cian más oscuro para el modo claro, pero aún brillante
 
       // --- 2. EL NÚCLEO (Esfera) ---
@@ -71,8 +71,8 @@ export function BrainBg() {
         const newColor = isLight ? lightColor : darkColor;
         coreMat.color.set(newColor);
         particlesMat.color.set(newColor);
-        // También ajustamos la opacidad general del canvas para mejor visibilidad en modo claro
-        canvas.style.opacity = isLight ? '1' : '0.4';
+        // Aumentamos la opacidad en modo oscuro para que el cian resalte más
+        canvas.style.opacity = isLight ? '1' : '0.7';
       }
 
       // Observador para cambios en el body (cambio de tema)
@@ -155,7 +155,7 @@ export function BrainBg() {
     <canvas 
       ref={canvasRef} 
       id="bg-canvas" 
-      className="fixed top-0 left-0 z-0 w-full h-full opacity-40 transition-opacity duration-300 pointer-events-none"
+      className="fixed top-0 left-0 z-0 w-full h-full opacity-70 transition-opacity duration-300 pointer-events-none"
     />
   )
 }
