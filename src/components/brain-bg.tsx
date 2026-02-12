@@ -28,28 +28,25 @@ export function BrainBg() {
       const mainGroup = new THREE.Group()
       scene.add(mainGroup)
 
-      // --- 1. Definir colores para los temas ---
-      const darkColor = new THREE.Color(0x00f2ff); // El cian brillante original que te gusta
-      const lightColor = new THREE.Color(0x00cccc); // Un cian más oscuro para el modo claro, pero aún brillante
+      // --- 1. Definir colores para los temas (Aquí puedes "monear" el color) ---
+      const darkColor = new THREE.Color(0x00c8ff); // <-- Un cian más azulado
+      const lightColor = new THREE.Color(0x00cccc); // Un cian más oscuro para el modo claro
 
       // --- 2. EL NÚCLEO (Esfera) ---
       const coreGeo = new THREE.IcosahedronGeometry(10, 1) 
       const edges = new THREE.EdgesGeometry(coreGeo)
       const coreMat = new THREE.LineBasicMaterial({ 
         color: darkColor,
-        // La propiedad 'linewidth' tiene limitaciones en WebGL y a menudo no funciona.
-        // En su lugar, ajustamos la opacidad para dar una sensación de grosor.
-        linewidth: 1, // Se deja en 1 por compatibilidad.
+        // La propiedad 'linewidth' es ignorada por la mayoría de navegadores.
+        // Para controlar el "grosor", ajusta la opacidad de abajo. Un valor más alto se verá más "grueso".
         transparent: true,
-        // ====> AQUÍ PUEDES MONEAR EL ANCHO/VISIBILIDAD <====
-        // Un valor más alto (ej: 0.9) hará la línea más sólida y brillante.
-        opacity: 0.8 
+        opacity: 0.8 // <--- Aquí puedes "monear" el grosor visual (ej: 0.5 es más fino, 1.0 es más grueso)
       }) 
       const coreLines = new THREE.LineSegments(edges, coreMat)
       mainGroup.add(coreLines)
 
       // --- 3. LA ATMÓSFERA (Puntos) ---
-      const particleCount = 200
+      const particleCount = 20
       const particlesGeo = new THREE.BufferGeometry()
       const posArray = new Float32Array(particleCount * 3)
       
@@ -75,7 +72,6 @@ export function BrainBg() {
         const newColor = isLight ? lightColor : darkColor;
         coreMat.color.set(newColor);
         particlesMat.color.set(newColor);
-        // Aumentamos la opacidad en modo oscuro para que el cian resalte más
         canvas.style.opacity = isLight ? '1' : '0.7';
       }
 
@@ -91,8 +87,7 @@ export function BrainBg() {
 
       // --- 5. Lógica de Tamaño (PC/Móvil) ---
       const updateCameraPosition = () => {
-        // En móvil (menos de 768px), alejamos la cámara para que el cerebro se vea más pequeño
-        camera.position.z = window.innerWidth < 768 ? 40 : 22;
+        camera.position.z = window.innerWidth < 768 ? 40 : 25;
       }
       
       // Llamadas iniciales
@@ -128,12 +123,9 @@ export function BrainBg() {
 
       // Limpieza y responsividad
       const handleResize = () => {
-        // Actualizar tamaño del renderer y aspect ratio
         camera.aspect = window.innerWidth / window.innerHeight
         camera.updateProjectionMatrix()
         renderer.setSize(window.innerWidth, window.innerHeight)
-        
-        // Actualizar posición de la cámara según el nuevo tamaño
         updateCameraPosition();
       }
       window.addEventListener("resize", handleResize)
@@ -142,7 +134,7 @@ export function BrainBg() {
         cancelAnimationFrame(animationId)
         window.removeEventListener("resize", handleResize)
         document.removeEventListener("mousemove", handleMouseMove)
-        observer.disconnect() // <--- Importante: desconectar el observador
+        observer.disconnect() 
         coreGeo.dispose()
         edges.dispose()
         particlesGeo.dispose()
