@@ -36,9 +36,9 @@ export function BrainBg() {
       const edges = new THREE.EdgesGeometry(coreGeo)
       const coreMat = new THREE.LineBasicMaterial({ 
         color: 0x00f2ff, 
-        linewidth: 2.5, // Hacemos las líneas más anchas
+        linewidth: 6.25, // <-- Aquí puedes ajustar el grosor
         transparent: true,
-        opacity: 0.7 // Hacemos las líneas más visibles
+        opacity: 0.7 
       }) 
       const coreLines = new THREE.LineSegments(edges, coreMat)
       mainGroup.add(coreLines)
