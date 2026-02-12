@@ -12,9 +12,6 @@ export function BrainBg() {
 
     let cleanup = () => {}
 
-    // ==========================================
-    // "NÚCLEO DE PROCESAMIENTO" UNIFICADO (Three.js)
-    // ==========================================
     const initAnimation = () => {
       const scene = new THREE.Scene()
       const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
@@ -31,21 +28,25 @@ export function BrainBg() {
       const mainGroup = new THREE.Group()
       scene.add(mainGroup)
 
-      // 1. EL NÚCLEO (Esfera de Alambre Tecnológica) - LÍNEAS MÁS GRUESAS
+      // --- 1. Definir colores para los temas ---
+      const darkColor = new THREE.Color(0x00f2ff);
+      const lightColor = new THREE.Color(0x083344); // Un azul-gris oscuro para el modo claro
+
+      // --- 2. EL NÚCLEO (Esfera) ---
       const coreGeo = new THREE.IcosahedronGeometry(10, 1) 
       const edges = new THREE.EdgesGeometry(coreGeo)
       const coreMat = new THREE.LineBasicMaterial({ 
-        color: 0x00f2ff, 
-        linewidth: 6.25, // <-- Aquí puedes ajustar el grosor
+        color: darkColor, // Color inicial
+        linewidth: 6.25, // Aquí puedes ajustar el grosor
         transparent: true,
         opacity: 0.7 
       }) 
       const coreLines = new THREE.LineSegments(edges, coreMat)
       mainGroup.add(coreLines)
 
-      // 2. LA ATMÓSFERA (Nube de Puntos Orbitando) - PUNTOS REDUCIDOS
+      // --- 3. LA ATMÓSFERA (Puntos) ---
       const particlesGeo = new THREE.BufferGeometry()
-      const particleCount = 200 // Reducimos drásticamente los puntos
+      const particleCount = 200
       const posArray = new Float32Array(particleCount * 3)
       
       for(let i = 0; i < particleCount * 3; i++) {
@@ -55,8 +56,8 @@ export function BrainBg() {
       particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3))
       
       const particlesMat = new THREE.PointsMaterial({
-        size: 0.15, // Puntos un poco más pequeños
-        color: 0x00f2ff,
+        size: 0.15,
+        color: darkColor, // Color inicial
         transparent: true,
         opacity: 0.6,
       })
@@ -64,8 +65,36 @@ export function BrainBg() {
       const particlesMesh = new THREE.Points(particlesGeo, particlesMat)
       mainGroup.add(particlesMesh)
 
-      // Posición de la cámara
-      camera.position.z = 25
+      // --- 4. Lógica de Tema (Claro/Oscuro) ---
+      const updateTheme = () => {
+        const isLight = document.body.classList.contains('light-mode');
+        const newColor = isLight ? lightColor : darkColor;
+        coreMat.color.set(newColor);
+        particlesMat.color.set(newColor);
+        // También ajustamos la opacidad general del canvas para mejor visibilidad en modo claro
+        canvas.style.opacity = isLight ? '1' : '0.4';
+      }
+
+      // Observador para cambios en el body (cambio de tema)
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.attributeName === "class") {
+            updateTheme();
+          }
+        });
+      });
+      observer.observe(document.body, { attributes: true });
+
+      // --- 5. Lógica de Tamaño (PC/Móvil) ---
+      const updateCameraPosition = () => {
+        // En móvil (menos de 768px), alejamos la cámara para que el cerebro se vea más pequeño
+        camera.position.z = window.innerWidth < 768 ? 40 : 25;
+      }
+      
+      // Llamadas iniciales
+      updateCameraPosition();
+      updateTheme();
+
 
       // INTERACCIÓN CON MOUSE (Efecto Parallax suave)
       let mouseX = 0
@@ -82,14 +111,10 @@ export function BrainBg() {
       const animate = () => {
         animationId = requestAnimationFrame(animate)
         
-        // Rotar Núcleo
         coreLines.rotation.y += 0.002
         coreLines.rotation.x += 0.001
-
-        // Rotar Atmósfera
         particlesMesh.rotation.y -= 0.0015
         
-        // Movimiento suave con el mouse (Tilt)
         mainGroup.rotation.y += 0.05 * (mouseX - mainGroup.rotation.y)
         mainGroup.rotation.x += 0.05 * (mouseY - mainGroup.rotation.x)
 
@@ -97,11 +122,15 @@ export function BrainBg() {
       }
       animate()
 
-      // Limpieza
+      // Limpieza y responsividad
       const handleResize = () => {
+        // Actualizar tamaño del renderer y aspect ratio
         camera.aspect = window.innerWidth / window.innerHeight
         camera.updateProjectionMatrix()
         renderer.setSize(window.innerWidth, window.innerHeight)
+        
+        // Actualizar posición de la cámara según el nuevo tamaño
+        updateCameraPosition();
       }
       window.addEventListener("resize", handleResize)
 
@@ -109,6 +138,7 @@ export function BrainBg() {
         cancelAnimationFrame(animationId)
         window.removeEventListener("resize", handleResize)
         document.removeEventListener("mousemove", handleMouseMove)
+        observer.disconnect() // <--- Importante: desconectar el observador
         coreGeo.dispose()
         edges.dispose()
         particlesGeo.dispose()
@@ -116,7 +146,6 @@ export function BrainBg() {
       }
     }
 
-    // --- EJECUTAR ANIMACIÓN UNIFICADA ---
     initAnimation()
 
     return () => cleanup()
@@ -126,7 +155,7 @@ export function BrainBg() {
     <canvas 
       ref={canvasRef} 
       id="bg-canvas" 
-      className="fixed top-0 left-0 z-0 w-full h-full opacity-40 pointer-events-none" 
+      className="fixed top-0 left-0 z-0 w-full h-full opacity-40 transition-opacity duration-300 pointer-events-none"
     />
   )
 }
