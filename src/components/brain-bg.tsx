@@ -37,9 +37,13 @@ export function BrainBg() {
       const edges = new THREE.EdgesGeometry(coreGeo)
       const coreMat = new THREE.LineBasicMaterial({ 
         color: darkColor,
-        linewidth: 2.5, 
+        // La propiedad 'linewidth' tiene limitaciones en WebGL y a menudo no funciona.
+        // En su lugar, ajustamos la opacidad para dar una sensación de grosor.
+        linewidth: 1, // Se deja en 1 por compatibilidad.
         transparent: true,
-        opacity: 0.7 
+        // ====> AQUÍ PUEDES MONEAR EL ANCHO/VISIBILIDAD <====
+        // Un valor más alto (ej: 0.9) hará la línea más sólida y brillante.
+        opacity: 0.8 
       }) 
       const coreLines = new THREE.LineSegments(edges, coreMat)
       mainGroup.add(coreLines)
