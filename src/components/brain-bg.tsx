@@ -36,37 +36,36 @@ export function BrainBg() {
       const edges = new THREE.EdgesGeometry(coreGeo)
       const coreMat = new THREE.LineBasicMaterial({ 
         color: 0x00f2ff, 
-        linewidth: 1.25, 
+        linewidth: 2.5, // Hacemos las líneas más anchas
         transparent: true,
-        opacity: 0.4
+        opacity: 0.7 // Hacemos las líneas más visibles
       }) 
       const coreLines = new THREE.LineSegments(edges, coreMat)
       mainGroup.add(coreLines)
 
-      // 2. LA ATMÓSFERA (Nube de Puntos Orbitando)
+      // 2. LA ATMÓSFERA (Nube de Puntos Orbitando) - PUNTOS REDUCIDOS
       const particlesGeo = new THREE.BufferGeometry()
-      const particleCount = 700
+      const particleCount = 200 // Reducimos drásticamente los puntos
       const posArray = new Float32Array(particleCount * 3)
       
       for(let i = 0; i < particleCount * 3; i++) {
-        // Reducimos la dispersión para un efecto más "comprimido"
         posArray[i] = (Math.random() - 0.5) * 30 
       }
       
       particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3))
       
       const particlesMat = new THREE.PointsMaterial({
-        size: 0.19,
+        size: 0.15, // Puntos un poco más pequeños
         color: 0x00f2ff,
         transparent: true,
-        opacity: 0.8,
+        opacity: 0.6,
       })
       
       const particlesMesh = new THREE.Points(particlesGeo, particlesMat)
       mainGroup.add(particlesMesh)
 
-      // Posición de la cámara alejada para un efecto "más chico"
-      camera.position.z = 28
+      // Posición de la cámara
+      camera.position.z = 25
 
       // INTERACCIÓN CON MOUSE (Efecto Parallax suave)
       let mouseX = 0
