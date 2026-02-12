@@ -29,15 +29,15 @@ export function BrainBg() {
       scene.add(mainGroup)
 
       // --- 1. Definir colores para los temas ---
-      const darkColor = new THREE.Color(0x00f2ff); // Cian neón para modo oscuro
-      const lightColor = new THREE.Color(0x0891b2); // Un cian más oscuro y visible para el modo claro
+      const darkColor = new THREE.Color(0x00f2ff); // El cian brillante original
+      const lightColor = new THREE.Color(0x00cccc); // Un cian más oscuro para el modo claro, pero aún brillante
 
       // --- 2. EL NÚCLEO (Esfera) ---
       const coreGeo = new THREE.IcosahedronGeometry(10, 1) 
       const edges = new THREE.EdgesGeometry(coreGeo)
       const coreMat = new THREE.LineBasicMaterial({ 
         color: darkColor, // Color inicial
-        linewidth: 2.25, // Aquí puedes ajustar el grosor para mejorarlo
+        linewidth: 2.5, // Aquí puedes ajustar el grosor
         transparent: true,
         opacity: 0.7 
       }) 
@@ -45,21 +45,21 @@ export function BrainBg() {
       mainGroup.add(coreLines)
 
       // --- 3. LA ATMÓSFERA (Puntos) ---
+      const particleCount = 200 // Menos puntos para que el cerebro sea el protagonista
       const particlesGeo = new THREE.BufferGeometry()
-      const particleCount = 150 // Reducido para que el cerebro sea el protagonista
       const posArray = new Float32Array(particleCount * 3)
       
       for(let i = 0; i < particleCount * 3; i++) {
-        posArray[i] = (Math.random() - 0.5) * 40 // Un poco más de dispersión
+        posArray[i] = (Math.random() - 0.5) * 30 
       }
       
       particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3))
       
       const particlesMat = new THREE.PointsMaterial({
-        size: 0.1,
+        size: 0.25,
         color: darkColor, // Color inicial
         transparent: true,
-        opacity: 0.3,
+        opacity: 0.4,
       })
       
       const particlesMesh = new THREE.Points(particlesGeo, particlesMat)
