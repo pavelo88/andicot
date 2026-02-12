@@ -10,16 +10,13 @@ export function BrainBg() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    // DETECTAR DISPOSITIVO
-    const isMobile = window.innerWidth < 768
     let cleanup = () => {}
 
     // ==========================================
-    // MODO PC: "NÚCLEO DE PROCESAMIENTO" (Three.js)
+    // "NÚCLEO DE PROCESAMIENTO" UNIFICADO (Three.js)
     // ==========================================
-    const initDesktop = () => {
+    const initAnimation = () => {
       const scene = new THREE.Scene()
-      // Cámara ajustada para ver el núcleo completo
       const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
       
       const renderer = new THREE.WebGLRenderer({ 
@@ -31,29 +28,29 @@ export function BrainBg() {
       renderer.setSize(window.innerWidth, window.innerHeight)
       renderer.setPixelRatio(window.devicePixelRatio)
 
-      // GRUPO PRINCIPAL (Para rotar todo junto si se requiere)
       const mainGroup = new THREE.Group()
       scene.add(mainGroup)
 
-      // 1. EL NÚCLEO (Esfera de Alambre Tecnológica)
-      const coreGeo = new THREE.IcosahedronGeometry(10, 1) // Radio 10
-      const coreMat = new THREE.MeshBasicMaterial({ 
+      // 1. EL NÚCLEO (Esfera de Alambre Tecnológica) - LÍNEAS MÁS GRUESAS
+      const coreGeo = new THREE.IcosahedronGeometry(10, 1) 
+      const edges = new THREE.EdgesGeometry(coreGeo)
+      const coreMat = new THREE.LineBasicMaterial({ 
         color: 0x00f2ff, 
-        wireframe: true, 
-        transparent: true, 
-        opacity: 0.4 
-      })
-      const coreSphere = new THREE.Mesh(coreGeo, coreMat)
-      mainGroup.add(coreSphere)
+        linewidth: 1.25, 
+        transparent: true,
+        opacity: 0.4
+      }) 
+      const coreLines = new THREE.LineSegments(edges, coreMat)
+      mainGroup.add(coreLines)
 
       // 2. LA ATMÓSFERA (Nube de Puntos Orbitando)
       const particlesGeo = new THREE.BufferGeometry()
-      const particleCount = 700 // Cantidad de datos flotando
+      const particleCount = 700
       const posArray = new Float32Array(particleCount * 3)
       
       for(let i = 0; i < particleCount * 3; i++) {
-        // Distribuir puntos en una esfera más grande (Radio 14 a 22)
-        posArray[i] = (Math.random() - 0.5) * 35 
+        // Reducimos la dispersión para un efecto más "comprimido"
+        posArray[i] = (Math.random() - 0.5) * 30 
       }
       
       particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3))
@@ -68,8 +65,8 @@ export function BrainBg() {
       const particlesMesh = new THREE.Points(particlesGeo, particlesMat)
       mainGroup.add(particlesMesh)
 
-      // Posición de la cámara
-      camera.position.z = 22
+      // Posición de la cámara alejada para un efecto "más chico"
+      camera.position.z = 28
 
       // INTERACCIÓN CON MOUSE (Efecto Parallax suave)
       let mouseX = 0
@@ -87,10 +84,10 @@ export function BrainBg() {
         animationId = requestAnimationFrame(animate)
         
         // Rotar Núcleo
-        coreSphere.rotation.y += 0.002
-        coreSphere.rotation.x += 0.001
+        coreLines.rotation.y += 0.002
+        coreLines.rotation.x += 0.001
 
-        // Rotar Atmósfera (Sentido contrario y más lento)
+        // Rotar Atmósfera
         particlesMesh.rotation.y -= 0.0015
         
         // Movimiento suave con el mouse (Tilt)
@@ -114,95 +111,14 @@ export function BrainBg() {
         window.removeEventListener("resize", handleResize)
         document.removeEventListener("mousemove", handleMouseMove)
         coreGeo.dispose()
+        edges.dispose()
         particlesGeo.dispose()
         renderer.dispose()
       }
     }
 
-    // ==========================================
-    // MODO MÓVIL: "RED DE PLEXO DINÁMICA" (Canvas 2D)
-    // ==========================================
-    const initMobile = () => {
-      const ctx = canvas.getContext("2d")
-      if (!ctx) return
-
-      let width = window.innerWidth
-      let height = window.innerHeight
-      canvas.width = width
-      canvas.height = height
-
-      const particles: any[] = []
-      const particleCount = 60 // Optimizado para móviles
-      const maxDistance = Math.min(width, height) / 5;
-
-      for (let i = 0; i < particleCount; i++) {
-        particles.push({
-          x: Math.random() * width,
-          y: Math.random() * height,
-          vx: (Math.random() - 0.5) * 0.4, // Velocidad reducida
-          vy: (Math.random() - 0.5) * 0.4,
-          radius: Math.random() * 1.5 + 0.5
-        })
-      }
-
-      let animationId: number
-      const animate = () => {
-        animationId = requestAnimationFrame(animate)
-        ctx.clearRect(0, 0, width, height)
-
-        particles.forEach(p => {
-          p.x += p.vx
-          p.y += p.vy
-
-          if (p.x < 0 || p.x > width) p.vx *= -1
-          if (p.y < 0 || p.y > height) p.vy *= -1
-
-          ctx.beginPath()
-          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2)
-          ctx.fillStyle = "rgba(0, 242, 255, 0.7)"
-          ctx.fill()
-        });
-
-        ctx.lineWidth = 0.3
-        for (let i = 0; i < particleCount; i++) {
-          for (let j = i + 1; j < particleCount; j++) {
-            const p1 = particles[i]
-            const p2 = particles[j]
-            const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y)
-
-            if (dist < maxDistance) {
-              const opacity = 1 - (dist / maxDistance)
-              ctx.beginPath()
-              ctx.moveTo(p1.x, p1.y)
-              ctx.lineTo(p2.x, p2.y)
-              ctx.strokeStyle = `rgba(0, 242, 255, ${opacity * 0.4})`
-              ctx.stroke()
-            }
-          }
-        }
-      }
-      animate()
-
-      const handleResize = () => {
-          width = window.innerWidth
-          height = window.innerHeight
-          canvas.width = width
-          canvas.height = height
-      }
-      window.addEventListener("resize", handleResize)
-
-      cleanup = () => {
-        cancelAnimationFrame(animationId)
-        window.removeEventListener("resize", handleResize)
-      }
-    }
-
-    // --- EJECUTAR SEGÚN DISPOSITIVO ---
-    if (isMobile) {
-      initMobile()
-    } else {
-      initDesktop()
-    }
+    // --- EJECUTAR ANIMACIÓN UNIFICADA ---
+    initAnimation()
 
     return () => cleanup()
   }, [])
