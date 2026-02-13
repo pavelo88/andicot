@@ -37,20 +37,24 @@ export function BrainBg() {
       const edges = new THREE.EdgesGeometry(coreGeo)
       const coreMat = new THREE.LineBasicMaterial({ 
         color: darkColor,
-        // La propiedad 'linewidth' es ignorada por la mayoría de navegadores.
-        // Para controlar el "grosor", ajusta la opacidad de abajo. Un valor más alto se verá más "grueso".
+        // 'linewidth' no funciona en la mayoría de sistemas. 
+        // Para "monear" el grosor, usa 'opacity'. Un valor más cercano a 1.0 hará la línea más visible y gruesa.
         transparent: true,
-        opacity: 0.8 // <--- Aquí puedes "monear" el grosor visual (ej: 0.5 es más fino, 1.0 es más grueso)
+        opacity: 0.8
       }) 
       const coreLines = new THREE.LineSegments(edges, coreMat)
       mainGroup.add(coreLines)
 
       // --- 3. LA ATMÓSFERA (Puntos) ---
+      // --- AQUÍ PUEDES "MONEAR" LA CANTIDAD DE PUNTOS ---
+      // Simplemente cambia el número de abajo. Ej: 50, 100, etc.
       const particleCount = 20
       const particlesGeo = new THREE.BufferGeometry()
       const posArray = new Float32Array(particleCount * 3)
       
       for(let i = 0; i < particleCount * 3; i++) {
+        // El '30' de al final controla qué tan lejos se esparcen los puntos.
+        // Un número más grande los aleja más del centro.
         posArray[i] = (Math.random() - 0.5) * 30 
       }
       
@@ -87,6 +91,7 @@ export function BrainBg() {
 
       // --- 5. Lógica de Tamaño (PC/Móvil) ---
       const updateCameraPosition = () => {
+        // En PC, la cámara está en 25 (más cerca). En móvil, en 40 (más lejos).
         camera.position.z = window.innerWidth < 768 ? 40 : 25;
       }
       
