@@ -29,18 +29,15 @@ export function BrainBg() {
       scene.add(mainGroup)
 
       // --- 1. Definir colores para los temas (Aquí puedes "monear" el color) ---
-      const darkColor = new THREE.Color(0x00c8ff); // <-- Un cian más azulado
+      const darkColor = new THREE.Color(0x00f2ff); // <-- El cian brillante que te gusta
       const lightColor = new THREE.Color(0x00cccc); // Un cian más oscuro para el modo claro
 
       // --- 2. EL NÚCLEO (Esfera) ---
-      const coreGeo = new THREE.IcosahedronGeometry(10, 1) 
+      const coreGeo = new THREE.IcosahedronGeometry(11, 1) 
       const edges = new THREE.EdgesGeometry(coreGeo)
       const coreMat = new THREE.LineBasicMaterial({ 
         color: darkColor,
-        // 'linewidth' no funciona en la mayoría de sistemas. 
-        // Para "monear" el grosor, usa 'opacity'. Un valor más cercano a 1.0 hará la línea más visible y gruesa.
         transparent: true,
-        opacity: 0.8
       }) 
       const coreLines = new THREE.LineSegments(edges, coreMat)
       mainGroup.add(coreLines)
@@ -53,9 +50,10 @@ export function BrainBg() {
       const posArray = new Float32Array(particleCount * 3)
       
       for(let i = 0; i < particleCount * 3; i++) {
-        // El '30' de al final controla qué tan lejos se esparcen los puntos.
+        // --- AQUÍ PUEDES "MONEAR" LA DISPERSIÓN ---
+        // El '100' de al final controla qué tan lejos se esparcen los puntos.
         // Un número más grande los aleja más del centro.
-        posArray[i] = (Math.random() - 0.5) * 30 
+        posArray[i] = (Math.random() - 0.5) * 100 
       }
       
       particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3))
@@ -75,6 +73,11 @@ export function BrainBg() {
         const isLight = document.body.classList.contains('light-mode');
         const newColor = isLight ? lightColor : darkColor;
         coreMat.color.set(newColor);
+        
+        // --- AQUÍ PUEDES "MONEAR" LA OPACIDAD PARA CADA MODO ---
+        // Cambia el primer valor (1.0) para el modo claro y el segundo (0.8) para el modo oscuro.
+        coreMat.opacity = isLight ? 1.0 : 0.8;
+
         particlesMat.color.set(newColor);
         canvas.style.opacity = isLight ? '1' : '0.7';
       }
