@@ -158,7 +158,7 @@ export default function AdminPage() {
   // --- LOGIN ---
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
-    if (password === "Andicot_2026_Sinergia") setIsAuthenticated(true)
+    if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) setIsAuthenticated(true)
     else setAuthError(true)
   }
 
@@ -445,5 +445,7 @@ function Label({ text }: { text: string }) {
         <label className="text-[10px] text-gray-500 font-bold uppercase mb-2 block tracking-widest">{text}</label>
     )
 }
+
+    
 
     
