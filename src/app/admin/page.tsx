@@ -1,13 +1,13 @@
+
 "use client"
 
 import Image from "next/image"
 import logoImg from "../icon.png"
 import { useState, useEffect } from "react"
 import { useSystemData } from "@/hooks/useStarkData"
-import { db, storage } from "@/lib/firebase"
+import { db } from "@/lib/firebase"
 import { doc, writeBatch } from "firebase/firestore" 
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
-import { Save, Lock, Globe, Database, Upload, Tag, ShieldCheck, BarChart3, Mail, Award, DollarSign, Share2, LogOut, Trash2 } from "lucide-react"
+import { Save, Lock, Globe, Database, Tag, ShieldCheck, BarChart3, Mail, Award, DollarSign, Share2, LogOut } from "lucide-react"
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -20,8 +20,7 @@ export default function AdminPage() {
   
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState("")
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
-
+  
   // --- PRE-CARGA DE ESTRUCTURA ---
   useEffect(() => {
     if (!loading && data && services.length > 0) {
@@ -46,8 +45,6 @@ export default function AdminPage() {
         d: s.d || s.descripcion || "",
         tags: s.tags || "",
         img: s.img || "",
-        newFile: null,
-        previewUrl: null
       }))
       setServicesForm(mapped)
     }
@@ -72,40 +69,17 @@ export default function AdminPage() {
     setServicesForm(updated)
   }
 
-  const handleImageFile = (index: number, file: File) => {
-    const updated = [...servicesForm]
-    updated[index].newFile = file
-    updated[index].previewUrl = URL.createObjectURL(file)
-    setServicesForm(updated)
-  }
-
-  const handleRemoveImage = (index: number) => {
-    const updated = [...servicesForm]
-    updated[index].img = ""
-    updated[index].newFile = null
-    updated[index].previewUrl = null
-    setServicesForm(updated)
-  }
-
   const saveAllChanges = async () => {
     setIsSaving(true)
     try {
       const batch = writeBatch(db)
 
-      // 1. Procesar Imágenes de Servicios
-      const updatedServices = await Promise.all(servicesForm.map(async (service) => {
-        let finalUrl = service.img
-        if (service.newFile) {
-          const storageRef = ref(storage, `servicios/${service.id}/${Date.now()}`)
-          await uploadBytes(storageRef, service.newFile)
-          finalUrl = await getDownloadURL(storageRef)
-        }
-        return { ...service, img: finalUrl }
-      }))
+      // 1. Procesar Imágenes de Servicios (Temporalmente desactivado)
+      // const updatedServices = await Promise.all(servicesForm.map(async (service) => { ... }))
 
       // 2. Batch de Servicios
-      updatedServices.forEach(s => {
-        const { newFile, previewUrl, ...cleanData } = s
+      servicesForm.forEach(s => {
+        const { ...cleanData } = s
         batch.update(doc(db, "servicios", s.id), cleanData)
       })
 
@@ -317,41 +291,14 @@ export default function AdminPage() {
                             ID: {s.id.slice(0,6)}
                         </span>
 
-                        {/* Imagen con Drag & Drop y Borrado */}
-                        <div 
-                            className={`relative aspect-video mb-5 bg-zinc-900 rounded-lg overflow-hidden border transition-all duration-300 ${dragOverIndex === i ? 'border-cyan-500 ring-2 ring-offset-2 ring-offset-black/50 ring-cyan-500' : 'border-white/10 group-hover:border-cyan-500/30'}`}
-                            onDragOver={(e) => { e.preventDefault(); setDragOverIndex(i); }}
-                            onDragLeave={() => setDragOverIndex(null)}
-                            onDrop={(e) => {
-                                e.preventDefault();
-                                setDragOverIndex(null);
-                                if (e.dataTransfer.files?.[0]) {
-                                    handleImageFile(i, e.dataTransfer.files[0]);
-                                }
-                            }}
-                        >
-                            <img src={s.previewUrl || s.img || "/placeholder.jpg"} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500" alt={s.t || s.titulo} />
-
-                            {(s.previewUrl || s.img) && (
-                                <button 
-                                    type="button"
-                                    onClick={() => handleRemoveImage(i)}
-                                    className="absolute top-2 left-2 z-20 p-1.5 bg-black/60 rounded-full text-red-500 hover:bg-red-500 hover:text-black transition-all opacity-0 group-hover:opacity-100"
-                                    title="Eliminar imagen"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                            )}
-                            
-                            <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer bg-black/70 transition-all duration-300 opacity-0 group-hover:opacity-100"
-                                style={{ opacity: dragOverIndex === i ? 1 : undefined }}
-                            >
-                                <Upload className="w-8 h-8 text-cyan-400 mb-2" />
-                                <span className="text-[10px] uppercase font-bold text-white tracking-widest text-center px-2">
-                                    {dragOverIndex === i ? 'Suelta la imagen para cargarla' : 'Arrastra o haz click para cambiar'}
+                        {/* Imagen (sin funcionalidad de subida) */}
+                        <div className="relative aspect-video mb-5 bg-zinc-900 rounded-lg overflow-hidden border border-white/10 group-hover:border-cyan-500/30">
+                            <img src={s.img || "/placeholder.jpg"} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500" alt={s.t || s.titulo} />
+                             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span className="text-[10px] uppercase font-bold text-gray-400 tracking-widest text-center px-2">
+                                    GESTIÓN DE IMÁGENES DESACTIVADA
                                 </span>
-                                <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleImageFile(i, e.target.files[0])} />
-                            </label>
+                            </div>
                         </div>
 
                         {/* Campos */}
@@ -440,3 +387,5 @@ function Label({ text }: { text: string }) {
         <label className="text-[10px] text-gray-500 font-bold uppercase mb-2 block tracking-widest">{text}</label>
     )
 }
+
+    
