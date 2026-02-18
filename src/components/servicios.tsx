@@ -7,6 +7,8 @@ import {
   Cpu, ChevronRight, MousePointer2 
 } from "lucide-react"
 import { BlueprintBackground } from "@/components/imagenes"
+// NUEVO: Componentes del carrusel
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 
 
 // --- INTERFACES ---
@@ -34,20 +36,18 @@ export function Servicios({ services, onSelect, highlightedId }: { services: Ser
     }
   }, [highlightedId, services])
 
-  // --- AUTO-PLAY (NUEVO) ---
+  // --- AUTO-PLAY (MÓVIL) ---
   useEffect(() => {
-    // Si está pausado o no hay servicios, no hacemos nada
     if (isPaused || services.length === 0) return
 
     const startAutoPlay = () => {
       autoPlayRef.current = setInterval(() => {
         setCurrentIndex(prev => (prev === services.length - 1 ? 0 : prev + 1))
-      }, 3500) // Cambia cada 3.5 segundos (ajusta este número si quieres más rápido/lento)
+      }, 3500)
     }
 
     startAutoPlay()
 
-    // Limpieza al desmontar o cambiar estado
     return () => {
       if (autoPlayRef.current) clearInterval(autoPlayRef.current)
     }
@@ -59,14 +59,14 @@ export function Servicios({ services, onSelect, highlightedId }: { services: Ser
   const [touchEnd, setTouchEnd] = useState<number | null>(null)
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    setIsPaused(true) // Pausar automático al tocar
+    setIsPaused(true)
     setTouchStart(e.targetTouches[0].clientX)
   }
   
   const handleTouchMove = (e: React.TouchEvent) => setTouchEnd(e.targetTouches[0].clientX)
   
   const handleTouchEnd = () => {
-    setIsPaused(false) // Reanudar automático al soltar
+    setIsPaused(false)
     if (!touchStart || !touchEnd) return
     const distance = touchStart - touchEnd
     if (distance > 50) setCurrentIndex(prev => (prev === services.length - 1 ? 0 : prev + 1))
@@ -81,13 +81,11 @@ export function Servicios({ services, onSelect, highlightedId }: { services: Ser
           Catálogo de <span className="text-cyan-500">Soluciones</span>
         </h2>
         <div className="h-1 w-20 bg-cyan-500 mt-4 mx-auto lg:mx-0 shadow-[0_0_20px_rgba(0,242,255,0.6)]"></div>
-
       </div>
 
-      {/* --- MÓVIL (SWIPE + AUTO) --- */}
+      {/* --- VISTA MÓVIL (SE MANTIENE IGUAL) --- */}
       <div className="md:hidden relative min-h-[500px]" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
         {services.length > 0 && (
-          // Envuelto en un div con animación de fade key para suavizar el cambio automático
           <div key={currentIndex} className="animate-in fade-in slide-in-from-right-4 duration-500">
               <ServiceCard 
                 service={services[currentIndex]} 
@@ -98,7 +96,6 @@ export function Servicios({ services, onSelect, highlightedId }: { services: Ser
           </div>
         )}
         
-        {/* Controles manuales discretos (opcional) */}
         <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between px-2 pointer-events-none">
             <button onClick={() => setCurrentIndex(prev => (prev === 0 ? services.length - 1 : prev - 1))} className="pointer-events-auto bg-black/20 p-2 rounded-full text-white/50 hover:text-cyan-500 backdrop-blur-sm">‹</button>
             <button onClick={() => setCurrentIndex(prev => (prev === services.length - 1 ? 0 : prev + 1))} className="pointer-events-auto bg-black/20 p-2 rounded-full text-white/50 hover:text-cyan-500 backdrop-blur-sm">›</button>
@@ -111,8 +108,33 @@ export function Servicios({ services, onSelect, highlightedId }: { services: Ser
         </div>
       </div>
 
-      {/* --- PC (GRID COMPACTA - SIN CAMBIOS) --- */}
-      <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+      {/* --- VISTA TABLET: CARRUSEL (NUEVO) --- */}
+      <div className="hidden md:block lg:hidden">
+        <Carousel
+          opts={{ align: "start", loop: true }}
+          className="w-full max-w-4xl mx-auto"
+        >
+          <CarouselContent className="-ml-4">
+            {services.map((s) => (
+              <CarouselItem key={s.id} className="pl-4 md:basis-1/2">
+                <div className="p-1 h-full flex">
+                    <ServiceCard
+                        service={s}
+                        onClick={() => onSelect(s.id)}
+                        isActive={s.id === highlightedId}
+                        isMobile={false}
+                    />
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="absolute left-[-20px] top-1/2 -translate-y-1/2 z-10" />
+          <CarouselNext className="absolute right-[-20px] top-1/2 -translate-y-1/2 z-10" />
+        </Carousel>
+      </div>
+      
+      {/* --- VISTA PC: GRID (MODIFICADO) --- */}
+      <div className="hidden lg:grid lg:grid-cols-3 gap-8 items-start">
         {services.map(s => (
           <ServiceCard 
             key={s.id} 
@@ -140,7 +162,7 @@ function ServiceCard({ service, onClick, isActive, isMobile }: { service: Servic
     <div 
       onClick={onClick}
       className={`
-        group tech-glass p-5 cursor-pointer transition-all duration-500 hover:-translate-y-2 flex flex-col
+        group tech-glass p-5 cursor-pointer transition-all duration-500 hover:-translate-y-2 flex flex-col w-full
         ${isActive ? 'ring-2 ring-cyan-500 shadow-[0_0_40px_rgba(0,242,255,0.2)]' : 'border-white/5 hover:border-cyan-500/30'}
         ${isMobile ? 'h-full justify-between' : ''} 
       `}
