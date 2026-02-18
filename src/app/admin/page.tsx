@@ -3,11 +3,12 @@
 
 import Image from "next/image"
 import logoImg from "../icon.png"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useSystemData } from "@/hooks/useStarkData"
-import { db } from "@/lib/firebase"
-import { doc, writeBatch } from "firebase/firestore" 
-import { Save, Lock, Globe, Database, Tag, ShieldCheck, BarChart3, Mail, Award, DollarSign, Share2, LogOut } from "lucide-react"
+import { db, storage } from "@/lib/firebase" 
+import { doc, writeBatch } from "firebase/firestore"
+import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage"
+import { Save, Lock, Globe, Database, Tag, ShieldCheck, BarChart3, Mail, Award, DollarSign, Share2, LogOut, Upload, Trash2, X } from "lucide-react"
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -21,30 +22,31 @@ export default function AdminPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState("")
   
+  // Estados para Drag & Drop
+  const [dragActive, setDragActive] = useState<number | null>(null)
+  
   // --- PRE-CARGA DE ESTRUCTURA ---
   useEffect(() => {
     if (!loading && data && services.length > 0) {
-      // 1. Preparamos la configuración global con valores por defecto
       const safeData = {
         ...data,
         hero: data.hero || { titulo_principal: "", titulo_resaltado: "", subtitulo: "" },
         garantia: data.garantia || { titulo: "Garantía STARK", desc: "", btn: "VER PÓLIZA" },
         estadisticas: data.estadisticas || { proyectos: "500+", años: "15+", uptime: "99.9%", soporte: "24/7" },
         contacto: data.contacto || { email: "", tel: "", direccion: "" },
-        // NUEVOS CAMPOS: Redes y Finanzas
         redes: data.redes || { facebook: "", instagram: "", tiktok: "" },
         finanzas: data.finanzas || { iva: "15", descuento: "0" },
-        // LÓGICA MARCAS: Convertimos array a texto para editar
         marcasString: data.marcas && Array.isArray(data.marcas) ? data.marcas.join(", ") : ""
       }
       setConfigForm(safeData)
 
-      // 2. Preparamos los servicios
       const mapped = services.map(s => ({
         ...s,
         d: s.d || s.descripcion || "",
         tags: s.tags || "",
         img: s.img || "",
+        imgPreview: null,
+        file: null,
       }))
       setServicesForm(mapped)
     }
@@ -52,7 +54,6 @@ export default function AdminPage() {
 
   // --- MANEJADORES ---
   const handleConfigChange = (section: string, field: string, value: string) => {
-    // Manejo especial para campos raíz (como marcasString)
     if (section === "root") {
         setConfigForm((prev: any) => ({ ...prev, [field]: value }))
     } else {
@@ -69,38 +70,89 @@ export default function AdminPage() {
     setServicesForm(updated)
   }
 
+  // --- MANEJO DE IMÁGENES ---
+  const handleImageChange = (index: number, file: File) => {
+    const updated = [...servicesForm]
+    updated[index].file = file;
+    updated[index].imgPreview = URL.createObjectURL(file);
+    setServicesForm(updated);
+  }
+
+  const handleImageDelete = (index: number) => {
+    const updated = [...servicesForm];
+    updated[index].file = null;
+    updated[index].imgPreview = null;
+    updated[index].img = ""; // También limpia la URL existente
+    setServicesForm(updated);
+  };
+  
+  const handleImageUpload = async (service: any) => {
+    if (!service.file) return service.img // Si no hay archivo nuevo, devuelve la URL existente
+    const serviceSlug = (service.t || service.titulo).toLowerCase().replace(/\s+/g, '-')
+    const filePath = `servicios/${serviceSlug}/${Date.now()}`
+    const storageRef = ref(storage, filePath)
+    
+    await uploadBytes(storageRef, service.file)
+    const downloadURL = await getDownloadURL(storageRef)
+    return downloadURL
+  }
+
+  // --- DRAG & DROP ---
+  const handleDrag = useCallback((e: React.DragEvent, index: number) => {
+    e.preventDefault(); e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") setDragActive(index);
+    else if (e.type === "dragleave") setDragActive(null);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent, index: number) => {
+    e.preventDefault(); e.stopPropagation();
+    setDragActive(null);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleImageChange(index, e.dataTransfer.files[0]);
+    }
+  }, []);
+
+
   const saveAllChanges = async () => {
-    setIsSaving(true)
+    setIsSaving(true);
+    setSaveStatus("");
     try {
-      const batch = writeBatch(db)
+        const batch = writeBatch(db);
 
-      // 1. Procesar Imágenes de Servicios (Temporalmente desactivado)
-      // const updatedServices = await Promise.all(servicesForm.map(async (service) => { ... }))
+        // 1. Procesar imágenes y preparar datos de servicios
+        const updatedServicesData = await Promise.all(servicesForm.map(async (service) => {
+            const newImgUrl = await handleImageUpload(service);
+            const { imgPreview, file, ...cleanData } = service;
+            return { ...cleanData, img: newImgUrl };
+        }));
 
-      // 2. Batch de Servicios
-      servicesForm.forEach(s => {
-        const { ...cleanData } = s
-        batch.update(doc(db, "servicios", s.id), cleanData)
-      })
+        // 2. Aplicar actualizaciones de servicios en el batch
+        updatedServicesData.forEach(s => {
+            batch.update(doc(db, "servicios", s.id), s);
+        });
 
-      // 3. Preparar Configuración Global
-      const finalConfig = { ...configForm }
-      
-      // Convertir string de marcas a array limpio
-      if (finalConfig.marcasString) {
-          finalConfig.marcas = finalConfig.marcasString.split(",").map((m: string) => m.trim()).filter(Boolean)
-          delete finalConfig.marcasString
-      }
+        // 3. Preparar y aplicar configuración global
+        const finalConfig = { ...configForm };
+        if (finalConfig.marcasString) {
+            finalConfig.marcas = finalConfig.marcasString.split(",").map((m: string) => m.trim()).filter(Boolean);
+            delete finalConfig.marcasString;
+        }
+        batch.update(doc(db, "configuracion", "web_data"), finalConfig);
 
-      batch.update(doc(db, "configuracion", "web_data"), finalConfig)
+        // 4. Confirmar todos los cambios
+        await batch.commit();
+        setSaveStatus("success");
+        
+        // Actualizar estado local para reflejar los cambios guardados
+        setServicesForm(updatedServicesData.map(s => ({...s, imgPreview: null, file: null})));
 
-      await batch.commit()
-      setSaveStatus("success")
-      setTimeout(() => setSaveStatus(""), 3000)
-    } catch (e) {
-      console.error(e)
-      setSaveStatus("error")
-    } finally { setIsSaving(false) }
+    } catch (e: any) {
+        console.error("Error al guardar:", e);
+        setSaveStatus("error");
+    } finally {
+        setIsSaving(false);
+        setTimeout(() => setSaveStatus(""), 4000);
+    }
   }
 
   // --- LOGIN ---
@@ -137,9 +189,9 @@ export default function AdminPage() {
         <div className="relative mb-8">
             <div className="absolute inset-0 bg-cyan-500/20 blur-xl rounded-full animate-pulse"></div>
             <Image 
-              src={logoImg}    // <--- Usamos la variable importada (sin comillas)
+              src={logoImg}
               alt="Logo Andicot" 
-              priority         // <--- Carga instantánea (elimina el parpadeo)
+              priority
               className="w-24 h-auto relative z-10 drop-shadow-[0_0_10px_rgba(0,242,255,0.8)] animate-pulse object-contain"
             />
         </div>
@@ -165,7 +217,6 @@ export default function AdminPage() {
   return (
     <main className="min-h-screen bg-black text-white p-6 md:p-12 pb-40 font-sans">
       
-      {/* HEADER FLOTANTE MEJORADO */}
       <header className="flex flex-col md:flex-row justify-between items-center mb-16 gap-6 sticky top-4 bg-black/80 backdrop-blur-xl z-50 py-4 px-6 border border-white/10 rounded-2xl shadow-2xl">
         <div className="flex items-center gap-4">
             <div className="bg-cyan-500/10 p-2 rounded-lg border border-cyan-500/20">
@@ -189,10 +240,12 @@ export default function AdminPage() {
                 className={`px-8 py-3 font-bold uppercase text-sm flex items-center gap-3 transition-all rounded-lg border ${
                     saveStatus === "success" 
                     ? "bg-green-600 border-green-500 text-white shadow-[0_0_20px_rgba(34,197,94,0.4)]" 
+                    : saveStatus === 'error'
+                    ? "bg-red-600 border-red-500 text-white shadow-[0_0_20px_rgba(220,38,38,0.4)]"
                     : "bg-cyan-500 text-black border-cyan-400 hover:shadow-[0_0_20px_rgba(0,242,255,0.4)] hover:scale-105"
                 }`}
             >
-                {isSaving ? "GUARDANDO..." : saveStatus === "success" ? "GUARDADO EXITOSO" : "GUARDAR CAMBIOS"} 
+                {isSaving ? "GUARDANDO..." : saveStatus === "success" ? "GUARDADO EXITOSO" : saveStatus === "error" ? "ERROR, REINTENTAR" : "GUARDAR CAMBIOS"} 
                 <Save className="w-5 h-5" />
             </button>
         </div>
@@ -200,14 +253,13 @@ export default function AdminPage() {
 
       <div className="space-y-10 max-w-7xl mx-auto">
         
-        {/* FILA 1: HERO & ESTADÍSTICAS */}
         <div className="grid lg:grid-cols-2 gap-8">
             <SectionCard title="Contenido Hero Principal" icon={<Globe />}>
                 <InputField label="Título Línea 1 (Blanco)" value={configForm.hero.titulo_principal} onChange={(v) => handleConfigChange("hero", "titulo_principal", v)} />
                 <InputField label="Título Línea 2 (Cyan)" value={configForm.hero.titulo_resaltado} onChange={(v) => handleConfigChange("hero", "titulo_resaltado", v)} />
                 <div>
                     <Label text="Subtítulo Descriptivo" />
-                    <TextArea value={configForm.hero.subtitulo} onChange={(e) => handleConfigChange("hero", "subtitulo", e.target.value)} rows={3} />
+                    <TextArea value={configForm.hero.subtitulo} onChange={(e: any) => handleConfigChange("hero", "subtitulo", e.target.value)} rows={3} />
                 </div>
             </SectionCard>
 
@@ -221,10 +273,8 @@ export default function AdminPage() {
             </SectionCard>
         </div>
 
-        {/* FILA 2: GARANTÍA, FINANZAS Y REDES */}
         <div className="grid lg:grid-cols-2 gap-8">
             <SectionCard title="Garantía & Finanzas" icon={<DollarSign />}>
-                 {/* Garantía */}
                 <div className="p-4 border border-white/5 rounded-lg bg-white/5 mb-6">
                     <h4 className="text-cyan-500 text-xs font-bold uppercase mb-4 flex items-center gap-2"><ShieldCheck className="w-4 h-4"/> Configuración Garantía</h4>
                     <div className="space-y-4">
@@ -232,8 +282,6 @@ export default function AdminPage() {
                         <InputField label="Texto Botón" value={configForm.garantia.btn} onChange={(v) => handleConfigChange("garantia", "btn", v)} />
                     </div>
                 </div>
-
-                {/* Finanzas (IVA y Descuento) */}
                 <div className="p-4 border border-white/5 rounded-lg bg-emerald-500/5">
                     <h4 className="text-emerald-400 text-xs font-bold uppercase mb-4 flex items-center gap-2"><Tag className="w-4 h-4"/> Configuración Cotizador</h4>
                     <div className="grid grid-cols-2 gap-4">
@@ -261,13 +309,12 @@ export default function AdminPage() {
             </SectionCard>
         </div>
 
-        {/* FILA 3: GESTIÓN DE MARCAS (ALIADOS) */}
         <SectionCard title="Gestión de Aliados (Marcas)" icon={<Award />}>
             <div>
                 <Label text="Lista de Marcas (Separar por comas)" />
                 <TextArea 
                     value={configForm.marcasString || ""} 
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleConfigChange("root", "marcasString", e.target.value)} 
+                    onChange={(e: any) => handleConfigChange("root", "marcasString", e.target.value)} 
                     rows={4}
                     placeholder="Ej: BOSCH, SAMSUNG, HIKVISION, PELCO, DSC..."
                 />
@@ -277,7 +324,6 @@ export default function AdminPage() {
             </div>
         </SectionCard>
 
-        {/* SECCIÓN 4: CATÁLOGO DE SERVICIOS */}
         <div className="pt-10 border-t border-white/10">
             <h3 className="text-white font-black font-orbitron text-2xl mb-8 flex items-center gap-3 uppercase italic">
                 <Database className="text-cyan-500 w-8 h-8" /> Catálogo de Servicios
@@ -286,22 +332,36 @@ export default function AdminPage() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {servicesForm.map((s, i) => (
                     <div key={s.id} className="tech-glass p-6 border-white/5 hover:border-cyan-500/40 transition-all group relative bg-black/40">
-                        {/* ID Badge */}
                         <span className="absolute top-2 right-2 text-[10px] font-mono text-gray-500 bg-black/50 px-2 py-1 rounded border border-white/5">
                             ID: {s.id.slice(0,6)}
                         </span>
 
-                        {/* Imagen (sin funcionalidad de subida) */}
-                        <div className="relative aspect-video mb-5 bg-zinc-900 rounded-lg overflow-hidden border border-white/10 group-hover:border-cyan-500/30">
-                            <img src={s.img || "/placeholder.jpg"} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500" alt={s.t || s.titulo} />
-                             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <span className="text-[10px] uppercase font-bold text-gray-400 tracking-widest text-center px-2">
-                                    GESTIÓN DE IMÁGENES DESACTIVADA
-                                </span>
-                            </div>
+                        <div 
+                          className={`relative aspect-video mb-5 bg-zinc-900 rounded-lg overflow-hidden border border-white/10 group-hover:border-cyan-500/30 transition-all ${dragActive === i ? 'border-cyan-500 ring-2 ring-cyan-500' : ''}`}
+                          onDragEnter={(e) => handleDrag(e, i)}
+                          onDragLeave={(e) => handleDrag(e, i)}
+                          onDragOver={(e) => handleDrag(e, i)}
+                          onDrop={(e) => handleDrop(e, i)}
+                        >
+                            {(s.img || s.imgPreview) ? (
+                                <>
+                                    <Image src={s.imgPreview || s.img} alt={s.t || s.titulo} fill className="w-full h-full object-cover" />
+                                    <button onClick={() => handleImageDelete(i)} className="absolute top-2 right-2 bg-black/50 p-1.5 rounded-full text-red-500 hover:bg-red-500 hover:text-white transition-all">
+                                        <Trash2 className="w-4 h-4"/>
+                                    </button>
+                                </>
+                            ) : (
+                                <label htmlFor={`file-upload-${i}`} className="w-full h-full flex flex-col items-center justify-center text-center cursor-pointer text-gray-500 hover:text-cyan-400 transition-colors">
+                                    <Upload className="w-8 h-8 mb-2" />
+                                    <span className="text-[10px] uppercase font-bold tracking-widest">
+                                        SUBIR IMAGEN
+                                    </span>
+                                    <span className="text-[9px] font-mono mt-1">o arrastrar aquí</span>
+                                    <input id={`file-upload-${i}`} type="file" className="hidden" accept="image/*" onChange={(e) => e.target.files && handleImageChange(i, e.target.files[0])} />
+                                </label>
+                            )}
                         </div>
 
-                        {/* Campos */}
                         <div className="space-y-4">
                             <input 
                                 value={s.t || s.titulo} 
@@ -312,7 +372,7 @@ export default function AdminPage() {
                             
                             <div>
                                 <Label text="Descripción Corta" />
-                                <TextArea value={s.d} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleServiceChange(i, "d", e.target.value)} rows={3} />
+                                <TextArea value={s.d} onChange={(e: any) => handleServiceChange(i, "d", e.target.value)} rows={3} />
                             </div>
                             
                             <div>
@@ -328,7 +388,7 @@ export default function AdminPage() {
                                 <input 
                                     type="number" 
                                     value={s.p || s.precio_base} 
-                                    onChange={(e) => handleServiceChange(i, "p", e.target.value)} 
+                                    onChange={(e) => handleServiceChange(i, "p", parseFloat(e.target.value) || 0)} 
                                     className="bg-transparent text-right font-mono text-white font-bold outline-none w-24 text-lg" 
                                 />
                             </div>
@@ -341,8 +401,6 @@ export default function AdminPage() {
     </main>
   )
 }
-
-// --- COMPONENTES AUXILIARES PARA ESTILO UNIFICADO ---
 
 function SectionCard({ title, icon, children }: any) {
     return (
