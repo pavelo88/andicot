@@ -7,7 +7,7 @@ import { useSystemData } from "@/hooks/useStarkData"
 import { db, storage } from "@/lib/firebase"
 import { doc, writeBatch } from "firebase/firestore" 
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
-import { Save, Lock, Globe, Database, Upload, Tag, ShieldCheck, BarChart3, Mail, Award, DollarSign, Share2, LogOut } from "lucide-react"
+import { Save, Lock, Globe, Database, Upload, Tag, ShieldCheck, BarChart3, Mail, Award, DollarSign, Share2, LogOut, Trash2 } from "lucide-react"
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -20,6 +20,7 @@ export default function AdminPage() {
   
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState("")
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
 
   // --- PRE-CARGA DE ESTRUCTURA ---
   useEffect(() => {
@@ -75,6 +76,14 @@ export default function AdminPage() {
     const updated = [...servicesForm]
     updated[index].newFile = file
     updated[index].previewUrl = URL.createObjectURL(file)
+    setServicesForm(updated)
+  }
+
+  const handleRemoveImage = (index: number) => {
+    const updated = [...servicesForm]
+    updated[index].img = ""
+    updated[index].newFile = null
+    updated[index].previewUrl = null
     setServicesForm(updated)
   }
 
@@ -308,13 +317,40 @@ export default function AdminPage() {
                             ID: {s.id.slice(0,6)}
                         </span>
 
-                        {/* Imagen */}
-                        <div className="relative aspect-video mb-5 bg-zinc-900 rounded-lg overflow-hidden border border-white/10 group-hover:border-cyan-500/30 transition-colors">
+                        {/* Imagen con Drag & Drop y Borrado */}
+                        <div 
+                            className={`relative aspect-video mb-5 bg-zinc-900 rounded-lg overflow-hidden border transition-all duration-300 ${dragOverIndex === i ? 'border-cyan-500 ring-2 ring-offset-2 ring-offset-black/50 ring-cyan-500' : 'border-white/10 group-hover:border-cyan-500/30'}`}
+                            onDragOver={(e) => { e.preventDefault(); setDragOverIndex(i); }}
+                            onDragLeave={() => setDragOverIndex(null)}
+                            onDrop={(e) => {
+                                e.preventDefault();
+                                setDragOverIndex(null);
+                                if (e.dataTransfer.files?.[0]) {
+                                    handleImageFile(i, e.dataTransfer.files[0]);
+                                }
+                            }}
+                        >
                             <img src={s.previewUrl || s.img || "/placeholder.jpg"} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500" alt={s.t || s.titulo} />
-                            <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 bg-black/70 transition-all duration-300">
+
+                            {(s.previewUrl || s.img) && (
+                                <button 
+                                    type="button"
+                                    onClick={() => handleRemoveImage(i)}
+                                    className="absolute top-2 left-2 z-20 p-1.5 bg-black/60 rounded-full text-red-500 hover:bg-red-500 hover:text-black transition-all opacity-0 group-hover:opacity-100"
+                                    title="Eliminar imagen"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            )}
+                            
+                            <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer bg-black/70 transition-all duration-300 opacity-0 group-hover:opacity-100"
+                                style={{ opacity: dragOverIndex === i ? 1 : undefined }}
+                            >
                                 <Upload className="w-8 h-8 text-cyan-400 mb-2" />
-                                <span className="text-[10px] uppercase font-bold text-white tracking-widest">Cambiar Imagen</span>
-                                <input type="file" className="hidden" onChange={(e) => e.target.files?.[0] && handleImageFile(i, e.target.files[0])} />
+                                <span className="text-[10px] uppercase font-bold text-white tracking-widest text-center px-2">
+                                    {dragOverIndex === i ? 'Suelta la imagen para cargarla' : 'Arrastra o haz click para cambiar'}
+                                </span>
+                                <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleImageFile(i, e.target.files[0])} />
                             </label>
                         </div>
 
