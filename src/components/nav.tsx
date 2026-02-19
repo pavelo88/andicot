@@ -204,4 +204,3 @@ function MobileButton({ label, onClick, icon, isLight }: { label: string, onClic
         </button>
     )
 }
-
