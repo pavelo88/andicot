@@ -1,4 +1,3 @@
-
 "use client"
 
 import Image from "next/image"
@@ -86,10 +85,12 @@ export default function AdminPage() {
     setServicesForm(updated);
   };
   
+  // CORRECCIÓN: Nombre fijo usando el ID del servicio para que se sobrescriba
   const handleImageUpload = async (service: any) => {
-    if (!service.file) return service.img // Si no hay archivo nuevo, devuelve la URL existente
-    const serviceSlug = (service.t || service.titulo).toLowerCase().replace(/\s+/g, '-')
-    const filePath = `servicios/${serviceSlug}/${Date.now()}`
+    if (!service.file) return service.img 
+    
+    // Usamos el ID del servicio en lugar de Date.now() para mantener un nombre único y limpio
+    const filePath = `servicios/${service.id}/imagen_principal.jpg`
     const storageRef = ref(storage, filePath)
     
     await uploadBytes(storageRef, service.file)
@@ -445,7 +446,3 @@ function Label({ text }: { text: string }) {
         <label className="text-[10px] text-gray-500 font-bold uppercase mb-2 block tracking-widest">{text}</label>
     )
 }
-
-    
-
-    

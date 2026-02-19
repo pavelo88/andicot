@@ -1,231 +1,448 @@
 "use client"
 
-import { useState, useEffect, useRef, type ChangeEvent, type FormEvent } from "react"
-import { MapPin, Mail, Phone, Facebook, Instagram, Music2, X, Send } from "lucide-react"
-import { addDoc, collection } from "firebase/firestore"
-import { db } from "@/lib/firebase"
+import Image from "next/image"
+import logoImg from "../icon.png"
+import { useState, useEffect, useCallback } from "react"
+import { useSystemData } from "@/hooks/useStarkData"
+import { db, storage } from "@/lib/firebase" 
+import { doc, writeBatch } from "firebase/firestore"
+import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage"
+import { Save, Lock, Globe, Database, Tag, ShieldCheck, BarChart3, Mail, Award, DollarSign, Share2, LogOut, Upload, Trash2, X } from "lucide-react"
 
+export default function AdminPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [password, setPassword] = useState("")
+  const [authError, setAuthError] = useState(false)
 
-export function Contacto({ info, redes, garantia }: { info: any, redes: any, garantia: any }) {
-  const [showModal, setShowModal] = useState(false)
-  const msgRef = useRef<HTMLTextAreaElement>(null)
-
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | null>(null);
-
-  // --- CONEXIÓN CON COTIZADOR ---
+  const { data, services, loading } = useSystemData()
+  const [configForm, setConfigForm] = useState<any>(null)
+  const [servicesForm, setServicesForm] = useState<any[]>([])
+  
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveStatus, setSaveStatus] = useState("")
+  
+  // Estados para Drag & Drop
+  const [dragActive, setDragActive] = useState<number | null>(null)
+  
+  // --- PRE-CARGA DE ESTRUCTURA ---
   useEffect(() => {
-    const loadMessage = () => {
-      const msg = localStorage.getItem("system_quote_msg")
-      if (msg && msgRef.current) {
-        msgRef.current.value = msg
-        msgRef.current.style.height = 'auto'
-        msgRef.current.style.height = `${msgRef.current.scrollHeight}px`
-        localStorage.removeItem("system_quote_msg") 
+    if (!loading && data && services.length > 0) {
+      const safeData = {
+        ...data,
+        hero: data.hero || { titulo_principal: "", titulo_resaltado: "", subtitulo: "" },
+        garantia: data.garantia || { titulo: "Garantía STARK", desc: "", btn: "VER PÓLIZA" },
+        estadisticas: data.estadisticas || { proyectos: "500+", años: "15+", uptime: "99.9%", soporte: "24/7" },
+        contacto: data.contacto || { email: "", tel: "", direccion: "" },
+        redes: data.redes || { facebook: "", instagram: "", tiktok: "" },
+        finanzas: data.finanzas || { iva: "15", descuento: "0" },
+        marcasString: data.marcas && Array.isArray(data.marcas) ? data.marcas.join(", ") : ""
       }
+      setConfigForm(safeData)
+
+      const mapped = services.map(s => ({
+        ...s,
+        d: s.d || s.descripcion || "",
+        tags: s.tags || "",
+        img: s.img || "",
+        imgPreview: null,
+        file: null,
+      }))
+      setServicesForm(mapped)
     }
-    window.addEventListener("updateContactForm", loadMessage)
-    return () => window.removeEventListener("updateContactForm", loadMessage)
-  }, [])
+  }, [data, services, loading])
 
-  // --- MANEJADORES DEL FORMULARIO ---
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleAutoResize = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    e.target.style.height = 'auto'; 
-    e.target.style.height = `${e.target.scrollHeight}px`; 
+  // --- MANEJADORES ---
+  const handleConfigChange = (section: string, field: string, value: string) => {
+    if (section === "root") {
+        setConfigForm((prev: any) => ({ ...prev, [field]: value }))
+    } else {
+        setConfigForm((prev: any) => ({
+            ...prev,
+            [section]: { ...prev[section], [field]: value }
+        }))
+    }
   }
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (isSubmitting) return;
+  const handleServiceChange = (index: number, field: string, value: any) => {
+    const updated = [...servicesForm]
+    updated[index] = { ...updated[index], [field]: value }
+    setServicesForm(updated)
+  }
 
-    setIsSubmitting(true);
-    setSubmitStatus(null);
-    try {
-      const message = msgRef.current?.value;
-      if (!formData.name || !formData.email || !message) {
-        throw new Error("Por favor complete los campos requeridos.");
-      }
-      await addDoc(collection(db, "contact_messages"), {
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        message: message,
-        createdAt: new Date().toISOString(),
-        read: false,
-      });
-      setSubmitStatus('success');
-      setFormData({ name: '', email: '', phone: '' });
-      if (msgRef.current) {
-        msgRef.current.value = '';
-        msgRef.current.style.height = 'auto';
-      }
-    } catch (error) {
-      console.error("Form submission error:", error);
-      setSubmitStatus('error');
-    } finally {
-      setIsSubmitting(false);
-      setTimeout(() => setSubmitStatus(null), 6000);
-    }
+  // --- MANEJO DE IMÁGENES ---
+  const handleImageChange = (index: number, file: File) => {
+    const updated = [...servicesForm]
+    updated[index].file = file;
+    updated[index].imgPreview = URL.createObjectURL(file);
+    setServicesForm(updated);
+  }
+
+  const handleImageDelete = (index: number) => {
+    const updated = [...servicesForm];
+    updated[index].file = null;
+    updated[index].imgPreview = null;
+    updated[index].img = ""; // También limpia la URL existente
+    setServicesForm(updated);
   };
+  
+  // CORRECCIÓN: Nombre fijo usando el ID del servicio para que se sobrescriba
+  const handleImageUpload = async (service: any) => {
+    if (!service.file) return service.img 
+    
+    // Usamos el ID del servicio en lugar de Date.now() para mantener un nombre único y limpio
+    const filePath = `servicios/${service.id}/imagen_principal.jpg`
+    const storageRef = ref(storage, filePath)
+    
+    await uploadBytes(storageRef, service.file)
+    const downloadURL = await getDownloadURL(storageRef)
+    return downloadURL
+  }
 
-  return (
-    <>
-      <section id="contacto" className="relative z-10 py-12 md:py-24 max-w-7xl mx-auto px-4 md:px-6 scroll-mt-20">
+  // --- DRAG & DROP ---
+  const handleDrag = useCallback((e: React.DragEvent, index: number) => {
+    e.preventDefault(); e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") setDragActive(index);
+    else if (e.type === "dragleave") setDragActive(null);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent, index: number) => {
+    e.preventDefault(); e.stopPropagation();
+    setDragActive(null);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleImageChange(index, e.dataTransfer.files[0]);
+    }
+  }, []);
+
+
+  const saveAllChanges = async () => {
+    setIsSaving(true);
+    setSaveStatus("");
+    try {
+        const batch = writeBatch(db);
+
+        // 1. Procesar imágenes y preparar datos de servicios
+        const updatedServicesData = await Promise.all(servicesForm.map(async (service) => {
+            const newImgUrl = await handleImageUpload(service);
+            const { imgPreview, file, ...cleanData } = service;
+            return { ...cleanData, img: newImgUrl };
+        }));
+
+        // 2. Aplicar actualizaciones de servicios en el batch
+        updatedServicesData.forEach(s => {
+            batch.update(doc(db, "servicios", s.id), s);
+        });
+
+        // 3. Preparar y aplicar configuración global
+        const finalConfig = { ...configForm };
+        if (finalConfig.marcasString) {
+            finalConfig.marcas = finalConfig.marcasString.split(",").map((m: string) => m.trim()).filter(Boolean);
+            delete finalConfig.marcasString;
+        }
+        batch.update(doc(db, "configuracion", "web_data"), finalConfig);
+
+        // 4. Confirmar todos los cambios
+        await batch.commit();
+        setSaveStatus("success");
         
-        <h3 className="text-2xl md:text-3xl italic font-black mb-6 md:mb-12 uppercase text-white light:text-black font-orbitron text-center">
-          Canal de Comunicación
-        </h3>
+        // Actualizar estado local para reflejar los cambios guardados
+        setServicesForm(updatedServicesData.map(s => ({...s, imgPreview: null, file: null})));
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 items-stretch">
-          
-          {/* === FORMULARIO === */}
-          <div className="tech-glass rounded-xl p-5 md:p-8 flex flex-col h-full border-cyan-500/20 bg-black/40">
-            <form onSubmit={handleSubmit} className="space-y-3 md:space-y-6 flex-1 flex flex-col">
-              <div className="grid grid-cols-2 gap-3">
-                <input 
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  placeholder="NOMBRE" 
-                  className="w-full bg-black/20 border border-cyan-500/30 text-white p-3 text-xs md:text-sm font-mono outline-none focus:border-cyan-400 focus:bg-cyan-950/20 transition-all rounded" 
-                  required 
-                />
-                <input 
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="EMAIL" 
-                  className="w-full bg-black/20 border border-cyan-500/30 text-white p-3 text-xs md:text-sm font-mono outline-none focus:border-cyan-400 focus:bg-cyan-950/20 transition-all rounded" 
-                  required 
-                />
-              </div>
-              
-              <input 
-                type="tel" 
-                name="phone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                placeholder="WHATSAPP / TELÉFONO" 
-                className="w-full bg-black/20 border border-cyan-500/30 text-white p-3 text-xs md:text-sm font-mono outline-none focus:border-cyan-400 focus:bg-cyan-950/20 transition-all rounded" 
-              />
-              
-              <textarea 
-                id="message-area"
-                ref={msgRef}
-                name="message"
-                placeholder="DESCRIBA SU REQUERIMIENTO..." 
-                rows={3}
-                onInput={handleAutoResize}
-                className="w-full bg-black/20 border border-cyan-500/30 text-white p-3 text-xs md:text-sm font-mono outline-none focus:border-cyan-400 focus:bg-cyan-950/20 transition-all resize-none overflow-hidden rounded min-h-[80px]" 
-                required
-              ></textarea>
-              
-              {submitStatus && (
-                <div className={`p-3 rounded text-center text-xs font-mono ${submitStatus === 'success' ? 'bg-emerald-900/50 text-emerald-300 border border-emerald-500/30' : 'bg-red-900/50 text-red-300 border border-red-500/30'}`}>
-                  {submitStatus === 'success' ? '¡Mensaje enviado! Nos pondremos en contacto pronto.' : 'Error al enviar. Por favor, intente de nuevo.'}
-                </div>
-              )}
+    } catch (e: any) {
+        console.error("Error al guardar:", e);
+        setSaveStatus("error");
+    } finally {
+        setIsSaving(false);
+        setTimeout(() => setSaveStatus(""), 4000);
+    }
+  }
 
-              <div className="grid grid-cols-2 gap-3 mt-auto pt-2">
-                <button type="submit" disabled={isSubmitting} className="bg-cyan-500 text-black font-black py-3 md:py-4 text-xs md:text-sm uppercase hover:brightness-125 transition-all font-orbitron flex items-center justify-center gap-2 rounded hover:shadow-[0_0_20px_rgba(0,242,255,0.4)] disabled:opacity-50 disabled:cursor-not-allowed">
-                  <Send className="w-4 h-4" /> {isSubmitting ? 'ENVIANDO...' : 'Enviar'}
-                </button>
-                
-                <button 
-                  type="button" 
-                  onClick={() => setShowModal(true)}
-                  className="bg-transparent border border-cyan-500 text-cyan-500 font-bold py-3 md:py-4 text-xs md:text-sm uppercase hover:bg-cyan-500/10 transition-all font-orbitron rounded"
-                >
-                  {garantia.btn || "Ver Garantía"}
-                </button>
-              </div>
-            </form>
-          </div>
-          
-          {/* === INFO Y MAPA === */}
-          <div className="tech-glass rounded-xl p-0 overflow-hidden flex flex-col h-full border-cyan-500/20 bg-black/40">
-            <div className="p-6 text-center border-b border-cyan-500/20 bg-black/20">
-                <div className="flex flex-col md:flex-row justify-around items-center gap-6">
-                    <div>
-                        <span className="font-mono text-[9px] uppercase tracking-widest text-gray-500 block mb-1">Contacto Directo</span>
-                        <a href={`tel:${info.tel.replace(/\s/g, '')}`} className="text-xl md:text-2xl font-black text-white hover:text-cyan-400 transition-colors font-orbitron">
-                        {info.tel}
-                        </a>
-                    </div>
-                    <div className="flex gap-6">
-                        <SocialIcon href={redes.fb} icon={<Facebook className="w-5 h-5" />} />
-                        <SocialIcon href={redes.ig} icon={<Instagram className="w-5 h-5" />} />
-                        <SocialIcon href={redes.tt} icon={<Music2 className="w-5 h-5" />} />
-                    </div>
-                </div>
+  // --- LOGIN ---
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) setIsAuthenticated(true)
+    else setAuthError(true)
+  }
+
+  if (!isAuthenticated) return (
+    <div className="min-h-screen bg-black flex items-center justify-center p-6">
+      <form onSubmit={handleLogin} className="tech-glass p-10 max-w-md w-full border border-cyan-500/30 bg-black/90 shadow-2xl">
+        <Lock className="w-12 h-12 text-cyan-500 mx-auto mb-6" />
+        <h1 className="text-2xl md:text-6xl font-orbitron text-center mb-8 uppercase tracking-tighter text-white">PANEL DE CONTROL</h1>
+        <input 
+            type="password" 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
+            className="w-full bg-black border border-cyan-500/50 p-4 text-cyan-400 outline-none mb-6 text-center font-mono text-lg rounded" 
+            placeholder="CLAVE DE ACCESO..." 
+        />
+        <button className="w-full bg-cyan-500 text-black font-bold py-4 uppercase text-sm tracking-[0.2em] hover:bg-cyan-400 transition-all rounded shadow-[0_0_20px_rgba(0,242,255,0.4)]">
+            INICIAR SESIÓN
+        </button>
+        {authError && <p className="text-red-500 text-center mt-6 text-xs font-mono animate-pulse">ACCESO DENEGADO</p>}
+      </form>
+    </div>
+  )
+
+  if (loading || !configForm) {
+    return (
+      <div className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center p-6 text-center">
+        
+        <div className="relative mb-8">
+            <div className="absolute inset-0 bg-cyan-500/20 blur-xl rounded-full animate-pulse"></div>
+            <Image 
+              src={logoImg}
+              alt="Logo Andicot" 
+              priority
+              className="w-24 h-auto relative z-10 drop-shadow-[0_0_10px_rgba(0,242,255,0.8)] animate-pulse object-contain"
+            />
+        </div>
+
+        <h1 className="text-2xl md:text-4xl font-black text-white font-orbitron tracking-widest uppercase mb-4">
+          BIENVENIDO A ANDICOT
+        </h1>
+
+        <p className="text-cyan-500 font-mono text-sm md:text-base max-w-xl leading-relaxed mx-auto">
+          Expertos en Infraestructura, Cableado Estructurado y Soluciones Tecnológicas de Alta Gama.
+        </p>
+
+        <div className="mt-12 flex flex-col items-center gap-3">
+            <div className="w-6 h-6 border-2 border-cyan-900 border-t-cyan-500 rounded-full animate-spin"></div>
+            <span className="text-[10px] text-gray-600 font-mono tracking-[0.2em] uppercase animate-pulse">
+              Sincronizando Sistema...
+            </span>
+        </div>
+
+      </div>
+    )
+  }
+  return (
+    <main className="min-h-screen bg-black text-white p-6 md:p-12 pb-40 font-sans">
+      
+      <header className="flex flex-col md:flex-row justify-between items-center mb-16 gap-6 sticky top-4 bg-black/80 backdrop-blur-xl z-50 py-4 px-6 border border-white/10 rounded-2xl shadow-2xl">
+        <div className="flex items-center gap-4">
+            <div className="bg-cyan-500/10 p-2 rounded-lg border border-cyan-500/20">
+                <Database className="w-6 h-6 text-cyan-500" />
             </div>
-
-            <div className="flex-1 w-full min-h-[250px] relative grayscale invert contrast-125 brightness-90 border-t border-cyan-500/20">
-              <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d127641.05435678491!2d-78.57062637956405!3d-0.1865938072041283!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x91d59a400242219b%3A0xe252752a16826f59!2sQuito%2C%20Ecuador!5e0!3m2!1ses!2s!4v1700000000000!5m2!1ses!2s"
-                width="100%" 
-                height="100%" 
-                style={{ border: 0, position: 'absolute', top: 0, left: 0 }} 
-                allowFullScreen 
-                loading="lazy" 
-                referrerPolicy="no-referrer-when-downgrade"
-              ></iframe>
-              <div className="absolute inset-0 bg-transparent pointer-events-none md:pointer-events-auto"></div>
+            <div>
+                <h1 className="text-xl md:text-2xl font-black italic font-orbitron text-white">
+                    SYSTEM <span className="text-cyan-500">ADMIN</span>
+                </h1>
+                <p className="text-[10px] font-mono text-gray-400 uppercase tracking-[0.2em]">Panel de Control Global</p>
             </div>
-            
-            <div className="p-3 bg-black/40 text-center border-t border-cyan-500/20">
-                <p className="text-[10px] font-mono italic text-gray-400">
-                  {info.direccion}
+        </div>
+        
+        <div className="flex gap-4">
+            <button onClick={() => setIsAuthenticated(false)} className="p-3 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-all">
+                <LogOut className="w-5 h-5" />
+            </button>
+            <button 
+                onClick={saveAllChanges} 
+                disabled={isSaving} 
+                className={`px-8 py-3 font-bold uppercase text-sm flex items-center gap-3 transition-all rounded-lg border ${
+                    saveStatus === "success" 
+                    ? "bg-green-600 border-green-500 text-white shadow-[0_0_20px_rgba(34,197,94,0.4)]" 
+                    : saveStatus === 'error'
+                    ? "bg-red-600 border-red-500 text-white shadow-[0_0_20px_rgba(220,38,38,0.4)]"
+                    : "bg-cyan-500 text-black border-cyan-400 hover:shadow-[0_0_20px_rgba(0,242,255,0.4)] hover:scale-105"
+                }`}
+            >
+                {isSaving ? "GUARDANDO..." : saveStatus === "success" ? "GUARDADO EXITOSO" : saveStatus === "error" ? "ERROR, REINTENTAR" : "GUARDAR CAMBIOS"} 
+                <Save className="w-5 h-5" />
+            </button>
+        </div>
+      </header>
+
+      <div className="space-y-10 max-w-7xl mx-auto">
+        
+        <div className="grid lg:grid-cols-2 gap-8">
+            <SectionCard title="Contenido Hero Principal" icon={<Globe />}>
+                <InputField label="Título Línea 1 (Blanco)" value={configForm.hero.titulo_principal} onChange={(v) => handleConfigChange("hero", "titulo_principal", v)} />
+                <InputField label="Título Línea 2 (Cyan)" value={configForm.hero.titulo_resaltado} onChange={(v) => handleConfigChange("hero", "titulo_resaltado", v)} />
+                <div>
+                    <Label text="Subtítulo Descriptivo" />
+                    <TextArea value={configForm.hero.subtitulo} onChange={(e: any) => handleConfigChange("hero", "subtitulo", e.target.value)} rows={3} />
+                </div>
+            </SectionCard>
+
+            <SectionCard title="Estadísticas (Hero)" icon={<BarChart3 />}>
+                <div className="grid grid-cols-2 gap-6">
+                    <InputField label="Proyectos (ej: 500+)" value={configForm.estadisticas.proyectos} onChange={(v) => handleConfigChange("estadisticas", "proyectos", v)} />
+                    <InputField label="Años Exp. (ej: 15+)" value={configForm.estadisticas.años} onChange={(v) => handleConfigChange("estadisticas", "años", v)} />
+                    <InputField label="Uptime (ej: 99.9%)" value={configForm.estadisticas.uptime} onChange={(v) => handleConfigChange("estadisticas", "uptime", v)} />
+                    <InputField label="Soporte (ej: 24/7)" value={configForm.estadisticas.soporte} onChange={(v) => handleConfigChange("estadisticas", "soporte", v)} />
+                </div>
+            </SectionCard>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-8">
+            <SectionCard title="Garantía & Finanzas" icon={<DollarSign />}>
+                <div className="p-4 border border-white/5 rounded-lg bg-white/5 mb-6">
+                    <h4 className="text-cyan-500 text-xs font-bold uppercase mb-4 flex items-center gap-2"><ShieldCheck className="w-4 h-4"/> Configuración Garantía</h4>
+                    <div className="space-y-4">
+                        <InputField label="Título Garantía" value={configForm.garantia.titulo} onChange={(v) => handleConfigChange("garantia", "titulo", v)} />
+                        <InputField label="Texto Botón" value={configForm.garantia.btn} onChange={(v) => handleConfigChange("garantia", "btn", v)} />
+                    </div>
+                </div>
+                <div className="p-4 border border-white/5 rounded-lg bg-emerald-500/5">
+                    <h4 className="text-emerald-400 text-xs font-bold uppercase mb-4 flex items-center gap-2"><Tag className="w-4 h-4"/> Configuración Cotizador</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                        <InputField label="IVA (%)" value={configForm.finanzas.iva} onChange={(v) => handleConfigChange("finanzas", "iva", v)} />
+                        <InputField label="Descuento Global (%)" value={configForm.finanzas.descuento} onChange={(v) => handleConfigChange("finanzas", "descuento", v)} />
+                    </div>
+                </div>
+            </SectionCard>
+
+            <SectionCard title="Contacto & Redes Sociales" icon={<Share2 />}>
+                <div className="space-y-5">
+                    <InputField label="Email Corporativo" value={configForm.contacto.email} onChange={(v) => handleConfigChange("contacto", "email", v)} />
+                    <InputField label="WhatsApp / Teléfono" value={configForm.contacto.tel} onChange={(v) => handleConfigChange("contacto", "tel", v)} />
+                    <InputField label="Dirección Física" value={configForm.contacto.direccion} onChange={(v) => handleConfigChange("contacto", "direccion", v)} />
+                    
+                    <div className="border-t border-white/10 pt-5 mt-5">
+                        <Label text="Enlaces Redes Sociales" />
+                        <div className="space-y-3">
+                            <InputField label="Facebook URL" value={configForm.redes.facebook} onChange={(v) => handleConfigChange("redes", "facebook", v)} />
+                            <InputField label="Instagram URL" value={configForm.redes.instagram} onChange={(v) => handleConfigChange("redes", "instagram", v)} />
+                            <InputField label="TikTok URL" value={configForm.redes.tiktok} onChange={(v) => handleConfigChange("redes", "tiktok", v)} />
+                        </div>
+                    </div>
+                </div>
+            </SectionCard>
+        </div>
+
+        <SectionCard title="Gestión de Aliados (Marcas)" icon={<Award />}>
+            <div>
+                <Label text="Lista de Marcas (Separar por comas)" />
+                <TextArea 
+                    value={configForm.marcasString || ""} 
+                    onChange={(e: any) => handleConfigChange("root", "marcasString", e.target.value)} 
+                    rows={4}
+                    placeholder="Ej: BOSCH, SAMSUNG, HIKVISION, PELCO, DSC..."
+                />
+                <p className="text-xs text-cyan-400 mt-2 font-mono flex items-center gap-2">
+                    <Database className="w-3 h-3" /> Las marcas se actualizarán automáticamente en el anillo 3D.
                 </p>
             </div>
-          </div>
-        </div>
-      </section>
+        </SectionCard>
 
-      {/* MODAL GARANTÍA */}
-      {showModal && (
-        <div className="fixed inset-0 z-[3000] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="tech-glass max-w-2xl w-full p-6 md:p-10 relative overflow-y-auto max-h-[85vh] rounded-xl shadow-2xl shadow-cyan-500/20 border-cyan-500 bg-black/80">
-            <button onClick={() => setShowModal(false)} className="absolute top-4 right-4 text-gray-500 hover:text-cyan-500 transition-colors">
-              <X className="w-6 h-6" />
-            </button>
-            <h3 className="text-xl md:text-2xl uppercase italic text-cyan-400 font-black font-orbitron mb-6 border-b border-white/10 pb-4">
-                {garantia.titulo}
+        <div className="pt-10 border-t border-white/10">
+            <h3 className="text-white font-black font-orbitron text-2xl mb-8 flex items-center gap-3 uppercase italic">
+                <Database className="text-cyan-500 w-8 h-8" /> Catálogo de Servicios
             </h3>
-            <div className="font-mono text-xs space-y-3 leading-relaxed text-gray-300">
-              {garantia.items && garantia.items.map((item: string, i: number) => (
-                <div key={i} className="flex gap-3">
-                  <span className="text-cyan-500 font-bold shrink-0">{`0${i+1}`}</span>
-                  <span>{item}</span>
-                </div>
-              ))}
-              <div className="bg-red-950/30 border border-red-500/30 p-3 mt-4 text-[10px] text-red-200 rounded">
-                <span className="font-bold block mb-1 text-red-400">IMPORTANTE:</span> 
-                La garantía se anula por manipulación de terceros o variaciones de voltaje.
-              </div>
+            
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {servicesForm.map((s, i) => (
+                    <div key={s.id} className="tech-glass p-6 border-white/5 hover:border-cyan-500/40 transition-all group relative bg-black/40">
+                        <span className="absolute top-2 right-2 text-[10px] font-mono text-gray-500 bg-black/50 px-2 py-1 rounded border border-white/5">
+                            ID: {s.id.slice(0,6)}
+                        </span>
+
+                        <div 
+                          className={`relative aspect-video mb-5 bg-zinc-900 rounded-lg overflow-hidden border border-white/10 group-hover:border-cyan-500/30 transition-all ${dragActive === i ? 'border-cyan-500 ring-2 ring-cyan-500' : ''}`}
+                          onDragEnter={(e) => handleDrag(e, i)}
+                          onDragLeave={(e) => handleDrag(e, i)}
+                          onDragOver={(e) => handleDrag(e, i)}
+                          onDrop={(e) => handleDrop(e, i)}
+                        >
+                            {(s.img || s.imgPreview) ? (
+                                <>
+                                    <Image src={s.imgPreview || s.img} alt={s.t || s.titulo} fill className="w-full h-full object-cover" />
+                                    <button onClick={() => handleImageDelete(i)} className="absolute top-2 right-2 bg-black/50 p-1.5 rounded-full text-red-500 hover:bg-red-500 hover:text-white transition-all">
+                                        <Trash2 className="w-4 h-4"/>
+                                    </button>
+                                </>
+                            ) : (
+                                <label htmlFor={`file-upload-${i}`} className="w-full h-full flex flex-col items-center justify-center text-center cursor-pointer text-gray-500 hover:text-cyan-400 transition-colors">
+                                    <Upload className="w-8 h-8 mb-2" />
+                                    <span className="text-[10px] uppercase font-bold tracking-widest">
+                                        SUBIR IMAGEN
+                                    </span>
+                                    <span className="text-[9px] font-mono mt-1">o arrastrar aquí</span>
+                                    <input id={`file-upload-${i}`} type="file" className="hidden" accept="image/*" onChange={(e) => e.target.files && handleImageChange(i, e.target.files[0])} />
+                                </label>
+                            )}
+                        </div>
+
+                        <div className="space-y-4">
+                            <input 
+                                value={s.t || s.titulo} 
+                                onChange={(e) => handleServiceChange(i, "t", e.target.value)} 
+                                className="w-full bg-transparent border-b border-white/10 pb-2 font-orbitron text-lg font-bold uppercase text-cyan-400 outline-none focus:border-cyan-500 transition-colors placeholder:text-gray-700" 
+                                placeholder="TÍTULO DEL SERVICIO" 
+                            />
+                            
+                            <div>
+                                <Label text="Descripción Corta" />
+                                <TextArea value={s.d} onChange={(e: any) => handleServiceChange(i, "d", e.target.value)} rows={3} />
+                            </div>
+                            
+                            <div>
+                                <Label text="Tags de Búsqueda" />
+                                <div className="flex items-center gap-2 bg-black/40 border border-white/10 rounded p-2 focus-within:border-cyan-500/50 transition-colors">
+                                    <Tag className="w-4 h-4 text-cyan-500/50" />
+                                    <input value={s.tags} onChange={(e) => handleServiceChange(i, "tags", e.target.value)} className="w-full bg-transparent text-xs text-cyan-100 font-mono outline-none" placeholder="camara, sensor, alarma..." />
+                                </div>
+                            </div>
+
+                            <div className="flex justify-between items-center bg-emerald-900/10 p-3 rounded border border-emerald-500/20">
+                                <span className="text-xs text-emerald-400 font-bold uppercase tracking-wider">Precio Base ($)</span>
+                                <input 
+                                    type="number" 
+                                    value={s.p || s.precio_base} 
+                                    onChange={(e) => handleServiceChange(i, "p", parseFloat(e.target.value) || 0)} 
+                                    className="bg-transparent text-right font-mono text-white font-bold outline-none w-24 text-lg" 
+                                />
+                            </div>
+                        </div>
+                    </div>
+                ))}
             </div>
-            <button onClick={() => setShowModal(false)} className="mt-6 bg-cyan-500 text-black font-black w-full py-3 text-sm hover:brightness-125 transition-all font-orbitron uppercase rounded">
-              {garantia.btn_cierre || "Entendido"}
-            </button>
-          </div>
         </div>
-      )}
-    </>
+      </div>
+    </main>
   )
 }
 
-function SocialIcon({ href, icon }: { href: string, icon: any }) {
+function SectionCard({ title, icon, children }: any) {
     return (
-        <a href={href} target="_blank" className="text-gray-400 hover:text-cyan-400 hover:scale-110 transition-all p-2 bg-white/5 rounded-full hover:bg-white/10 border border-transparent hover:border-cyan-500/30">
-            {icon}
-        </a>
+        <section className="tech-glass p-8 border-white/5 bg-black/20 hover:bg-black/40 transition-colors">
+            <h3 className="text-cyan-500 font-bold font-mono text-sm mb-6 flex items-center gap-3 uppercase tracking-[0.15em] border-b border-cyan-500/10 pb-4">
+                {icon} {title}
+            </h3>
+            <div className="space-y-5">
+                {children}
+            </div>
+        </section>
+    )
+}
+
+function InputField({ label, value, onChange }: { label: string, value: string, onChange: (v: string) => void }) {
+    return (
+        <div>
+            <Label text={label} />
+            <input 
+                value={value || ""} 
+                onChange={(e) => onChange(e.target.value)} 
+                className="w-full bg-black/40 border border-white/10 p-3 text-sm text-white rounded outline-none focus:border-cyan-500/60 focus:bg-black/60 transition-all font-medium" 
+            />
+        </div>
+    )
+}
+
+function TextArea({ value, onChange, rows = 3, placeholder }: any) {
+    return (
+        <textarea 
+            value={value || ""} 
+            onChange={onChange} 
+            rows={rows}
+            placeholder={placeholder}
+            className="w-full bg-black/40 border border-white/10 p-3 text-sm text-gray-300 rounded outline-none focus:border-cyan-500/60 focus:bg-black/60 transition-all resize-none leading-relaxed" 
+        />
+    )
+}
+
+function Label({ text }: { text: string }) {
+    return (
+        <label className="text-[10px] text-gray-500 font-bold uppercase mb-2 block tracking-widest">{text}</label>
     )
 }
