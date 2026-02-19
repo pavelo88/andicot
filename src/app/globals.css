@@ -41,10 +41,6 @@ body {
     overflow-x: hidden; 
 }
 
-/* CORRECCIÓN 1: HEADER TAPANDO CONTENIDO
-   Empujamos el contenido hacia abajo para que la barra negra
-   no se coma el título "INFRAESTRUCTURA".
-*/
 main {
     padding-top: 90px !important; 
 }
@@ -62,7 +58,6 @@ section {
    3. BLINDAJE DE IDENTIDAD (NAV & FOOTER)
    ========================================= */
 
-/* Por defecto (Oscuro) es Negro */
 nav, footer {
     background-color: #000000 !important;
     border-color: rgba(255, 255, 255, 0.1) !important;
@@ -72,12 +67,6 @@ nav *, footer * {
     color: #ffffff !important; 
 }
 
-
-
-/* CORRECCIÓN 3: EXCEPCIÓN TELÉFONO (LETRA BLANCA)
-   El número de teléfono se mantiene blanco incluso en modo claro
-   (para que se vea sobre el mapa oscuro).
-*/
 body.light-mode a[href^="tel"],
 body.light-mode .phone-number-stark {
     color: #ffffff !important;
@@ -87,7 +76,6 @@ body.light-mode .phone-number-stark {
    4. MODIFICACIONES ESPECÍFICAS MODO CLARO
    ========================================= */
 
-/* Anillo de Alianzas (Celestito en Claro) */
 body.light-mode #alianzas {
     background-color: #e0f7fa !important; 
     border-top: 1px solid rgba(0, 112, 243, 0.1);
@@ -98,52 +86,41 @@ body.light-mode #alianzas h2 {
     font-weight: 900;
 }
 
-/* Tarjetas Servicios */
 body.light-mode #servicios .group > div:first-child {
     background-color: rgba(0, 112, 243, 0.03) !important;
     border-color: rgba(0, 112, 243, 0.2) !important;
 }
 
-/* Textos Generales (Negro en Claro) */
 body.light-mode main h1, body.light-mode main h2, 
 body.light-mode main h3, body.light-mode main p,
 body.light-mode main span:not(.text-cyan-500) {
     color: #020617 !important;
 }
 
-/* Inputs (Blanco en Claro) */
 body.light-mode select, body.light-mode input {
     background-color: #ffffff !important;
     color: #000000 !important;
     border: 1px solid #cbd5e1 !important;
 }
 
-/* =========================================
-   5. CORRECCIÓN 4: FORMULARIO "REQUERIMIENTO"
-   ========================================= */
-/* Ahora el textarea es idéntico a los inputs */
 textarea {
-    background-color: rgba(15, 23, 42, 0.6) !important; /* Base oscura igual que input */
+    background-color: rgba(15, 23, 42, 0.6) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 8px !important; /* Mismas esquinas */
+    border-radius: 8px !important;
     padding: 1rem !important;
     outline: none;
     color: var(--text-main);
 }
 
-/* En modo claro, se vuelve blanco puro como los inputs */
 body.light-mode textarea {
     background-color: #ffffff !important;
     border: 1px solid #cbd5e1 !important;
     color: #000000 !important;
 }
 
-/* =========================================
-   6. CORRECCIÓN 5: ALIANZAS MÓVIL (CUADRADO)
-   ========================================= */
 @media (max-width: 768px) {
     #alianzas .carousel-scene {
-        height: 250px !important; /* Altura controlada, casi cuadrada */
+        height: 250px !important;
         margin-top: 0 !important;
     }
     #alianzas {
@@ -167,11 +144,7 @@ body.light-mode textarea {
 .font-orbitron { font-family: 'Orbitron', sans-serif !important; }
 .font-mono { font-family: 'JetBrains Mono', monospace !important; }
 
-/* Títulos Gigantes (Tu estilo original) */
-/* Título Principal (INFRAESTRUCTURA) */
-/* Título Principal (INFRAESTRUCTURA) */
 h1 { 
-    /* Mínimo 2rem (móvil) -> Máximo 6rem (PC gigante) */
     font-size: clamp(2rem, 5vw, 6rem); 
     line-height: 1.1;
     word-break: break-word; 
@@ -180,10 +153,6 @@ h1 {
 }
 h2 { font-size: clamp(2rem, 6vw, 2.5rem); }
 
-
-
-
-/* --- ANIMACIÓN CARRUSEL INFINITO --- */
 @keyframes scroll {
     0% { transform: translateX(0); }
     100% { transform: translateX(-50%); }
@@ -191,11 +160,10 @@ h2 { font-size: clamp(2rem, 6vw, 2.5rem); }
 
 .animate-infinite-scroll {
     display: flex;
-    width: max-content; /* Obliga a que los elementos estén en una sola línea */
-    animation: scroll 40s linear infinite; /* 40s es la velocidad, cámbialo si quieres */
+    width: max-content;
+    animation: scroll 40s linear infinite;
 }
 
-/* Pausar cuando pones el mouse encima (opcional, pero recomendado) */
 .animate-infinite-scroll:hover {
     animation-play-state: paused;
 }
@@ -204,8 +172,6 @@ h2 { font-size: clamp(2rem, 6vw, 2.5rem); }
    8. PARCHES DE EMERGENCIA (LOGO Y HAMBURGUESA)
    ========================================= */
 
-/* 1. RESCATAR EL CYAN DEL LOGO */
-/* Esto obliga a que el rombo y las letras cyan NO se pongan blancas/negras */
 nav .border-cyan-500,
 nav .text-cyan-400,
 nav .text-cyan-500,
@@ -214,17 +180,14 @@ nav .text-cyan-500,
     border-color: var(--cyan-accent) !important;
 }
 
-/* 2. ARREGLAR LA HAMBURGUESA (ICONO MENÚ) */
-/* Los iconos usan 'stroke' (línea), no 'fill' (relleno). Esto lo corrige. */
 nav button svg, 
 .lucide-menu, 
 .lucide-x {
-    fill: none !important; /* Quita el relleno negro feo */
-    stroke: currentColor !important; /* Pinta la línea */
+    fill: none !important;
+    stroke: currentColor !important;
     stroke-width: 2px;
 }
 
-/* Color exacto para Modo Oscuro (Blanco) */
 nav button svg {
     color: #ffffff !important;
 }
@@ -233,15 +196,13 @@ nav button svg {
    9. CORRECCIONES FINALES VISUALES
    ========================================= */
 
-/* A) ARREGLO TEXTOS INVISIBLES EN MODO CLARO */
-/* Esto fuerza a los títulos y textos de las tarjetas a ser negros en modo claro */
 body.light-mode h1, 
 body.light-mode h2, 
 body.light-mode h3, 
 body.light-mode h4,
 body.light-mode .font-orbitron {
     color: #000000 !important;
-    text-shadow: none !important; /* Quita sombras blancas que manchan */
+    text-shadow: none !important;
 }
 
 body.light-mode p,
@@ -250,26 +211,22 @@ body.light-mode span {
     color: #333333 !important;
 }
 
-/* Excepción: Textos que explícitamente queremos de color (como el precio o botones) */
 body.light-mode .text-cyan-500,
 body.light-mode .text-cyan-400 {
-    color: #06b6d4 !important; /* Azul legible en modo claro */
+    color: #06b6d4 !important;
 }
 body.light-mode .text-white {
-    color: #000000 !important; /* Si algo dice text-white, que sea negro en modo claro */
+    color: #000000 !important;
 }
-/* Excepción botones sólidos */
 body.light-mode button.bg-cyan-500 {
     color: #ffffff !important;
 }
-
 
 body.light-mode footer {
     background-color: #ffffff !important;
     border-top: 1px solid #cbd5e1 !important;
 }
 
-/* Esto fuerza a que TODOS los textos, enlaces y párrafos del footer sean negros */
 body.light-mode footer p,
 body.light-mode footer a,
 body.light-mode footer span,
@@ -281,22 +238,18 @@ body.light-mode footer div {
     color: #000000 !important;
 }
 
-/* Iconos del footer en modo claro */
 body.light-mode footer svg {
     color: #000000 !important;
     stroke: #000000 !important;
 }
 
-/* Hover: Al pasar el mouse, que se ponga Azul/Cyan */
 body.light-mode footer a:hover,
 body.light-mode footer a:hover span,
 body.light-mode footer a:hover svg {
-    color: #00f2ff !important; /* Azul Stark Claro */
+    color: #00f2ff !important;
     stroke: #00f2ff !important;
 }
 
-/* 2. MODO OSCURO (DARK) -> TODO BLANCO (RESTAURACIÓN) */
-/* Esto asegura que si quitas el modo claro, vuelva a ser legible */
 footer {
     background-color: #000000 !important;
     border-top: 1px solid rgba(255,255,255,0.1) !important;
@@ -304,7 +257,6 @@ footer {
 footer * {
     color: #ffffff !important;
 }
-/* Excepción para textos grises sutiles en oscuro */
 footer .text-gray-500 {
     color: #9ca3af !important;
 }
@@ -313,13 +265,11 @@ footer .text-gray-500 {
    ZONA DE RESCATE: FORZAR NAV BLANCO
    ======================================================= */
 
-/* 1. OBLIGAR a la barra de navegación a ser BLANCA en modo claro */
 body.light-mode nav {
-    background-color: #ffffff !important; /* Fondo Blanco Sólido */
-    border-bottom: 1px solid #e2e8f0 !important; /* Borde gris suavecito */
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #e2e8f0 !important;
 }
 
-/* 2. Asegurar que los textos del menú sean negros */
 body.light-mode nav a,
 body.light-mode nav span,
 body.light-mode nav svg {
@@ -327,8 +277,6 @@ body.light-mode nav svg {
     stroke: #000000 !important;
 }
 
-/* 3. OBLIGAR al menú desplegable del celular a ser BLANCO */
-/* Busca cualquier div fijo con z-index 90 (tu menú móvil) y lo pinta blanco */
 body.light-mode div.fixed.z-\[90\] {
     background-color: rgba(255, 255, 255, 0.98) !important;
 }
@@ -337,7 +285,6 @@ body.light-mode div.fixed.z-\[90\] {
    PARCHES FINALES (NAV NEGRO Y MARCAS PEQUEÑAS)
    ======================================================= */
 
-/* 1. NAV EN MODO CLARO -> LETRAS NEGRAS OBLIGATORIAS */
 body.light-mode nav a,
 body.light-mode nav span,
 body.light-mode nav svg,
@@ -345,32 +292,81 @@ body.light-mode nav button {
     color: #000000 !important;
     stroke: #000000 !important;
 }
-/* Excepción: El botón del sol (tema) se queda naranja */
 body.light-mode nav button.text-orange-500 {
     color: #f97316 !important;
     stroke: #f97316 !important;
 }
 
-/* =======================================================
-   2. SECCIÓN MARCAS (ALIADOS) -> ULTRA COMPACTA
-   ======================================================= */
    #alianzas, #marcas {
     padding-top: 4rem !important;
-    padding-bottom: 4rem !important; /* Mínimo espacio abajo */
+    padding-bottom: 4rem !important;
     min-height: auto !important;
     height: auto !important;
-    overflow: hidden !important; /* Corta cualquier sobrante */
+    overflow: hidden !important;
 }
 
-/* Título pegado arriba */
 #alianzas h2 {
     margin-bottom: 0 !important;
     line-height: 1 !important;
 }
 
-/* Forzar al carrusel a ser bajito */
 #alianzas .carousel-scene {
-    height: 180px !important; /* Altura fija pequeña */
+    height: 180px !important;
     margin-top: -20px !important;
-    transform: scale(0.8); /* Truco: Lo hacemos un 20% más pequeño visualmente */
+    transform: scale(0.8);
+}
+
+/* =======================================================
+   10. AJUSTES CONTACTO MODO CLARO
+   ======================================================= */
+
+body.light-mode #contacto .tech-glass {
+    background-color: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    backdrop-filter: none !important;
+}
+
+/* ARREGLO: Los hijos internos (cabecera y pie del mapa) tenian su propio fondo oscuro. */
+/* Los hacemos transparentes para que muestren el fondo blanco del padre. */
+body.light-mode #contacto .tech-glass > div[class*="bg-black"] {
+    background-color: transparent !important;
+}
+
+/* Forzar textos a negro dentro de toda la sección */
+body.light-mode #contacto .tech-glass h3,
+body.light-mode #contacto .tech-glass a {
+    color: #000000 !important;
+}
+body.light-mode #contacto p {
+    color: #333 !important;
+}
+body.light-mode #contacto .font-orbitron {
+    color: #000000 !important;
+}
+
+/* Título "OFICINA CENTRAL" en un gris más oscuro y legible */
+body.light-mode #contacto .text-gray-500 {
+    color: #475569 !important;
+}
+
+/* Iconos de redes sociales en modo claro */
+body.light-mode #contacto .tech-glass:last-child a[href*="facebook"],
+body.light-mode #contacto .tech-glass:last-child a[href*="instagram"],
+body.light-mode #contacto .tech-glass:last-child a[href*="tiktok"] {
+    color: #334155 !important;
+}
+body.light-mode #contacto .tech-glass:last-child a:hover,
+body.light-mode #contacto .tech-glass:last-child a:hover svg {
+   color: #0ea5e9 !important; /* Azul cielo para el hover */
+}
+
+/* Anular el filtro oscuro del mapa en modo claro */
+body.light-mode #contacto div[class*="grayscale"] {
+    filter: none !important;
+}
+
+/* Asegurar placeholders legibles en modo claro */
+body.light-mode #contacto input::placeholder,
+body.light-mode #contacto textarea::placeholder {
+    color: #9ca3af !important;
 }
