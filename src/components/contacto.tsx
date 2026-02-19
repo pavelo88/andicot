@@ -3,7 +3,22 @@
 import { useState, useEffect } from "react"
 import { db } from "@/lib/firebase"
 import { collection, addDoc, serverTimestamp } from "firebase/firestore"
-import { Mail, Phone, MapPin, Send, Shield, Facebook, Instagram, Youtube, CheckCircle, AlertTriangle, Loader } from "lucide-react"
+import { Mail, Phone, MapPin, Send, Shield, Facebook, Instagram, Youtube, CheckCircle, AlertTriangle, Loader, FileText } from "lucide-react"
+
+// Componentes para el Modal de Garantía
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    DialogFooter,
+    DialogClose,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
+
 
 // --- INTERFACES ---
 interface ContactoProps {
@@ -109,20 +124,68 @@ export function Contacto({ info, redes, garantia }: ContactoProps) {
                             rows={6}
                             className="w-full bg-black/40 border border-white/10 p-3 text-sm text-gray-300 rounded outline-none focus:border-cyan-500/60 focus:bg-black/60 transition-all resize-none leading-relaxed"
                         />
-                        <button
-                            type="submit"
-                            disabled={status === 'loading'}
-                            className="w-full bg-cyan-500 text-black font-black uppercase py-4 rounded tracking-widest transition-all flex items-center justify-center gap-3 disabled:opacity-50 hover:brightness-110 active:scale-[0.98]"
-                        >
-                            {status === 'loading' && <Loader className="w-5 h-5 animate-spin" />}
-                            {status === 'success' && <CheckCircle className="w-5 h-5" />}
-                            {status === 'error' && <AlertTriangle className="w-5 h-5" />}
-                            {status === 'idle' && <Send className="w-5 h-5" />}
-                            
-                            {status === 'loading' ? 'ENVIANDO...' :
-                             status === 'success' ? 'MENSAJE RECIBIDO' :
-                             status === 'error' ? 'ERROR, VERIFIQUE' : 'ENVIAR MENSAJE'}
-                        </button>
+                        <div className="grid grid-cols-2 gap-4">
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button variant="outline" className="w-full bg-transparent border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300">
+                                        <Shield className="w-4 h-4 mr-2" />
+                                        {garantia.btn}
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className="tech-glass max-w-2xl text-white border-cyan-500/30">
+                                    <DialogHeader>
+                                        <DialogTitle className="font-orbitron text-cyan-400 text-2xl flex items-center gap-3">
+                                            <FileText/> {garantia.titulo}
+                                        </DialogTitle>
+                                    </DialogHeader>
+                                    <ScrollArea className="h-72 w-full pr-4">
+                                        <DialogDescription className="text-gray-300 text-sm space-y-4 text-left font-mono">
+                                            <p>Los dispositivos y equipos comercializados cuentan con un año de garantía contra defectos de fábrica, de acuerdo con los siguientes términos y condiciones.</p>
+                                            <p>El procedimiento para aplicar a garantía se realiza en la oficina ubicada en la calle Jose Tamayo N24-33 y Baquerizo Moreno. Complejo corporativo Torres del Castillo – Torre 2 – oficina 903, previa coordinación, en horario laborable de lunes a viernes de 09h00 hasta 17h00.</p>
+                                            <p>La recepción de equipos se realiza una vez se haya comunicado el desperfecto previamente por correo electrónico (ventas@andicot.com) o WhatsApp (0984467411), se requiere detalle especificando el problema del producto y video del inconveniente.</p>
+                                            <p>El trámite de garantía se realiza directamente con el cliente, no con terceros, se requiere de la factura y accesorios, sin adulteración del serial o apertura del equipo por terceros, que el equipo no presente golpes o quemaduras, variaciones de voltaje, o evidencias de mala manipulación y uso.</p>
+                                            <p>El tiempo de respuesta en el diagnóstico para validar la aplicación de garantía es de aproximadamente 48 a 72 horas en horario laborable, a partir del ingreso del equipo en soporte técnico.</p>
+                                            <p>En caso de que el producto no se pueda realizar reposición por falta de stock o se encuentre discontinuado, se emitirá una nota de crédito por el valor proporcional del tiempo restante de la garantía.</p>
+                                            <p>Cuando se hace efectivo un cambio por garantía, este producto prosigue con el tiempo restante de garantía con respecto a la factura de venta.</p>
+                                            <p>No nos responsabilizamos de productos que el cliente no reclame dentro de los 30 días después del ingreso a garantía.</p>
+                                            <p>En caso de que la compra haya sido enviada por courier a provincia por petición del cliente, éste debe cubrir todos los gastos de logística, no nos responsabilizamos por valores de envío adicionales.</p>
+                                            <p>Los productos sin garantía son los referidos a cables, accesorios y/o productos que no dispongan de número serial, por lo que se entregan probados, comprobando su funcionamiento.</p>
+                                            <p>Cuando el producto ingresa a revisión por garantía y se comprueba su buen estado, esta revisión y diagnóstico causará un costo de servicios técnicos de USD $10 mas impuestos; para evitar tal situación, se recomienda informar por correo o WhatsApp para realizar pruebas previas.</p>
+                                            <p className="font-bold text-cyan-400">Toda garantía se invalida en forma automática en los siguientes casos:</p>
+                                            <ul className="list-disc list-inside space-y-2 pl-4">
+                                                <li>Si el sello de seguridad o la etiqueta en la que consta el número de serie muestra signos de haber sido movido o alterado.</li>
+                                                <li>Si los equipos o partes se encuentran golpeados, rotos o con signos de maltratos o humedad.</li>
+                                                <li>Si algún componente electrónico está quemado o se verifica que ha sido manipulado.</li>
+                                                <li>Si el equipo ha sido abierto y manipulado internamente.</li>
+                                            </ul>
+                                        </DialogDescription>
+                                    </ScrollArea>
+                                    <DialogFooter>
+                                        <DialogClose asChild>
+                                            <Button type="button" className="w-full bg-cyan-800/50 hover:bg-cyan-700/50 text-cyan-200">
+                                                Cerrar
+                                            </Button>
+                                        </DialogClose>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+
+                            <button
+                                type="submit"
+                                disabled={status === 'loading'}
+                                className="w-full bg-cyan-500 text-black font-black uppercase py-3 rounded tracking-widest transition-all flex items-center justify-center gap-3 disabled:opacity-50 hover:brightness-110 active:scale-[0.98]"
+                            >
+                                {status === 'loading' && <Loader className="w-5 h-5 animate-spin" />}
+                                {status === 'success' && <CheckCircle className="w-5 h-5" />}
+                                {status === 'error' && <AlertTriangle className="w-5 h-5" />}
+                                {status === 'idle' && <Send className="w-5 h-5" />}
+                                
+                                {status === 'loading' ? 'ENVIANDO...' :
+                                 status === 'success' ? 'RECIBIDO' :
+                                 status === 'error' ? 'VERIFIQUE' : 'ENVIAR'}
+                            </button>
+                        </div>
+
                     </form>
                 </div>
 
@@ -134,7 +197,7 @@ export function Contacto({ info, redes, garantia }: ContactoProps) {
                     <div className="absolute inset-0 bg-black/80"></div>
                     <div className="relative z-10 space-y-6 text-white">
                         {/* Datos de Contacto */}
-                        <InfoItem icon={<Phone className="w-4 h-4" />} text={info.tel} href={`tel:${info.tel.replace(/\s/g, '')}`} />
+                        <InfoItem icon={<Phone className="w-4 h-4" />} text={info.tel} href={info.wa_link || `https://wa.me/${info.tel.replace(/\s/g, '')}`} />
                         <InfoItem icon={<Mail className="w-4 h-4" />} text={info.email} href={`mailto:${info.email}`} />
                         <InfoItem icon={<MapPin className="w-4 h-4" />} text={info.direccion} />
 
@@ -143,16 +206,6 @@ export function Contacto({ info, redes, garantia }: ContactoProps) {
                             {facebookUrl && <SocialIcon href={facebookUrl} icon={<Facebook className="w-5 h-5"/>} />}
                             {instagramUrl && <SocialIcon href={instagramUrl} icon={<Instagram className="w-5 h-5"/>} />}
                             {tiktokUrl && <SocialIcon href={tiktokUrl} icon={<Youtube className="w-5 h-5"/>} />}
-                        </div>
-
-                        {/* Garantía */}
-                        <div className="p-4 bg-cyan-950/40 border border-cyan-500/20 rounded-lg">
-                            <h4 className="text-cyan-400 font-bold uppercase text-xs flex items-center gap-2 mb-3">
-                                <Shield className="w-4 h-4"/> {garantia.titulo}
-                            </h4>
-                            <ul className="text-xs text-gray-300 space-y-1 list-disc list-inside">
-                                {garantia.items.map((item, i) => <li key={i}>{item}</li>)}
-                            </ul>
                         </div>
                     </div>
                 </div>
@@ -167,7 +220,7 @@ function InfoItem({ icon, text, href }: { icon: React.ReactNode, text: string, h
     const content = (
         <div className="flex items-start gap-4 group">
             <div className="text-cyan-500 mt-1">{icon}</div>
-            <p className="text-sm font-mono tracking-tight leading-relaxed group-hover:text-cyan-400 transition-colors">
+            <p className="text-sm font-mono tracking-tight leading-relaxed group-hover:text-cyan-400 transition-colors phone-number-stark">
                 {text}
             </p>
         </div>
