@@ -1,12 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Link from "next/link"
 import { useSystemData } from "@/hooks/useStarkData"
 import { db, storage } from "@/lib/firebase"
 import { doc, writeBatch } from "firebase/firestore" 
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
-import { Save, Lock, Globe, Database, Upload, Tag, ShieldCheck, BarChart3, Mail, Award, DollarSign, Share2, LogOut } from "lucide-react"
+import { Save, Lock, Globe, Database, Upload, Tag, ShieldCheck, BarChart3, Award, DollarSign, Share2, LogOut } from "lucide-react"
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -20,7 +19,6 @@ export default function AdminPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState("")
 
-  // --- PRE-CARGA DE ESTRUCTURA ---
   useEffect(() => {
     if (!loading && data && services.length > 0) {
       const safeData = {
@@ -47,7 +45,6 @@ export default function AdminPage() {
     }
   }, [data, services, loading])
 
-  // --- MANEJADORES ---
   const handleConfigChange = (section: string, field: string, value: string) => {
     if (section === "root") {
         setConfigForm((prev: any) => ({ ...prev, [field]: value }))
@@ -110,11 +107,14 @@ export default function AdminPage() {
     } finally { setIsSaving(false) }
   }
 
-  // --- LOGIN ---
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
-    if (password === "Andicot_2026_Sinergia") setIsAuthenticated(true)
-    else setAuthError(true)
+    if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
+      setIsAuthenticated(true)
+      setAuthError(false)
+    } else {
+      setAuthError(true)
+    }
   }
 
   if (!isAuthenticated) return (
@@ -129,7 +129,7 @@ export default function AdminPage() {
             className="w-full bg-black border border-cyan-500/50 p-4 text-cyan-400 outline-none mb-6 text-center font-mono text-lg rounded" 
             placeholder="CLAVE DE ACCESO..." 
         />
-        <button className="w-full bg-cyan-500 text-black font-bold py-4 uppercase text-sm tracking-[0.2em] hover:bg-cyan-400 transition-all rounded shadow-[0_0_20px_rgba(0,242,255,0.4)]">
+        <button type="submit" className="w-full bg-cyan-500 text-black font-bold py-4 uppercase text-sm tracking-[0.2em] hover:bg-cyan-400 transition-all rounded shadow-[0_0_20px_rgba(0,242,255,0.4)]">
             INICIAR SESIÓN
         </button>
         {authError && <p className="text-red-500 text-center mt-6 text-xs font-mono animate-pulse">ACCESO DENEGADO</p>}
@@ -156,11 +156,6 @@ export default function AdminPage() {
         </div>
         
         <div className="flex gap-4">
-            <Link href="/admin/correos" legacyBehavior>
-              <a className="p-3 rounded-lg border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 transition-all">
-                <Mail className="w-5 h-5" />
-              </a>
-            </Link>
             <button onClick={() => setIsAuthenticated(false)} className="p-3 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-all">
                 <LogOut className="w-5 h-5" />
             </button>
