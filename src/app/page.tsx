@@ -32,10 +32,10 @@ export default function Home() {
             <div className="absolute inset-0 bg-accent/20 blur-xl rounded-full animate-pulse"></div>
             
             <Image 
-              src={logoImg}    // <--- Usamos la variable importada (sin comillas)
+              src={logoImg}
               alt="Logo Andicot" 
-              priority         // <--- Carga instantánea (elimina el parpadeo)
-              className="w-96 h-auto relative z-10 drop-shadow-[0_0_10px_theme(colors.accent/0.8)] animate-pulse object-contain"
+              priority
+              className="w-96 h-auto relative z-10 animate-pulse object-contain border-0 border-none outline-none ring-0 shadow-none"
             />
         </div>
 
