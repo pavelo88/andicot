@@ -139,9 +139,26 @@ export function Contacto({ info, redes, garantia }: ContactoProps) {
                                         </DialogTitle>
                                     </DialogHeader>
                                     <ScrollArea className="h-72 w-full pr-4">
-                                        <DialogDescription className="text-muted-foreground text-sm space-y-4 text-left font-code">
-                                          {/* Contenido de la garantía... */}
-                                        </DialogDescription>
+                                        <div className="text-muted-foreground text-sm space-y-4 text-left font-code pr-6">
+                                            <p>Los dispositivos y equipos comercializados cuentan con un año de garantía contra defectos de fábrica, de acuerdo con los siguientes términos y condiciones.</p>
+                                            <p>El procedimiento para aplicar a garantía se realiza en la oficina ubicada en la calle Jose Tamayo N24-33 y Baquerizo Moreno. Complejo corporativo Torres del Castillo – Torre 2 – oficina 903, previa coordinación, en horario laborable de lunes a viernes de 09h00 hasta 17h00.</p>
+                                            <p>La recepción de equipos se realiza una vez se haya comunicado el desperfecto previamente por correo electrónico (ventas@andicot.com) o WhatsApp (0984467411), se requiere detalle especificando el problema del producto y video del inconveniente.</p>
+                                            <p>El trámite de garantía se realiza directamente con el cliente, no con terceros, se requiere de la factura y accesorios, sin adulteración del serial o apertura del equipo por terceros, que el equipo no presente golpes o quemaduras, variaciones de voltaje, o evidencias de mala manipulación y uso.</p>
+                                            <p>El tiempo de respuesta en el diagnóstico para validar la aplicación de garantía es de aproximadamente 48 a 72 horas en horario laborable, a partir del ingreso del equipo en soporte técnico.</p>
+                                            <p>En caso de que el producto no se pueda realizar reposición por falta de stock o se encuentre discontinuado, se emitirá una nota de crédito por el valor proporcional del tiempo restante de la garantía.</p>
+                                            <p>Cuando se hace efectivo un cambio por garantía, este producto prosigue con el tiempo restante de garantía con respecto a la factura de venta.</p>
+                                            <p>No nos responsabilizamos de productos que el cliente no reclame dentro de los 30 días después del ingreso a garantía.</p>
+                                            <p>En caso de que la compra haya sido enviada por courier a provincia por petición del cliente, éste debe cubrir todos los gastos de logística, no nos responsabilizamos por valores de envío adicionales.</p>
+                                            <p>Los productos sin garantía son los referidos a cables, accesorios y/o productos que no dispongan de número serial, por lo que se entregan probados, comprobando su funcionamiento.</p>
+                                            <p>Cuando el producto ingresa a revisión por garantía y se comprueba su buen estado, esta revisión y diagnóstico causará un costo de servicios técnicos de USD $10 mas impuestos; para evitar tal situación, se recomienda informar por correo o WhatsApp para realizar pruebas previas.</p>
+                                            <h5 className="font-bold text-foreground pt-4">Toda garantía se invalida en forma automática en los siguientes casos:</h5>
+                                            <ul className="list-disc pl-5 space-y-2">
+                                                <li>Si el sello de seguridad o la etiqueta en la que consta el número de serie muestra signos de haber sido movido o alterado.</li>
+                                                <li>Si los equipos o partes se encuentran golpeados, rotos o con signos de maltratos o humedad.</li>
+                                                <li>Si algún componente electrónico está quemado o se verifica que ha sido manipulado.</li>
+                                                <li>Si el equipo ha sido abierto y manipulado internamente.</li>
+                                            </ul>
+                                        </div>
                                     </ScrollArea>
                                     <DialogFooter>
                                         <DialogClose asChild>

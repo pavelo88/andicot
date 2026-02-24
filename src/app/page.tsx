@@ -35,7 +35,7 @@ export default function Home() {
               src={logoImg}
               alt="Logo Andicot" 
               priority
-              className="w-96 h-auto relative z-10 animate-pulse object-contain border-0 border-none outline-none ring-0 shadow-none"
+              className="w-96 h-auto relative z-10 object-contain opacity-100 filter-none"
             />
         </div>
 
