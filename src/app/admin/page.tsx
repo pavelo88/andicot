@@ -118,45 +118,45 @@ export default function AdminPage() {
   }
 
   if (!isAuthenticated) return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-6">
-      <form onSubmit={handleLogin} className="tech-glass p-10 max-w-md w-full border border-cyan-500/30 bg-black/90 shadow-2xl">
-        <Lock className="w-12 h-12 text-cyan-500 mx-auto mb-6" />
-        <h1 className="text-2xl md:text-6xl font-orbitron text-center mb-8 uppercase tracking-tighter text-white">PANEL DE CONTROL</h1>
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <form onSubmit={handleLogin} className="tech-glass p-10 max-w-md w-full border-accent/30 bg-background/90 shadow-2xl">
+        <Lock className="w-12 h-12 text-accent mx-auto mb-6" />
+        <h1 className="text-2xl md:text-6xl font-headline text-center mb-8 uppercase tracking-tighter text-foreground">PANEL DE CONTROL</h1>
         <input 
             type="password" 
             value={password} 
             onChange={(e) => setPassword(e.target.value)} 
-            className="w-full bg-black border border-cyan-500/50 p-4 text-cyan-400 outline-none mb-6 text-center font-mono text-lg rounded" 
+            className="w-full bg-background border border-accent/50 p-4 text-accent outline-none mb-6 text-center font-code text-lg rounded" 
             placeholder="CLAVE DE ACCESO..." 
         />
-        <button type="submit" className="w-full bg-cyan-500 text-black font-bold py-4 uppercase text-sm tracking-[0.2em] hover:bg-cyan-400 transition-all rounded shadow-[0_0_20px_rgba(0,242,255,0.4)]">
+        <button type="submit" className="w-full bg-accent text-accent-foreground font-bold py-4 uppercase text-sm tracking-[0.2em] hover:brightness-110 transition-all rounded shadow-[0_0_20px_theme(colors.accent/0.4)]">
             INICIAR SESIÓN
         </button>
-        {authError && <p className="text-red-500 text-center mt-6 text-xs font-mono animate-pulse">ACCESO DENEGADO</p>}
+        {authError && <p className="text-destructive text-center mt-6 text-xs font-code animate-pulse">ACCESO DENEGADO</p>}
       </form>
     </div>
   )
 
-  if (loading || !configForm) return <div className="h-screen bg-black flex items-center justify-center text-cyan-500 font-mono text-lg animate-pulse">SINCRONIZANDO SISTEMA...</div>
+  if (loading || !configForm) return <div className="h-screen bg-background flex items-center justify-center text-accent font-code text-lg animate-pulse">SINCRONIZANDO SISTEMA...</div>
 
   return (
-    <main className="min-h-screen bg-black text-white p-6 md:p-12 pb-40 font-sans">
+    <main className="min-h-screen bg-background text-foreground p-6 md:p-12 pb-40 font-sans">
       
-      <header className="flex flex-col md:flex-row justify-between items-center mb-16 gap-6 sticky top-4 bg-black/80 backdrop-blur-xl z-50 py-4 px-6 border border-white/10 rounded-2xl shadow-2xl">
+      <header className="flex flex-col md:flex-row justify-between items-center mb-16 gap-6 sticky top-4 bg-background/80 backdrop-blur-xl z-50 py-4 px-6 border border-border rounded-2xl shadow-2xl">
         <div className="flex items-center gap-4">
-            <div className="bg-cyan-500/10 p-2 rounded-lg border border-cyan-500/20">
-                <Database className="w-6 h-6 text-cyan-500" />
+            <div className="bg-accent/10 p-2 rounded-lg border border-accent/20">
+                <Database className="w-6 h-6 text-accent" />
             </div>
             <div>
-                <h1 className="text-xl md:text-2xl font-black italic font-orbitron text-white">
-                    SYSTEM <span className="text-cyan-500">ADMIN</span>
+                <h1 className="text-xl md:text-2xl font-black font-headline text-foreground">
+                    SYSTEM <span className="text-accent">ADMIN</span>
                 </h1>
-                <p className="text-[10px] font-mono text-gray-400 uppercase tracking-[0.2em]">Panel de Control Global</p>
+                <p className="text-[10px] font-code text-muted-foreground uppercase tracking-[0.2em]">Panel de Control Global</p>
             </div>
         </div>
         
         <div className="flex gap-4">
-            <button onClick={() => setIsAuthenticated(false)} className="p-3 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-all">
+            <button onClick={() => setIsAuthenticated(false)} className="p-3 rounded-lg border border-destructive/30 text-destructive hover:bg-destructive/10 transition-all">
                 <LogOut className="w-5 h-5" />
             </button>
             <button 
@@ -165,7 +165,7 @@ export default function AdminPage() {
                 className={`px-8 py-3 font-bold uppercase text-sm flex items-center gap-3 transition-all rounded-lg border ${
                     saveStatus === "success" 
                     ? "bg-green-600 border-green-500 text-white shadow-[0_0_20px_rgba(34,197,94,0.4)]" 
-                    : "bg-cyan-500 text-black border-cyan-400 hover:shadow-[0_0_20px_rgba(0,242,255,0.4)] hover:scale-105"
+                    : "bg-accent text-accent-foreground border-accent hover:shadow-[0_0_20px_theme(colors.accent/0.4)] hover:scale-105"
                 }`}
             >
                 {isSaving ? "GUARDANDO..." : saveStatus === "success" ? "GUARDADO EXITOSO" : "GUARDAR CAMBIOS"} 
@@ -179,7 +179,7 @@ export default function AdminPage() {
         <div className="grid lg:grid-cols-2 gap-8">
             <SectionCard title="Contenido Hero Principal" icon={<Globe />}>
                 <InputField label="Título Línea 1 (Blanco)" value={configForm.hero.titulo_principal} onChange={(v) => handleConfigChange("hero", "titulo_principal", v)} />
-                <InputField label="Título Línea 2 (Cyan)" value={configForm.hero.titulo_resaltado} onChange={(v) => handleConfigChange("hero", "titulo_resaltado", v)} />
+                <InputField label="Título Línea 2 (Acento)" value={configForm.hero.titulo_resaltado} onChange={(v) => handleConfigChange("hero", "titulo_resaltado", v)} />
                 <div>
                     <Label text="Subtítulo Descriptivo" />
                     <TextArea value={configForm.hero.subtitulo} onChange={(e) => handleConfigChange("hero", "subtitulo", e.target.value)} rows={3} />
@@ -198,14 +198,14 @@ export default function AdminPage() {
 
         <div className="grid lg:grid-cols-2 gap-8">
             <SectionCard title="Garantía & Finanzas" icon={<DollarSign />}>
-                <div className="p-4 border border-white/5 rounded-lg bg-white/5 mb-6">
-                    <h4 className="text-cyan-500 text-xs font-bold uppercase mb-4 flex items-center gap-2"><ShieldCheck className="w-4 h-4"/> Configuración Garantía</h4>
+                <div className="p-4 border border-border rounded-lg bg-foreground/5 mb-6">
+                    <h4 className="text-accent text-xs font-bold uppercase mb-4 flex items-center gap-2"><ShieldCheck className="w-4 h-4"/> Configuración Garantía</h4>
                     <div className="space-y-4">
                         <InputField label="Título Garantía" value={configForm.garantia.titulo} onChange={(v) => handleConfigChange("garantia", "titulo", v)} />
                         <InputField label="Texto Botón" value={configForm.garantia.btn} onChange={(v) => handleConfigChange("garantia", "btn", v)} />
                     </div>
                 </div>
-                <div className="p-4 border border-white/5 rounded-lg bg-emerald-500/5">
+                <div className="p-4 border border-border rounded-lg bg-emerald-500/5">
                     <h4 className="text-emerald-400 text-xs font-bold uppercase mb-4 flex items-center gap-2"><Tag className="w-4 h-4"/> Configuración Cotizador</h4>
                     <div className="grid grid-cols-2 gap-4">
                         <InputField label="IVA (%)" value={configForm.finanzas.iva} onChange={(v) => handleConfigChange("finanzas", "iva", v)} />
@@ -220,7 +220,7 @@ export default function AdminPage() {
                     <InputField label="WhatsApp / Teléfono" value={configForm.contacto.tel} onChange={(v) => handleConfigChange("contacto", "tel", v)} />
                     <InputField label="Dirección Física" value={configForm.contacto.direccion} onChange={(v) => handleConfigChange("contacto", "direccion", v)} />
                     
-                    <div className="border-t border-white/10 pt-5 mt-5">
+                    <div className="border-t border-border pt-5 mt-5">
                         <Label text="Enlaces Redes Sociales" />
                         <div className="space-y-3">
                             <InputField label="Facebook URL" value={configForm.redes.facebook} onChange={(v) => handleConfigChange("redes", "facebook", v)} />
@@ -241,29 +241,29 @@ export default function AdminPage() {
                     rows={4}
                     placeholder="Ej: BOSCH, SAMSUNG, HIKVISION, PELCO, DSC..."
                 />
-                <p className="text-xs text-cyan-400 mt-2 font-mono flex items-center gap-2">
+                <p className="text-xs text-accent mt-2 font-code flex items-center gap-2">
                     <Database className="w-3 h-3" /> Las marcas se actualizarán automáticamente en el anillo 3D.
                 </p>
             </div>
         </SectionCard>
 
-        <div className="pt-10 border-t border-white/10">
-            <h3 className="text-white font-black font-orbitron text-2xl mb-8 flex items-center gap-3 uppercase italic">
-                <Database className="text-cyan-500 w-8 h-8" /> Catálogo de Servicios
+        <div className="pt-10 border-t border-border">
+            <h3 className="text-foreground font-black font-headline text-2xl mb-8 flex items-center gap-3 uppercase">
+                <Database className="text-accent w-8 h-8" /> Catálogo de Servicios
             </h3>
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {servicesForm.map((s, i) => (
-                    <div key={s.id} className="tech-glass p-6 border-white/5 hover:border-cyan-500/40 transition-all group relative bg-black/40">
-                        <span className="absolute top-2 right-2 text-[10px] font-mono text-gray-500 bg-black/50 px-2 py-1 rounded border border-white/5">
+                    <div key={s.id} className="tech-glass p-6 border-border hover:border-accent/40 transition-all group relative bg-background/40">
+                        <span className="absolute top-2 right-2 text-[10px] font-code text-muted-foreground bg-background/50 px-2 py-1 rounded border border-border">
                             ID: {s.id.slice(0,6)}
                         </span>
 
-                        <div className="relative aspect-video mb-5 bg-zinc-900 rounded-lg overflow-hidden border border-white/10 group-hover:border-cyan-500/30 transition-colors">
+                        <div className="relative aspect-video mb-5 bg-zinc-900 rounded-lg overflow-hidden border border-border group-hover:border-accent/30 transition-colors">
                             <img src={s.previewUrl || s.img || "/placeholder.jpg"} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
-                            <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 bg-black/70 transition-all duration-300">
-                                <Upload className="w-8 h-8 text-cyan-400 mb-2" />
-                                <span className="text-[10px] uppercase font-bold text-white tracking-widest">Cambiar Imagen</span>
+                            <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 bg-background/70 transition-all duration-300">
+                                <Upload className="w-8 h-8 text-accent mb-2" />
+                                <span className="text-[10px] uppercase font-bold text-foreground tracking-widest">Cambiar Imagen</span>
                                 <input type="file" className="hidden" onChange={(e) => e.target.files?.[0] && handleImageFile(i, e.target.files[0])} />
                             </label>
                         </div>
@@ -272,7 +272,7 @@ export default function AdminPage() {
                             <input 
                                 value={s.t || s.titulo} 
                                 onChange={(e) => handleServiceChange(i, "t", e.target.value)} 
-                                className="w-full bg-transparent border-b border-white/10 pb-2 font-orbitron text-lg font-bold uppercase text-cyan-400 outline-none focus:border-cyan-500 transition-colors placeholder:text-gray-700" 
+                                className="w-full bg-transparent border-b border-border pb-2 font-headline text-lg font-bold uppercase text-accent outline-none focus:border-accent transition-colors placeholder:text-muted-foreground" 
                                 placeholder="TÍTULO DEL SERVICIO" 
                             />
                             
@@ -283,9 +283,9 @@ export default function AdminPage() {
                             
                             <div>
                                 <Label text="Tags de Búsqueda" />
-                                <div className="flex items-center gap-2 bg-black/40 border border-white/10 rounded p-2 focus-within:border-cyan-500/50 transition-colors">
-                                    <Tag className="w-4 h-4 text-cyan-500/50" />
-                                    <input value={s.tags} onChange={(e) => handleServiceChange(i, "tags", e.target.value)} className="w-full bg-transparent text-xs text-cyan-100 font-mono outline-none" placeholder="camara, sensor, alarma..." />
+                                <div className="flex items-center gap-2 bg-background/40 border border-border rounded p-2 focus-within:border-accent/50 transition-colors">
+                                    <Tag className="w-4 h-4 text-accent/50" />
+                                    <input value={s.tags} onChange={(e) => handleServiceChange(i, "tags", e.target.value)} className="w-full bg-transparent text-xs text-accent font-code outline-none" placeholder="camara, sensor, alarma..." />
                                 </div>
                             </div>
 
@@ -295,7 +295,7 @@ export default function AdminPage() {
                                     type="number" 
                                     value={s.p || s.precio_base} 
                                     onChange={(e) => handleServiceChange(i, "p", e.target.value)} 
-                                    className="bg-transparent text-right font-mono text-white font-bold outline-none w-24 text-lg" 
+                                    className="bg-transparent text-right font-code text-foreground font-bold outline-none w-24 text-lg" 
                                 />
                             </div>
                         </div>
@@ -310,8 +310,8 @@ export default function AdminPage() {
 
 function SectionCard({ title, icon, children }: any) {
     return (
-        <section className="tech-glass p-8 border-white/5 bg-black/20 hover:bg-black/40 transition-colors">
-            <h3 className="text-cyan-500 font-bold font-mono text-sm mb-6 flex items-center gap-3 uppercase tracking-[0.15em] border-b border-cyan-500/10 pb-4">
+        <section className="tech-glass p-8 border-border bg-background/20 hover:bg-background/40 transition-colors">
+            <h3 className="text-accent font-bold font-code text-sm mb-6 flex items-center gap-3 uppercase tracking-[0.15em] border-b border-accent/10 pb-4">
                 {icon} {title}
             </h3>
             <div className="space-y-5">
@@ -328,7 +328,7 @@ function InputField({ label, value, onChange }: { label: string, value: string, 
             <input 
                 value={value || ""} 
                 onChange={(e) => onChange(e.target.value)} 
-                className="w-full bg-black/40 border border-white/10 p-3 text-sm text-white rounded outline-none focus:border-cyan-500/60 focus:bg-black/60 transition-all font-medium" 
+                className="w-full bg-background/40 border border-border p-3 text-sm text-foreground rounded outline-none focus:border-accent/60 focus:bg-background/60 transition-all font-medium" 
             />
         </div>
     )
@@ -341,13 +341,13 @@ function TextArea({ value, onChange, rows = 3, placeholder }: any) {
             onChange={onChange} 
             rows={rows}
             placeholder={placeholder}
-            className="w-full bg-black/40 border border-white/10 p-3 text-sm text-gray-300 rounded outline-none focus:border-cyan-500/60 focus:bg-black/60 transition-all resize-none leading-relaxed" 
+            className="w-full bg-background/40 border border-border p-3 text-sm text-muted-foreground rounded outline-none focus:border-accent/60 focus:bg-background/60 transition-all resize-none leading-relaxed" 
         />
     )
 }
 
 function Label({ text }: { text: string }) {
     return (
-        <label className="text-[10px] text-gray-500 font-bold uppercase mb-2 block tracking-widest">{text}</label>
+        <label className="text-[10px] text-muted-foreground font-bold uppercase mb-2 block tracking-widest">{text}</label>
     )
 }

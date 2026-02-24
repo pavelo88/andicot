@@ -89,42 +89,42 @@ export default function ProyeccionesPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-6">
-        <form onSubmit={handleLogin} className="tech-glass p-10 max-w-md w-full border border-cyan-500/30 bg-black/90 shadow-2xl">
-          <Lock className="w-12 h-12 text-cyan-500 mx-auto mb-6" />
-          <h1 className="text-3xl font-orbitron text-center mb-8 uppercase text-white">Proyecciones CRM</h1>
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <form onSubmit={handleLogin} className="tech-glass p-10 max-w-md w-full border-accent/30 bg-background/90 shadow-2xl">
+          <Lock className="w-12 h-12 text-accent mx-auto mb-6" />
+          <h1 className="text-3xl font-headline text-center mb-8 uppercase text-foreground">Proyecciones CRM</h1>
           <input 
               type="password" 
               value={password} 
               onChange={(e) => setPassword(e.target.value)} 
-              className="w-full bg-black border border-cyan-500/50 p-4 text-cyan-400 outline-none mb-6 text-center font-mono text-lg rounded" 
+              className="w-full bg-background border border-accent/50 p-4 text-accent outline-none mb-6 text-center font-code text-lg rounded" 
               placeholder="CLAVE DE ACCESO..." 
           />
-          <button type="submit" className="w-full bg-cyan-500 text-black font-bold py-4 uppercase text-sm tracking-[0.2em] hover:bg-cyan-400 transition-all rounded shadow-[0_0_20px_rgba(0,242,255,0.4)]">
+          <button type="submit" className="w-full bg-accent text-accent-foreground font-bold py-4 uppercase text-sm tracking-[0.2em] hover:brightness-110 transition-all rounded shadow-[0_0_20px_theme(colors.accent/0.4)]">
               ACCEDER
           </button>
-          {authError && <p className="text-red-500 text-center mt-6 text-xs font-mono animate-pulse">CLAVE INCORRECTA</p>}
+          {authError && <p className="text-destructive text-center mt-6 text-xs font-code animate-pulse">CLAVE INCORRECTA</p>}
         </form>
       </div>
     )
   }
 
   return (
-    <div className="p-4 md:p-8 bg-black min-h-screen text-white font-mono">
+    <div className="p-4 md:p-8 bg-background min-h-screen text-foreground font-code">
       <header className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl md:text-3xl font-black font-orbitron text-cyan-500">PROYECCIONES / CRM</h1>
-        <button onClick={() => setIsAuthenticated(false)} className="p-3 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-all flex items-center gap-2">
+        <h1 className="text-2xl md:text-3xl font-black font-headline text-accent">PROYECCIONES / CRM</h1>
+        <button onClick={() => setIsAuthenticated(false)} className="p-3 rounded-lg border border-destructive/30 text-destructive hover:bg-destructive/10 transition-all flex items-center gap-2">
             <LogOut className="w-5 h-5" />
             <span className="hidden md:inline">Cerrar Sesión</span>
         </button>
       </header>
 
       <div className="mb-6 flex items-center gap-4">
-        <Filter className="w-5 h-5 text-cyan-400"/>
+        <Filter className="w-5 h-5 text-accent"/>
         <select 
           onChange={(e) => setStatusFilter(e.target.value)} 
           value={statusFilter}
-          className="bg-black border border-cyan-500/30 p-2 rounded text-cyan-300 outline-none"
+          className="bg-background border border-accent/30 p-2 rounded text-accent outline-none"
         >
           <option value="todos">Todos los Estados</option>
           <option value="pendiente">Pendiente</option>
@@ -135,10 +135,10 @@ export default function ProyeccionesPage() {
         </select>
       </div>
       
-      <div className="overflow-x-auto border border-cyan-500/30 rounded-lg tech-glass bg-black/50">
+      <div className="overflow-x-auto border border-accent/30 rounded-lg tech-glass bg-background/50">
         <table className="w-full text-left text-xs md:text-sm">
-          <thead className="bg-cyan-950/50 border-b border-cyan-500/30">
-            <tr className="text-cyan-400 uppercase tracking-widest">
+          <thead className="bg-secondary/50 border-b border-accent/30">
+            <tr className="text-accent uppercase tracking-widest">
               <th className="p-4">Fecha</th>
               <th className="p-4">Cliente</th>
               <th className="p-4">Email</th>
@@ -150,20 +150,20 @@ export default function ProyeccionesPage() {
           </thead>
           <tbody>
             {loading ? (
-                <tr><td colSpan={7} className="text-center p-8 text-cyan-500 animate-pulse">Cargando proyecciones...</td></tr>
+                <tr><td colSpan={7} className="text-center p-8 text-accent animate-pulse">Cargando proyecciones...</td></tr>
             ) : filteredMessages.length === 0 ? (
-                <tr><td colSpan={7} className="text-center p-8 text-gray-500">No hay registros que coincidan con el filtro.</td></tr>
+                <tr><td colSpan={7} className="text-center p-8 text-muted-foreground">No hay registros que coincidan con el filtro.</td></tr>
             ) : (
                 filteredMessages.map((msg) => (
-                <tr key={msg.id} className="border-b border-white/10 hover:bg-cyan-500/10 transition-colors">
-                    <td className="p-4 text-gray-400 whitespace-nowrap">{formatDate(msg.createdAt)}</td>
-                    <td className="p-4 font-bold text-white">{msg.name}</td>
-                    <td className="p-4 text-cyan-300 font-medium">{msg.email}</td>
+                <tr key={msg.id} className="border-b border-border hover:bg-accent/10 transition-colors">
+                    <td className="p-4 text-muted-foreground whitespace-nowrap">{formatDate(msg.createdAt)}</td>
+                    <td className="p-4 font-bold text-foreground">{msg.name}</td>
+                    <td className="p-4 text-accent font-medium">{msg.email}</td>
                     <td className="p-4 text-green-400 font-medium">{msg.phone}</td>
-                    <td className="p-4 text-gray-300 min-w-[300px]">{msg.message}</td>
+                    <td className="p-4 text-muted-foreground min-w-[300px]">{msg.message}</td>
                     <td className="p-4">
                     <select 
-                        className="bg-black border border-gray-600 rounded p-2 text-white outline-none focus:border-cyan-500 transition-colors"
+                        className="bg-background border border-muted rounded p-2 text-foreground outline-none focus:border-accent transition-colors"
                         value={msg.status || "pendiente"}
                         onChange={(e) => handleStatusChange(msg.id, e.target.value)}
                     >
@@ -177,7 +177,7 @@ export default function ProyeccionesPage() {
                     <td className="p-4 text-center">
                     <button 
                         onClick={() => handleDelete(msg.id)} 
-                        className="p-2 text-red-500 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-colors"
+                        className="p-2 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
                         title="Eliminar Registro"
                     >
                         <Trash2 className="w-5 h-5" />

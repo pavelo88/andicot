@@ -8,7 +8,6 @@ import {
   Cpu, ChevronRight, MousePointer2 
 } from "lucide-react"
 import { BlueprintBackground } from "@/components/imagenes"
-// NUEVO: Componentes del carrusel
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 
 
@@ -26,10 +25,9 @@ interface ServiceProps {
 // =========================================================
 export function Servicios({ services, onSelect, highlightedId }: { services: ServiceProps[], onSelect: (id: string) => void, highlightedId?: string }) {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [isPaused, setIsPaused] = useState(false) // Estado para pausar el auto-play
+  const [isPaused, setIsPaused] = useState(false)
   const autoPlayRef = useRef<NodeJS.Timeout | null>(null)
   
-  // Sincronización Highlight
   useEffect(() => {
     if (highlightedId) {
       const index = services.findIndex(s => s.id === highlightedId)
@@ -37,7 +35,6 @@ export function Servicios({ services, onSelect, highlightedId }: { services: Ser
     }
   }, [highlightedId, services])
 
-  // --- AUTO-PLAY (MÓVIL) ---
   useEffect(() => {
     if (isPaused || services.length === 0) return
 
@@ -54,8 +51,6 @@ export function Servicios({ services, onSelect, highlightedId }: { services: Ser
     }
   }, [isPaused, services.length])
 
-
-  // --- SWIPE TÁCTIL (MÓVIL) ---
   const [touchStart, setTouchStart] = useState<number | null>(null)
   const [touchEnd, setTouchEnd] = useState<number | null>(null)
 
@@ -78,13 +73,13 @@ export function Servicios({ services, onSelect, highlightedId }: { services: Ser
   return (
     <section id="servicios" className="relative z-10 py-20 px-6 max-w-7xl mx-auto">
       <div className="mb-12 text-center">
-        <h2 className="text-3xl md:text-5xl font-black italic uppercase text-white font-orbitron">
-          Catálogo de <span className="text-cyan-500">Soluciones</span>
+        <h2 className="text-3xl md:text-5xl font-black uppercase text-foreground font-headline">
+          Catálogo de <span className="text-accent">Soluciones</span>
         </h2>
-        <div className="h-1 w-20 bg-cyan-500 mt-4 mx-auto shadow-[0_0_20px_rgba(0,242,255,0.6)]"></div>
+        <div className="h-1 w-20 bg-accent mt-4 mx-auto shadow-[0_0_20px_theme(colors.accent/0.6)]"></div>
       </div>
 
-      {/* --- VISTA MÓVIL (SE MANTIENE IGUAL) --- */}
+      {/* --- VISTA MÓVIL --- */}
       <div className="md:hidden relative min-h-[500px]" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
         {services.length > 0 && (
           <div key={currentIndex} className="animate-in fade-in slide-in-from-right-4 duration-500">
@@ -98,18 +93,18 @@ export function Servicios({ services, onSelect, highlightedId }: { services: Ser
         )}
         
         <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between px-2 pointer-events-none">
-            <button onClick={() => setCurrentIndex(prev => (prev === 0 ? services.length - 1 : prev - 1))} className="pointer-events-auto bg-black/20 p-2 rounded-full text-white/50 hover:text-cyan-500 backdrop-blur-sm">‹</button>
-            <button onClick={() => setCurrentIndex(prev => (prev === services.length - 1 ? 0 : prev + 1))} className="pointer-events-auto bg-black/20 p-2 rounded-full text-white/50 hover:text-cyan-500 backdrop-blur-sm">›</button>
+            <button onClick={() => setCurrentIndex(prev => (prev === 0 ? services.length - 1 : prev - 1))} className="pointer-events-auto bg-background/20 p-2 rounded-full text-foreground/50 hover:text-accent backdrop-blur-sm">‹</button>
+            <button onClick={() => setCurrentIndex(prev => (prev === services.length - 1 ? 0 : prev + 1))} className="pointer-events-auto bg-background/20 p-2 rounded-full text-foreground/50 hover:text-accent backdrop-blur-sm">›</button>
         </div>
 
         <div className="absolute bottom-0 w-full flex justify-center py-4">
-             <span className="text-[10px] font-mono text-cyan-500 bg-black/40 px-3 py-1 rounded-full border border-cyan-500/30 backdrop-blur-sm">
+             <span className="text-[10px] font-code text-accent bg-background/40 px-3 py-1 rounded-full border border-accent/30 backdrop-blur-sm">
                 {currentIndex + 1} / {services.length}
              </span>
         </div>
       </div>
 
-      {/* --- VISTA TABLET: CARRUSEL (NUEVO) --- */}
+      {/* --- VISTA TABLET: CARRUSEL --- */}
       <div className="hidden md:block lg:hidden">
         <Carousel
           opts={{ align: "start", loop: true }}
@@ -134,7 +129,7 @@ export function Servicios({ services, onSelect, highlightedId }: { services: Ser
         </Carousel>
       </div>
       
-      {/* --- VISTA PC: GRID (MODIFICADO) --- */}
+      {/* --- VISTA PC: GRID --- */}
       <div className="hidden lg:grid lg:grid-cols-3 gap-8 items-start">
         {services.map(s => (
           <ServiceCard 
@@ -150,9 +145,6 @@ export function Servicios({ services, onSelect, highlightedId }: { services: Ser
   )
 }
 
-// =========================================================
-// 2. SUBCOMPONENTE: TARJETA DE SERVICIO (SIN CAMBIOS)
-// =========================================================
 function ServiceCard({ service, onClick, isActive, isMobile }: { service: ServiceProps, onClick: () => void, isActive: boolean, isMobile: boolean }) {
   const title = service.t || service.titulo || "Servicio"
   const desc = service.d || service.descripcion || ""
@@ -164,47 +156,44 @@ function ServiceCard({ service, onClick, isActive, isMobile }: { service: Servic
       onClick={onClick}
       className={`
         group tech-glass p-5 cursor-pointer transition-all duration-500 hover:-translate-y-2 flex flex-col w-full
-        ${isActive ? 'ring-2 ring-cyan-500 shadow-[0_0_40px_rgba(0,242,255,0.2)]' : 'border-white/5 hover:border-cyan-500/30'}
+        ${isActive ? 'ring-2 ring-accent shadow-[0_0_40px_theme(colors.accent/0.2)]' : 'border-border hover:border-accent/30'}
         ${isMobile ? 'h-full justify-between' : ''} 
       `}
     >
-      {/* ZONA VISUAL: Sin fondo negro, altura reducida en PC */}
       <div className={`
-          relative w-full mb-5 overflow-hidden rounded-lg border border-white/10 group-hover:border-cyan-500/50 transition-all
+          relative w-full mb-5 overflow-hidden rounded-lg border border-border group-hover:border-accent/50 transition-all
           aspect-square md:aspect-[16/10]
-          ${img ? 'bg-transparent' : 'bg-black/40'}
+          ${img ? 'bg-transparent' : 'bg-background/40'}
       `}>
         {img ? (
           <>
             <Image src={img} alt={title} fill className="object-contain p-2 drop-shadow-xl group-hover:scale-105 transition-transform duration-700" />
-            <div className="absolute top-2 right-2 bg-black/60 backdrop-blur px-2 py-1 rounded text-[8px] text-cyan-400 font-mono border border-cyan-500/30">LIVE ●</div>
+            <div className="absolute top-2 right-2 bg-background/60 backdrop-blur px-2 py-1 rounded text-[8px] text-accent font-code border border-accent/30">LIVE ●</div>
           </>
         ) : (
           <div className="w-full h-full relative flex items-center justify-center">
-            {/* AQUÍ LLAMAMOS AL FONDO BLUEPRINT INTEGRADO */}
             <div className="absolute inset-0 opacity-50"><BlueprintBackground type={title} /></div>
-            <div className="relative z-10 p-3 rounded-full bg-black/40 border border-cyan-500/50 text-cyan-400 backdrop-blur-sm shadow-[0_0_15px_rgba(0,242,255,0.3)]">
+            <div className="relative z-10 p-3 rounded-full bg-background/40 border border-accent/50 text-accent backdrop-blur-sm shadow-[0_0_15px_theme(colors.accent/0.3)]">
                {getIcon(title)}
             </div>
           </div>
         )}
       </div>
 
-      {/* CONTENIDO */}
       <div className="flex flex-col flex-1">
-        <h4 className="text-lg font-black font-orbitron text-white mb-2 uppercase tracking-tight group-hover:text-cyan-400 transition-colors">
+        <h4 className="text-lg font-black font-headline text-foreground mb-2 uppercase tracking-tight group-hover:text-accent transition-colors">
           {title}
         </h4>
-        <p className={`text-xs text-gray-400 font-light leading-relaxed mb-4 ${isMobile ? 'line-clamp-4' : 'line-clamp-3'}`}>
+        <p className={`text-xs text-muted-foreground font-body leading-relaxed mb-4 ${isMobile ? 'line-clamp-4' : 'line-clamp-3'}`}>
           {desc}
         </p>
         
-        <div className="mt-auto pt-4 border-t border-white/10 flex items-center justify-between">
+        <div className="mt-auto pt-4 border-t border-border flex items-center justify-between">
             <div className="flex flex-col">
-                <span className="text-[8px] text-gray-500 uppercase font-bold tracking-widest">Desde</span>
-                <span className="text-xl font-mono text-cyan-500 font-bold">${price}</span>
+                <span className="text-[8px] text-muted-foreground uppercase font-bold tracking-widest">Desde</span>
+                <span className="text-xl font-code text-accent font-bold">${price}</span>
             </div>
-            <button className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-white bg-cyan-500/10 hover:bg-cyan-500 hover:text-black px-4 py-2 rounded transition-all border border-cyan-500/30">
+            <button className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-foreground bg-accent/10 hover:bg-accent hover:text-accent-foreground px-4 py-2 rounded transition-all border border-accent/30">
                {isMobile ? <MousePointer2 className="w-3 h-3"/> : null} 
                COTIZAR {isMobile ? '' : <ChevronRight className="w-3 h-3"/>}
             </button>

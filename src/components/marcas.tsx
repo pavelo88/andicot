@@ -34,27 +34,23 @@ export function Marcas({ brands }: { brands: string[] }) {
   return (
     <section 
         id="alianzas" 
-        className="relative z-10 py-8 md:py-24 overflow-hidden border-y border-white/5 transition-all duration-500
-                   bg-zinc-950 dark:bg-[radial-gradient(circle_at_center,rgba(0,242,255,0.08)_0%,#000_70%)]"
+        className="relative z-10 py-8 md:py-24 overflow-hidden border-y border-border transition-all duration-500
+                   bg-secondary/10 dark:bg-[radial-gradient(circle_at_center,theme(colors.accent/0.08)_0%,transparent_70%)]"
     >
       
-      {/* TÍTULO CORREGIDO: Estilo "Dos Colores" + Italic + Black */}
       <div className="text-center mb-4 md:mb-8 relative z-20">
-        <h2 className="font-orbitron font-black italic uppercase leading-tight">
-          {/* Parte 1: Blanco (o negro en light mode) */}
-          <span className="text-white light:text-black text-2xl md:text-5xl block md:inline md:mr-3">
+        <h2 className="font-headline font-black uppercase leading-tight">
+          <span className="text-foreground text-2xl md:text-5xl block md:inline md:mr-3">
             ALIADOS
           </span>
-          {/* Parte 2: Cyan Neón */}
-          <span className="text-cyan-500 text-3xl md:text-5xl block md:inline tracking-tighter">
+          <span className="text-accent text-3xl md:text-5xl block md:inline tracking-tighter">
             TECNOLÓGICOS
           </span>
-          <div className="h-1 w-20 bg-cyan-500 mt-4 mx-auto shadow-[0_0_20px_rgba(0,242,255,0.6)]"></div>
+          <div className="h-1 w-20 bg-accent mt-4 mx-auto shadow-[0_0_20px_theme(colors.accent/0.6)]"></div>
 
         </h2>
       </div>
 
-      {/* CONTENEDOR DE ESCENA 3D (Manteniendo el ajuste de altura móvil) */}
       <div 
         className="relative flex justify-center items-center" 
         style={{ 
@@ -77,9 +73,9 @@ export function Marcas({ brands }: { brands: string[] }) {
               <div
                 key={i}
                 className="absolute left-1/2 top-1/2 flex items-center justify-center
-                           tech-glass text-cyan-500
-                           font-orbitron font-bold shadow-[0_0_15px_rgba(0,242,255,0.1)]
-                           backface-visible transition-all hover:bg-cyan-500/10"
+                           tech-glass text-accent
+                           font-headline font-bold shadow-[0_0_15px_theme(colors.accent/0.1)]
+                           backface-visible transition-all hover:bg-accent/10"
                 style={{
                   width: isMobile ? "115px" : "185px", 
                   height: isMobile ? "45px" : "78px",

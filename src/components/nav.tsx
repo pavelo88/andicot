@@ -44,14 +44,12 @@ export function Nav() {
   }
 
   // COLORES DINÁMICOS
-  const textColorClass = isLightMode ? "text-black" : "text-white"
-  // Aquí está la magia: Si es claro, fondo blanco. Si es oscuro, fondo negro.
-  const mobileBgClass = isLightMode ? "bg-white/95" : "bg-black/95"
+  const textColorClass = isLightMode ? "text-primary" : "text-foreground"
+  const mobileBgClass = isLightMode ? "bg-background/95" : "bg-background/95"
   
-  // Hamburguesa: Si el menú está abierto, Cyan. Si no, depende del modo.
   const hamburgerColor = isOpen 
-    ? "text-cyan-400" 
-    : (isLightMode ? "text-black" : "text-white")
+    ? "text-accent" 
+    : (isLightMode ? "text-primary" : "text-foreground")
 
   return (
     <>
@@ -59,7 +57,7 @@ export function Nav() {
         className={`
           fixed top-0 w-full z-[100] transition-all duration-500 border-b
           ${isScrolled 
-            ? (isLightMode ? 'bg-white/80 border-gray-200 shadow-md' : 'bg-black/80 border-cyan-500/30 shadow-[0_0_20px_rgba(0,242,255,0.1)]') 
+            ? (isLightMode ? 'bg-background/80 border-border shadow-md' : 'bg-background/80 border-accent/30 shadow-[0_0_20px_theme(colors.accent/0.1)]') 
             : 'bg-transparent border-transparent py-6'
           }
           ${isScrolled ? 'backdrop-blur-md py-3' : ''}
@@ -76,18 +74,18 @@ export function Nav() {
             <div className={`
               w-10 h-10 border-2 rotate-45 flex items-center justify-center transition-all duration-300
               ${isScrolled 
-                ? (isLightMode ? 'border-black bg-black/5' : 'border-cyan-500 bg-cyan-500/10') 
-                : 'border-cyan-500 bg-transparent' // En Hero siempre Cyan
+                ? (isLightMode ? 'border-primary bg-primary/5' : 'border-accent bg-accent/10') 
+                : 'border-accent bg-transparent' // En Hero siempre Accent
               }
-              group-hover:rotate-90 group-hover:bg-cyan-500 group-hover:border-cyan-400
+              group-hover:rotate-90 group-hover:bg-accent group-hover:border-accent
             `}>
               <span className={`
                 rotate-[-45deg] font-black text-sm tracking-tighter transition-colors
                 ${isScrolled 
-                    ? (isLightMode ? 'text-black' : 'text-cyan-400') 
-                    : 'text-cyan-400' // En Hero siempre Cyan
+                    ? (isLightMode ? 'text-primary' : 'text-accent') 
+                    : 'text-accent' // En Hero siempre Accent
                 }
-                group-hover:text-black
+                group-hover:text-accent-foreground
               `}>
                 A
               </span>
@@ -96,9 +94,9 @@ export function Nav() {
             {/* Texto ANDICOT */}
             <div className="flex flex-col">
               <span className={`
-                text-xl font-black tracking-tighter italic uppercase transition-colors leading-none
-                ${isScrolled ? textColorClass : 'text-white drop-shadow-md'}
-                group-hover:text-cyan-400
+                text-xl font-black tracking-tighter uppercase transition-colors leading-none font-headline
+                ${isScrolled ? textColorClass : 'text-foreground drop-shadow-md'}
+                group-hover:text-accent
               `}>
                 ANDICOT
               </span>
@@ -107,7 +105,7 @@ export function Nav() {
           
           {/* === MENÚ DE ESCRITORIO === */}
           <div className="hidden md:flex items-center gap-8">
-            <div className={`flex gap-8 text-[11px] font-mono uppercase tracking-widest font-bold ${isLightMode && isScrolled ? 'text-gray-800' : 'text-gray-400'}`}>
+            <div className={`flex gap-8 text-[11px] font-code uppercase tracking-widest font-bold ${isLightMode && isScrolled ? 'text-muted-foreground' : 'text-muted-foreground'}`}>
               <NavButton label="Servicios" onClick={() => scrollToSection('#servicios')} />
               <NavButton label="Cotizador" onClick={() => scrollToSection('#cotizador')} />
               <NavButton label="Contacto" onClick={() => scrollToSection('#contacto')} />
@@ -121,7 +119,7 @@ export function Nav() {
                 p-2 rounded-full transition-all border
                 ${isLightMode 
                     ? "text-orange-500 border-orange-500/30 hover:bg-orange-100" 
-                    : "text-cyan-500 border-cyan-500/30 hover:bg-cyan-500/10 hover:shadow-[0_0_15px_rgba(0,242,255,0.6)]"
+                    : "text-accent border-accent/30 hover:bg-accent/10 hover:shadow-[0_0_15px_theme(colors.accent/0.6)]"
                 }
               `}
             >
@@ -133,7 +131,7 @@ export function Nav() {
           <div className="flex items-center gap-4 md:hidden">
             <button 
               onClick={toggleTheme} 
-              className={isLightMode ? "text-orange-500" : "text-cyan-500"}
+              className={isLightMode ? "text-orange-500" : "text-accent"}
             >
               {isLightMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
@@ -150,23 +148,21 @@ export function Nav() {
 
       {/* === MENÚ MÓVIL CORREGIDO === */}
       {isOpen && (
-        // AQUÍ USAMOS LA VARIABLE mobileBgClass PARA EL FONDO BLANCO/NEGRO
         <div className={`fixed inset-0 z-[90] ${mobileBgClass} backdrop-blur-xl flex flex-col items-center justify-center gap-10 md:hidden animate-in fade-in zoom-in-95 duration-200`}>
           
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50"></div>
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent to-transparent opacity-50"></div>
 
           <div className="flex flex-col gap-8 text-center">
-            {/* Pasamos isLight para que el botón se ponga negro si es necesario */}
             <MobileButton label="Catálogo de Servicios" onClick={() => scrollToSection('#servicios')} icon={<Laptop2 />} isLight={isLightMode} />
             <MobileButton label="Cotizador Online" onClick={() => scrollToSection('#cotizador')} icon={<Calculator />} isLight={isLightMode} />
             <MobileButton label="Contacto y Soporte" onClick={() => scrollToSection('#contacto')} icon={<MessageSquare />} isLight={isLightMode} />
           </div>
 
           <div className="absolute bottom-12 text-center">
-             <p className={`text-[10px] font-mono tracking-widest uppercase mb-2 ${isLightMode ? 'text-gray-500' : 'text-cyan-900'}`}>
+             <p className={`text-[10px] font-code tracking-widest uppercase mb-2 ${isLightMode ? 'text-muted-foreground' : 'text-secondary'}`}>
                  System Status: Online
              </p>
-             <div className="w-12 h-1 bg-cyan-500/50 mx-auto rounded-full"></div>
+             <div className="w-12 h-1 bg-accent/50 mx-auto rounded-full"></div>
           </div>
         </div>
       )}
@@ -177,27 +173,27 @@ export function Nav() {
 // Subcomponente Botón Escritorio
 function NavButton({ label, onClick }: { label: string, onClick: () => void }) {
     return (
-        <button onClick={onClick} className="relative group overflow-hidden py-1 hover:text-cyan-500 transition-colors">
+        <button onClick={onClick} className="relative group overflow-hidden py-1 hover:text-accent transition-colors">
             {label}
-            <span className="absolute bottom-0 left-0 w-full h-[2px] bg-cyan-500 -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></span>
+            <span className="absolute bottom-0 left-0 w-full h-[2px] bg-accent -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></span>
         </button>
     )
 }
 
-// Subcomponente Botón Móvil (Ahora soporta modo claro)
+// Subcomponente Botón Móvil
 function MobileButton({ label, onClick, icon, isLight }: { label: string, onClick: () => void, icon: any, isLight?: boolean }) {
     return (
         <button 
             onClick={onClick} 
             className={`
-                flex items-center gap-4 text-xl font-orbitron tracking-widest active:scale-95 transition-all p-4 border rounded-xl w-[280px] justify-center
+                flex items-center gap-4 text-xl font-headline tracking-widest active:scale-95 transition-all p-4 border rounded-xl w-[280px] justify-center
                 ${isLight 
-                    ? "text-black border-gray-200 hover:bg-gray-100 hover:text-cyan-600" // Estilo Claro
-                    : "text-white border-transparent hover:border-cyan-500/20 hover:bg-white/5 hover:text-cyan-400" // Estilo Oscuro
+                    ? "text-primary border-border hover:bg-secondary hover:text-accent"
+                    : "text-foreground border-transparent hover:border-accent/20 hover:bg-foreground/5 hover:text-accent"
                 }
             `}
         >
-            <div className="text-cyan-500 opacity-70">
+            <div className="text-accent opacity-70">
                 {icon}
             </div>
             {label}

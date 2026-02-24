@@ -28,9 +28,9 @@ export function BrainBg() {
       const mainGroup = new THREE.Group()
       scene.add(mainGroup)
 
-      // --- 1. Definir colores para los temas (Aquí puedes "monear" el color) ---
-      const darkColor = new THREE.Color(0x00c8ff); // <-- Un cian más azulado
-      const lightColor = new THREE.Color(0x00c8ff); // Un cian más oscuro para el modo claro
+      // --- 1. Definir colores para los temas ---
+      const darkColor = new THREE.Color(0xA4C851); // Verde Lima
+      const lightColor = new THREE.Color(0xA4C851); // Verde Lima
 
       // --- 2. EL NÚCLEO (Esfera) ---
       const coreGeo = new THREE.IcosahedronGeometry(11, 1) 
@@ -44,15 +44,11 @@ export function BrainBg() {
       mainGroup.add(coreLines)
 
       // --- 3. LA ATMÓSFERA (Puntos) ---
-      // --- AQUÍ PUEDES "MONEAR" LA CANTIDAD DE PUNTOS ---
-      // Simplemente cambia el número de abajo. Ej: 50, 100, etc.
       const particleCount = 4000
       const particlesGeo = new THREE.BufferGeometry()
       const posArray = new Float32Array(particleCount * 3)
       
       for(let i = 0; i < particleCount * 3; i++) {
-        // El '30' de al final controla qué tan lejos se esparcen los puntos.
-        // Un número más grande los aleja más del centro.
         posArray[i] = (Math.random() - 0.5) * 120 
       }
       
@@ -89,7 +85,6 @@ export function BrainBg() {
 
       // --- 5. Lógica de Tamaño (PC/Móvil) ---
       const updateCameraPosition = () => {
-        // En PC, la cámara está en 25 (más cerca). En móvil, en 40 (más lejos).
         camera.position.z = window.innerWidth < 768 ? 40 : 25;
       }
       

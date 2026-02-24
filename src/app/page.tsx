@@ -26,34 +26,34 @@ export default function Home() {
   // 4. Pantalla de carga (Mientras conecta con el satélite)
   if (loading) {
     return (
-      <div className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center p-6 text-center">
+      <div className="fixed inset-0 z-[9999] bg-background flex flex-col items-center justify-center p-6 text-center">
         
         <div className="relative mb-8">
-            <div className="absolute inset-0 bg-cyan-500/20 blur-xl rounded-full animate-pulse"></div>
+            <div className="absolute inset-0 bg-accent/20 blur-xl rounded-full animate-pulse"></div>
             
             <Image 
               src={logoImg}    // <--- Usamos la variable importada (sin comillas)
               alt="Logo Andicot" 
               priority         // <--- Carga instantánea (elimina el parpadeo)
-              className="w-24 h-auto relative z-10 drop-shadow-[0_0_10px_rgba(0,242,255,0.8)] animate-pulse object-contain"
+              className="w-24 h-auto relative z-10 drop-shadow-[0_0_10px_theme(colors.accent/0.8)] animate-pulse object-contain"
             />
         </div>
 
         {/* TÍTULO DE BIENVENIDA */}
-        <h1 className="text-2xl md:text-4xl font-black text-white font-orbitron tracking-widest uppercase mb-4">
+        <h1 className="text-2xl md:text-4xl font-black text-foreground font-headline tracking-widest uppercase mb-4">
           BIENVENIDO A ANDICOT
         </h1>
 
         {/* DESCRIPCIÓN DE LA EMPRESA */}
-        <p className="text-cyan-500 font-mono text-sm md:text-base max-w-xl leading-relaxed mx-auto">
+        <p className="text-accent font-code text-sm md:text-base max-w-xl leading-relaxed mx-auto">
           Expertos en Infraestructura, Cableado Estructurado y Soluciones Tecnológicas de Alta Gama.
         </p>
 
         {/* INDICADOR DE CARGA INFERIOR */}
         <div className="mt-12 flex flex-col items-center gap-3">
             {/* Spinner simple */}
-            <div className="w-6 h-6 border-2 border-cyan-900 border-t-cyan-500 rounded-full animate-spin"></div>
-            <span className="text-[10px] text-gray-600 font-mono tracking-[0.2em] uppercase animate-pulse">
+            <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+            <span className="text-[10px] text-muted-foreground font-code tracking-[0.2em] uppercase animate-pulse">
               Sincronizando Sistema...
             </span>
         </div>
@@ -90,7 +90,7 @@ export default function Home() {
 
   // 5. Si ya cargó, mostramos la web completa
   return (
-    <div className="relative z-10 text-white selection:bg-cyan-500/30">
+    <div className="relative z-10 text-foreground selection:bg-accent/30">
       <Nav />
       
       <main>
@@ -105,7 +105,6 @@ export default function Home() {
         <Marcas brands={data.marcas} />
         
         {/* SERVICIOS: Recibe el ID resaltado y la función de click */}
-        {/* NOTA: Tu componente Servicios necesitará una pequeña actualización para leer 'highlightedId' */}
         <Servicios 
           services={services}
           highlightedId={highlightedService}
