@@ -33,6 +33,7 @@ interface ContactoProps {
 export function Contacto({ info, redes, garantia }: ContactoProps) {
     const [name, setName] = useState("")
     const [email, setEmail] = useState("")
+    const [phone, setPhone] = useState("")
     const [message, setMessage] = useState("")
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
 
@@ -62,14 +63,15 @@ export function Contacto({ info, redes, garantia }: ContactoProps) {
             await addDoc(collection(db, "contact_messages"), {
                 name,
                 email,
+                phone,
                 message,
                 createdAt: serverTimestamp(),
                 status: 'pendiente', // Estado inicial para el CRM
-                ia_note: 'Análisis pendiente...' // Nota inicial para la IA
             });
             setStatus('success');
             setName("");
             setEmail("");
+            setPhone("");
             setMessage("");
         } catch (error) {
             console.error("Error al enviar mensaje:", error);
@@ -110,18 +112,25 @@ export function Contacto({ info, redes, garantia }: ContactoProps) {
                             onChange={(e) => setName(e.target.value)}
                             className="w-full bg-background/40 border border-border p-3 text-sm text-foreground rounded outline-none focus:border-accent/60 focus:bg-background/60 transition-all font-code tracking-wider"
                         />
-                        <input
+                         <input
                             type="email"
                             placeholder="SU EMAIL DE CONTACTO..."
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="w-full bg-background/40 border border-border p-3 text-sm text-foreground rounded outline-none focus:border-accent/60 focus:bg-background/60 transition-all font-code tracking-wider"
                         />
+                        <input
+                            type="tel"
+                            placeholder="SU TELÉFONO (OPCIONAL)..."
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                            className="w-full bg-background/40 border border-border p-3 text-sm text-foreground rounded outline-none focus:border-accent/60 focus:bg-background/60 transition-all font-code tracking-wider"
+                        />
                         <textarea
                             placeholder="DETALLE SU NECESIDAD O PROYECTO..."
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
-                            rows={6}
+                            rows={5}
                             className="w-full bg-background/40 border border-border p-3 text-sm text-muted-foreground rounded outline-none focus:border-accent/60 focus:bg-background/60 transition-all resize-none leading-relaxed flex-1"
                         />
                         <div className="grid grid-cols-2 gap-4 mt-auto pt-2">
@@ -137,27 +146,31 @@ export function Contacto({ info, redes, garantia }: ContactoProps) {
                                         <DialogTitle className="font-headline text-accent text-2xl flex items-center gap-3">
                                             <FileText/> {garantia.titulo}
                                         </DialogTitle>
+                                        <DialogDescription>
+                                            Resumen de los términos y condiciones más importantes.
+                                        </DialogDescription>
                                     </DialogHeader>
-                                    <ScrollArea className="h-72 w-full pr-4">
-                                        <div className="text-muted-foreground text-sm space-y-4 text-left font-code pr-6">
-                                            <p>Los dispositivos y equipos comercializados cuentan con un año de garantía contra defectos de fábrica, de acuerdo con los siguientes términos y condiciones.</p>
-                                            <p>El procedimiento para aplicar a garantía se realiza en la oficina ubicada en la calle Jose Tamayo N24-33 y Baquerizo Moreno. Complejo corporativo Torres del Castillo – Torre 2 – oficina 903, previa coordinación, en horario laborable de lunes a viernes de 09h00 hasta 17h00.</p>
-                                            <p>La recepción de equipos se realiza una vez se haya comunicado el desperfecto previamente por correo electrónico (ventas@andicot.com) o WhatsApp (0984467411), se requiere detalle especificando el problema del producto y video del inconveniente.</p>
-                                            <p>El trámite de garantía se realiza directamente con el cliente, no con terceros, se requiere de la factura y accesorios, sin adulteración del serial o apertura del equipo por terceros, que el equipo no presente golpes o quemaduras, variaciones de voltaje, o evidencias de mala manipulación y uso.</p>
-                                            <p>El tiempo de respuesta en el diagnóstico para validar la aplicación de garantía es de aproximadamente 48 a 72 horas en horario laborable, a partir del ingreso del equipo en soporte técnico.</p>
-                                            <p>En caso de que el producto no se pueda realizar reposición por falta de stock o se encuentre discontinuado, se emitirá una nota de crédito por el valor proporcional del tiempo restante de la garantía.</p>
-                                            <p>Cuando se hace efectivo un cambio por garantía, este producto prosigue con el tiempo restante de garantía con respecto a la factura de venta.</p>
-                                            <p>No nos responsabilizamos de productos que el cliente no reclame dentro de los 30 días después del ingreso a garantía.</p>
-                                            <p>En caso de que la compra haya sido enviada por courier a provincia por petición del cliente, éste debe cubrir todos los gastos de logística, no nos responsabilizamos por valores de envío adicionales.</p>
-                                            <p>Los productos sin garantía son los referidos a cables, accesorios y/o productos que no dispongan de número serial, por lo que se entregan probados, comprobando su funcionamiento.</p>
-                                            <p>Cuando el producto ingresa a revisión por garantía y se comprueba su buen estado, esta revisión y diagnóstico causará un costo de servicios técnicos de USD $10 mas impuestos; para evitar tal situación, se recomienda informar por correo o WhatsApp para realizar pruebas previas.</p>
-                                            <h5 className="font-bold text-foreground pt-4">Toda garantía se invalida en forma automática en los siguientes casos:</h5>
-                                            <ul className="list-disc pl-5 space-y-2">
-                                                <li>Si el sello de seguridad o la etiqueta en la que consta el número de serie muestra signos de haber sido movido o alterado.</li>
-                                                <li>Si los equipos o partes se encuentran golpeados, rotos o con signos de maltratos o humedad.</li>
-                                                <li>Si algún componente electrónico está quemado o se verifica que ha sido manipulado.</li>
-                                                <li>Si el equipo ha sido abierto y manipulado internamente.</li>
+                                    <ScrollArea className="h-80 w-full pr-4">
+                                        <div className="text-muted-foreground text-sm space-y-4 text-left font-body pr-6">
+                                            
+                                            <h5 className="font-bold text-foreground">Puntos Clave de la Garantía</h5>
+                                            <ul className="list-disc pl-5 space-y-3">
+                                                <li><strong>Vigencia:</strong> 1 año contra defectos de fábrica.</li>
+                                                <li><strong>Proceso:</strong> Es indispensable coordinar por email o WhatsApp antes de llevar el equipo a nuestras oficinas para el diagnóstico.</li>
+                                                <li><strong>Requisitos:</strong> Presentar factura, accesorios originales y el equipo sin alteraciones, golpes, quemaduras, humedad o manipulación interna.</li>
+                                                <li><strong>Diagnóstico:</strong> El tiempo de respuesta es de 48 a 72 horas laborables.</li>
+                                                <li><strong>Costo por Revisión:</strong> Si tras el diagnóstico se determina que el equipo funciona correctamente, la revisión tendrá un costo de $10 + IVA.</li>
+                                                <li><strong>Exclusiones:</strong> Cables, accesorios y productos sin número de serie se entregan probados y no están cubiertos por la garantía.</li>
                                             </ul>
+
+                                            <h5 className="font-bold text-foreground pt-4">Causas de Invalidación Automática</h5>
+                                            <p>
+                                                La garantía se anulará de forma inmediata si el equipo ha sido abierto, manipulado por personal no autorizado, o si presenta golpes, quemaduras, humedad o alteración en los sellos de seguridad.
+                                            </p>
+
+                                            <p className="text-xs pt-4 border-t border-border mt-4 text-center">
+                                                Este es un resumen. Los términos completos aplican según la factura de compra.
+                                            </p>
                                         </div>
                                     </ScrollArea>
                                     <DialogFooter>
@@ -238,3 +251,5 @@ function SocialIcon({ href, icon }: { href: string, icon: React.ReactNode }) {
         </a>
     )
 }
+
+    
