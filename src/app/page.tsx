@@ -35,7 +35,7 @@ export default function Home() {
               src={logoImg}    // <--- Usamos la variable importada (sin comillas)
               alt="Logo Andicot" 
               priority         // <--- Carga instantánea (elimina el parpadeo)
-              className="w-24 h-auto relative z-10 drop-shadow-[0_0_10px_theme(colors.accent/0.8)] animate-pulse object-contain"
+              className="w-96 h-auto relative z-10 drop-shadow-[0_0_10px_theme(colors.accent/0.8)] animate-pulse object-contain"
             />
         </div>
 

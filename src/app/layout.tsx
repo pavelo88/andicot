@@ -5,7 +5,7 @@ import { BrainBg } from "@/components/brain-bg";
 
 // CONFIGURACIÓN DE VISTA
 export const viewport: Viewport = {
-  themeColor: "#000000",
+  themeColor: "#ffffff",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -96,7 +96,7 @@ export default function RootLayout({
         />
       </head>
       
-      <body className="antialiased overflow-x-hidden selection:bg-cyan-500/30 selection:text-cyan-100">
+      <body className="light-mode antialiased overflow-x-hidden selection:bg-accent/30 selection:text-accent-foreground">
         {/* FONDO ANIMADO "CEREBRO" */}
         <BrainBg />
         

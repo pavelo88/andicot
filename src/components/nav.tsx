@@ -5,7 +5,7 @@ import { Sun, Menu, X, Moon, Laptop2, MessageSquare, Calculator } from "lucide-r
 
 export function Nav() {
   const [isOpen, setIsOpen] = useState(false)
-  const [isLightMode, setIsLightMode] = useState(false)
+  const [isLightMode, setIsLightMode] = useState(true)
   const [isScrolled, setIsScrolled] = useState(false)
 
   // 1. DETECTOR DE SCROLL
@@ -14,6 +14,7 @@ export function Nav() {
       setIsScrolled(window.scrollY > 50)
     }
     window.addEventListener("scroll", handleScroll)
+    handleScroll() // Set initial state
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
