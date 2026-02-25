@@ -33,6 +33,7 @@ interface ContactoProps {
 export function Contacto({ info, redes, garantia }: ContactoProps) {
     const [name, setName] = useState("")
     const [email, setEmail] = useState("")
+    const [phone, setPhone] = useState("")
     const [message, setMessage] = useState("")
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
 
@@ -62,14 +63,15 @@ export function Contacto({ info, redes, garantia }: ContactoProps) {
             await addDoc(collection(db, "contact_messages"), {
                 name,
                 email,
+                phone,
                 message,
                 createdAt: serverTimestamp(),
                 status: 'pendiente', // Estado inicial para el CRM
-                ia_note: 'Análisis pendiente...' // Nota inicial para la IA
             });
             setStatus('success');
             setName("");
             setEmail("");
+            setPhone("");
             setMessage("");
         } catch (error) {
             console.error("Error al enviar mensaje:", error);
@@ -88,18 +90,18 @@ export function Contacto({ info, redes, garantia }: ContactoProps) {
         <section id="contacto" className="relative z-10 py-20 px-6 max-w-7xl mx-auto scroll-mt-24">
             
             <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-5xl font-black italic uppercase text-white font-orbitron">
-                    Canal de <span className="text-cyan-500">Comunicación</span>
+                <h2 className="text-3xl md:text-5xl font-black uppercase text-foreground font-headline">
+                    Canal de <span className="text-accent">Comunicación</span>
                 </h2>
-                <div className="h-1 w-20 bg-cyan-500 mt-4 mx-auto shadow-[0_0_20px_rgba(0,242,255,0.6)]"></div>
+                <div className="h-1 w-20 bg-accent mt-4 mx-auto shadow-[0_0_20px_theme(colors.accent/0.6)]"></div>
             </div>
 
             <div className="grid lg:grid-cols-2 gap-10 items-stretch">
 
                 {/* --- COLUMNA 1: FORMULARIO --- */}
-                <div className="tech-glass p-8 border-cyan-500/20 rounded-xl flex flex-col h-full">
-                    <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2 font-orbitron">
-                        <Mail className="text-cyan-500" /> ENVIAR REQUERIMIENTO
+                <div className="tech-glass p-8 border-accent/20 rounded-xl flex flex-col h-full">
+                    <h3 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2 font-headline">
+                        <Mail className="text-accent" /> ENVIAR REQUERIMIENTO
                     </h3>
 
                     <form onSubmit={handleSubmit} className="space-y-5 flex-1 flex flex-col">
@@ -108,44 +110,72 @@ export function Contacto({ info, redes, garantia }: ContactoProps) {
                             placeholder="SU NOMBRE COMPLETO..."
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="w-full bg-black/40 border border-white/10 p-3 text-sm text-white rounded outline-none focus:border-cyan-500/60 focus:bg-black/60 transition-all font-mono tracking-wider"
+                            className="w-full bg-background/40 border border-border p-3 text-sm text-foreground rounded outline-none focus:border-accent/60 focus:bg-background/60 transition-all font-code tracking-wider"
                         />
-                        <input
+                         <input
                             type="email"
                             placeholder="SU EMAIL DE CONTACTO..."
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full bg-black/40 border border-white/10 p-3 text-sm text-white rounded outline-none focus:border-cyan-500/60 focus:bg-black/60 transition-all font-mono tracking-wider"
+                            className="w-full bg-background/40 border border-border p-3 text-sm text-foreground rounded outline-none focus:border-accent/60 focus:bg-background/60 transition-all font-code tracking-wider"
+                        />
+                        <input
+                            type="tel"
+                            placeholder="SU TELÉFONO (OPCIONAL)..."
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                            className="w-full bg-background/40 border border-border p-3 text-sm text-foreground rounded outline-none focus:border-accent/60 focus:bg-background/60 transition-all font-code tracking-wider"
                         />
                         <textarea
                             placeholder="DETALLE SU NECESIDAD O PROYECTO..."
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
-                            rows={6}
-                            className="w-full bg-black/40 border border-white/10 p-3 text-sm text-gray-300 rounded outline-none focus:border-cyan-500/60 focus:bg-black/60 transition-all resize-none leading-relaxed flex-1"
+                            rows={5}
+                            className="w-full bg-background/40 border border-border p-3 text-sm text-muted-foreground rounded outline-none focus:border-accent/60 focus:bg-background/60 transition-all resize-none leading-relaxed flex-1"
                         />
                         <div className="grid grid-cols-2 gap-4 mt-auto pt-2">
                             <Dialog>
                                 <DialogTrigger asChild>
-                                    <Button variant="outline" className="w-full bg-transparent border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300">
+                                    <Button variant="outline" className="w-full bg-transparent border-accent/30 text-accent hover:bg-accent/10 hover:text-accent">
                                         <Shield className="w-4 h-4 mr-2" />
                                         {garantia.btn}
                                     </Button>
                                 </DialogTrigger>
-                                <DialogContent className="tech-glass max-w-2xl text-white border-cyan-500/30">
+                                <DialogContent className="tech-glass max-w-2xl text-foreground border-accent/30">
                                     <DialogHeader>
-                                        <DialogTitle className="font-orbitron text-cyan-400 text-2xl flex items-center gap-3">
+                                        <DialogTitle className="font-headline text-accent text-2xl flex items-center gap-3">
                                             <FileText/> {garantia.titulo}
                                         </DialogTitle>
-                                    </DialogHeader>
-                                    <ScrollArea className="h-72 w-full pr-4">
-                                        <DialogDescription className="text-gray-300 text-sm space-y-4 text-left font-mono">
-                                          {/* Contenido de la garantía... */}
+                                        <DialogDescription>
+                                            Resumen de los términos y condiciones más importantes.
                                         </DialogDescription>
+                                    </DialogHeader>
+                                    <ScrollArea className="h-80 w-full pr-4">
+                                        <div className="text-muted-foreground text-sm space-y-4 text-left font-body pr-6">
+                                            
+                                            <h5 className="font-bold text-foreground">Puntos Clave de la Garantía</h5>
+                                            <ul className="list-disc pl-5 space-y-3">
+                                                <li><strong>Vigencia:</strong> 1 año contra defectos de fábrica.</li>
+                                                <li><strong>Proceso:</strong> Es indispensable coordinar por email o WhatsApp antes de llevar el equipo a nuestras oficinas para el diagnóstico.</li>
+                                                <li><strong>Requisitos:</strong> Presentar factura, accesorios originales y el equipo sin alteraciones, golpes, quemaduras, humedad o manipulación interna.</li>
+                                                <li><strong>Diagnóstico:</strong> El tiempo de respuesta es de 48 a 72 horas laborables.</li>
+                                                <li><strong>Costo por Revisión:</strong> Si tras el diagnóstico se determina que el equipo funciona correctamente, la revisión tendrá un costo de $10 + IVA.</li>
+                                                <li><strong>Exclusiones:</strong> Cables, accesorios y productos sin número de serie se entregan probados y no están cubiertos por la garantía.</li>
+                                            </ul>
+
+                                            <h5 className="font-bold text-foreground pt-4">Causas de Invalidación Automática</h5>
+                                            <p>
+                                                La garantía se anulará de forma inmediata si el equipo ha sido abierto, manipulado por personal no autorizado, o si presenta golpes, quemaduras, humedad o alteración en los sellos de seguridad.
+                                            </p>
+
+                                            <p className="text-xs pt-4 border-t border-border mt-4 text-center">
+                                                Este es un resumen. Los términos completos aplican según la factura de compra.
+                                            </p>
+                                        </div>
                                     </ScrollArea>
                                     <DialogFooter>
                                         <DialogClose asChild>
-                                            <Button type="button" className="w-full bg-cyan-800/50 hover:bg-cyan-700/50 text-cyan-200">
+                                            <Button type="button" variant="secondary">
                                                 Cerrar
                                             </Button>
                                         </DialogClose>
@@ -156,7 +186,7 @@ export function Contacto({ info, redes, garantia }: ContactoProps) {
                             <button
                                 type="submit"
                                 disabled={status === 'loading'}
-                                className="w-full bg-cyan-500 text-black font-black uppercase py-3 rounded tracking-widest transition-all flex items-center justify-center gap-3 disabled:opacity-50 hover:brightness-110 active:scale-[0.98]"
+                                className="w-full bg-accent text-accent-foreground font-black uppercase py-3 rounded tracking-widest transition-all flex items-center justify-center gap-3 disabled:opacity-50 hover:brightness-110 active:scale-[0.98]"
                             >
                                 {status === 'loading' && <Loader className="w-5 h-5 animate-spin" />}
                                 {status === 'success' && <CheckCircle className="w-5 h-5" />}
@@ -172,12 +202,12 @@ export function Contacto({ info, redes, garantia }: ContactoProps) {
                 </div>
 
                 {/* --- COLUMNA 2: INFO Y MAPA (ACTUALIZADA) --- */}
-                <div className="tech-glass rounded-xl p-0 overflow-hidden flex flex-col h-full border-cyan-500/20 bg-black/40">
-                    <div className="p-6 text-center border-b border-cyan-500/20 bg-black/20">
+                <div className="tech-glass rounded-xl p-0 overflow-hidden flex flex-col h-full border-accent/20 bg-card/40">
+                    <div className="p-6 text-center border-b border-accent/20 bg-background/20">
                         <div className="flex flex-col md:flex-row justify-around items-center gap-6">
                             <div>
-                                <span className="font-mono text-[9px] uppercase tracking-widest text-gray-500 block mb-1">OFICINA CENTRAL</span>
-                                <a href={`tel:${info.tel.replace(/\s/g, '')}`} className="text-xl md:text-2xl font-black text-white hover:text-cyan-400 transition-colors font-orbitron">
+                                <span className="font-code text-[9px] uppercase tracking-widest text-muted-foreground block mb-1">OFICINA CENTRAL</span>
+                                <a href={`tel:${info.tel.replace(/\s/g, '')}`} className="text-xl md:text-2xl font-black text-foreground hover:text-accent transition-colors font-headline">
                                 {info.tel}
                                 </a>
                             </div>
@@ -189,7 +219,7 @@ export function Contacto({ info, redes, garantia }: ContactoProps) {
                         </div>
                     </div>
 
-                    <div className="flex-1 w-full min-h-[300px] relative grayscale invert contrast-125 brightness-90 border-t border-cyan-500/20">
+                    <div className="flex-1 w-full min-h-[300px] relative grayscale invert contrast-125 brightness-90 border-t border-accent/20">
                     <iframe 
                         src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3989.817298131365!2d-78.48952862590858!3d-0.185623835431189!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x91d59a7f3b405c77%3A0x6b84025c56b7c524!2sTorres%20del%20Castillo!5e0!3m2!1ses-419!2sec!4v1715981016839!5m2!1ses-419!2sec"
                         width="100%" 
@@ -202,8 +232,8 @@ export function Contacto({ info, redes, garantia }: ContactoProps) {
                     <div className="absolute inset-0 bg-transparent pointer-events-none md:pointer-events-auto"></div>
                     </div>
                     
-                    <div className="p-3 bg-black/40 text-center border-t border-cyan-500/20">
-                        <p className="text-[10px] font-mono italic text-gray-400">
+                    <div className="p-3 bg-background/40 text-center border-t border-accent/20">
+                        <p className="text-[10px] font-code text-muted-foreground">
                         {info.direccion}
                         </p>
                     </div>
@@ -216,8 +246,10 @@ export function Contacto({ info, redes, garantia }: ContactoProps) {
 
 function SocialIcon({ href, icon }: { href: string, icon: React.ReactNode }) {
     return (
-        <a href={href} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-cyan-400 hover:scale-110 transition-all p-2 bg-white/5 rounded-full hover:bg-white/10 border border-transparent hover:border-cyan-500/30">
+        <a href={href} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-accent hover:scale-110 transition-all p-2 bg-foreground/5 rounded-full hover:bg-foreground/10 border border-transparent hover:border-accent/30">
             {icon}
         </a>
     )
 }
+
+    
