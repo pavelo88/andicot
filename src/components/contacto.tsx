@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { useToast } from "@/hooks/use-toast"
 
 
 // --- INTERFACES ---
@@ -31,6 +32,7 @@ interface ContactoProps {
 // COMPONENTE DE CONTACTO
 // =========================================================
 export function Contacto({ info, redes, garantia }: ContactoProps) {
+    const { toast } = useToast()
     const [name, setName] = useState("")
     const [email, setEmail] = useState("")
     const [phone, setPhone] = useState("")
@@ -55,7 +57,11 @@ export function Contacto({ info, redes, garantia }: ContactoProps) {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!name || !email || !message) {
-            setStatus('error');
+            toast({
+                variant: "destructive",
+                title: "Información Incompleta",
+                description: "Por favor, complete todos los campos requeridos (nombre, email y mensaje).",
+            })
             return;
         }
         setStatus('loading');
@@ -153,24 +159,29 @@ export function Contacto({ info, redes, garantia }: ContactoProps) {
                                     <ScrollArea className="h-80 w-full pr-4">
                                         <div className="text-muted-foreground text-sm space-y-4 text-left font-body pr-6">
                                             
-                                            <h5 className="font-bold text-foreground">Puntos Clave de la Garantía</h5>
-                                            <ul className="list-disc pl-5 space-y-3">
-                                                <li><strong>Vigencia:</strong> 1 año contra defectos de fábrica.</li>
-                                                <li><strong>Proceso:</strong> Es indispensable coordinar por email o WhatsApp antes de llevar el equipo a nuestras oficinas para el diagnóstico.</li>
-                                                <li><strong>Requisitos:</strong> Presentar factura, accesorios originales y el equipo sin alteraciones, golpes, quemaduras, humedad o manipulación interna.</li>
-                                                <li><strong>Diagnóstico:</strong> El tiempo de respuesta es de 48 a 72 horas laborables.</li>
-                                                <li><strong>Costo por Revisión:</strong> Si tras el diagnóstico se determina que el equipo funciona correctamente, la revisión tendrá un costo de $10 + IVA.</li>
-                                                <li><strong>Exclusiones:</strong> Cables, accesorios y productos sin número de serie se entregan probados y no están cubiertos por la garantía.</li>
-                                            </ul>
+                                        <p>Los dispositivos y equipos comercializados cuentan con un año de garantía contra defectos de fábrica, de acuerdo con los siguientes términos y condiciones.</p>
 
-                                            <h5 className="font-bold text-foreground pt-4">Causas de Invalidación Automática</h5>
-                                            <p>
-                                                La garantía se anulará de forma inmediata si el equipo ha sido abierto, manipulado por personal no autorizado, o si presenta golpes, quemaduras, humedad o alteración en los sellos de seguridad.
-                                            </p>
+                                        <h5 className="font-bold text-foreground pt-4">Procedimiento de Garantía</h5>
+                                        <ul className="list-disc pl-5 space-y-3">
+                                            <li><strong>Coordinación Previa:</strong> Antes de acudir, comunique el desperfecto por email (ventas@andicot.com) o WhatsApp (0984467411), incluyendo detalles y videos del problema.</li>
+                                            <li><strong>Recepción:</strong> El trámite se realiza en nuestra oficina (Jose Tamayo N24-33, Torres del Castillo, T2, Of. 903) de lunes a viernes, de 09h00 a 17h00.</li>
+                                            <li><strong>Requisitos:</strong> Es indispensable presentar la factura y todos los accesorios originales. El trámite es personal con el cliente directo.</li>
+                                            <li><strong>Diagnóstico:</strong> El tiempo de respuesta es de 48 a 72 horas laborables.</li>
+                                        </ul>
 
-                                            <p className="text-xs pt-4 border-t border-border mt-4 text-center">
-                                                Este es un resumen. Los términos completos aplican según la factura de compra.
-                                            </p>
+                                        <h5 className="font-bold text-foreground pt-4">Condiciones y Exclusiones</h5>
+                                        <ul className="list-disc pl-5 space-y-3">
+                                            <li><strong>Reposición:</strong> Si un producto no tiene stock o está discontinuado, se emitirá una nota de crédito proporcional. El producto de recambio continúa con el tiempo de garantía original.</li>
+                                            <li><strong>Logística:</strong> Gastos de envío por courier a provincia son cubiertos por el cliente.</li>
+                                            <li><strong>Sin Garantía:</strong> Cables, accesorios y productos sin número de serie se entregan probados y no están cubiertos.</li>
+                                            <li><strong>Costo por Revisión:</strong> Si el equipo funciona correctamente, el diagnóstico tiene un costo de $10 + IVA. Se recomienda realizar pruebas previas por WhatsApp para evitar este cargo.</li>
+                                            <li><strong>Abandono:</strong> No nos responsabilizamos por equipos no reclamados después de 30 días.</li>
+                                        </ul>
+
+                                        <h5 className="font-bold text-foreground pt-4">Causas de Invalidación Automática</h5>
+                                        <p>
+                                            La garantía se anulará de forma inmediata si el equipo ha sido abierto, manipulado por personal no autorizado, o si presenta golpes, quemaduras, humedad, sobrecargas de voltaje o alteración en los sellos de seguridad y seriales.
+                                        </p>
                                         </div>
                                     </ScrollArea>
                                     <DialogFooter>

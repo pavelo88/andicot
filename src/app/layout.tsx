@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 // Importamos el fondo animado (El cerebro)
 import { BrainBg } from "@/components/brain-bg";
+import { Toaster } from "@/components/ui/toaster";
 
 // CONFIGURACIÓN DE VISTA
 export const viewport: Viewport = {
@@ -102,6 +103,7 @@ export default function RootLayout({
         
         {/* CONTENIDO DE LA PÁGINA */}
         {children}
+        <Toaster />
       </body>
     </html>
   );
