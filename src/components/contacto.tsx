@@ -96,8 +96,8 @@ export function Contacto({ info, redes, garantia }: ContactoProps) {
         <section id="contacto" className="relative z-10 py-20 px-6 max-w-7xl mx-auto scroll-mt-24">
             
             <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-5xl font-black uppercase text-foreground font-headline">
-                    Canal de <span className="text-accent">Comunicación</span>
+                <h2 className="text-3xl md:text-5xl font-black italic uppercase text-white font-orbitron">
+                    Canal de <span className="text-cyan-500">Comunicación</span>
                 </h2>
                 <div className="h-1 w-20 bg-accent mt-4 mx-auto shadow-[0_0_20px_theme(colors.accent/0.6)]"></div>
             </div>
