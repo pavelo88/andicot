@@ -2,10 +2,11 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 // Importamos el fondo animado (El cerebro)
 import { BrainBg } from "@/components/brain-bg";
+import { Toaster } from "@/components/ui/toaster";
 
 // CONFIGURACIÓN DE VISTA
 export const viewport: Viewport = {
-  themeColor: "#000000",
+  themeColor: "#ffffff",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -96,12 +97,13 @@ export default function RootLayout({
         />
       </head>
       
-      <body className="antialiased overflow-x-hidden selection:bg-cyan-500/30 selection:text-cyan-100">
+      <body className="light-mode antialiased overflow-x-hidden selection:bg-accent/30 selection:text-accent-foreground">
         {/* FONDO ANIMADO "CEREBRO" */}
         <BrainBg />
         
         {/* CONTENIDO DE LA PÁGINA */}
         {children}
+        <Toaster />
       </body>
     </html>
   );
