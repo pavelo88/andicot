@@ -6,6 +6,7 @@ import { db, storage } from "@/lib/firebase"
 import { doc, writeBatch } from "firebase/firestore" 
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { Save, Lock, Globe, Database, Upload, Tag, ShieldCheck, BarChart3, Award, DollarSign, Share2, LogOut } from "lucide-react"
+import { BlueprintBackground } from "@/components/imagenes"
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -17,7 +18,7 @@ export default function AdminPage() {
   const [servicesForm, setServicesForm] = useState<any[]>([])
   
   const [isSaving, setIsSaving] = useState(false)
-  const [saveStatus, setSaveStatus] = useState("")
+  const [saveStatus, setSaveStatus] = useState<"success" | "error" | "">("")
 
   useEffect(() => {
     if (!loading && data && services.length > 0) {
@@ -35,7 +36,9 @@ export default function AdminPage() {
 
       const mapped = services.map(s => ({
         ...s,
+        t: s.t || s.titulo || "",
         d: s.d || s.descripcion || "",
+        p: s.p || s.precio_base || 0,
         tags: s.tags || "",
         img: s.img || "",
         newFile: null,
@@ -71,40 +74,54 @@ export default function AdminPage() {
 
   const saveAllChanges = async () => {
     setIsSaving(true)
+    setSaveStatus("")
     try {
       const batch = writeBatch(db)
 
-      const updatedServices = await Promise.all(servicesForm.map(async (service) => {
-        let finalUrl = service.img
-        if (service.newFile) {
-          const storageRef = ref(storage, `servicios/${service.id}/${Date.now()}`)
-          await uploadBytes(storageRef, service.newFile)
-          finalUrl = await getDownloadURL(storageRef)
-        }
-        return { ...service, img: finalUrl }
-      }))
+      // 1. Handle services update
+      const finalServices = await Promise.all(servicesForm.map(async (service) => {
+          let imageUrl = service.img;
+          if (service.newFile) {
+              const storageRef = ref(storage, `servicios/${service.id}/${Date.now()}_${service.newFile.name}`);
+              await uploadBytes(storageRef, service.newFile);
+              imageUrl = await getDownloadURL(storageRef);
+          }
+          return {
+              id: service.id,
+              titulo: service.t || service.titulo,
+              descripcion: service.d || service.descripcion,
+              precio_base: Number(service.p || service.precio_base || 0),
+              tags: service.tags || "",
+              img: imageUrl,
+          };
+      }));
 
-      updatedServices.forEach(s => {
-        const { newFile, previewUrl, ...cleanData } = s
-        batch.update(doc(db, "servicios", s.id), cleanData)
-      })
+      finalServices.forEach(s => {
+          const { id, ...dataToSave } = s;
+          batch.update(doc(db, "servicios", id), dataToSave);
+      });
 
+      // 2. Handle general config update
       const finalConfig = { ...configForm }
-      
       if (finalConfig.marcasString) {
           finalConfig.marcas = finalConfig.marcasString.split(",").map((m: string) => m.trim()).filter(Boolean)
-          delete finalConfig.marcasString
       }
+      delete finalConfig.marcasString; // Clean up temp field
 
       batch.update(doc(db, "configuracion", "web_data"), finalConfig)
 
+      // 3. Commit all changes
       await batch.commit()
       setSaveStatus("success")
       setTimeout(() => setSaveStatus(""), 3000)
+
     } catch (e) {
-      console.error(e)
+      console.error("Error al guardar cambios:", e)
       setSaveStatus("error")
-    } finally { setIsSaving(false) }
+      setTimeout(() => setSaveStatus(""), 4000)
+    } finally { 
+      setIsSaving(false)
+    }
   }
 
   const handleLogin = (e: React.FormEvent) => {
@@ -163,12 +180,15 @@ export default function AdminPage() {
                 onClick={saveAllChanges} 
                 disabled={isSaving} 
                 className={`px-8 py-3 font-bold uppercase text-sm flex items-center gap-3 transition-all rounded-lg border ${
+                    isSaving ? "bg-amber-500 border-amber-400 text-white animate-pulse" :
                     saveStatus === "success" 
                     ? "bg-green-600 border-green-500 text-white shadow-[0_0_20px_rgba(34,197,94,0.4)]" 
+                    : saveStatus === "error"
+                    ? "bg-red-600 border-red-500 text-white"
                     : "bg-accent text-accent-foreground border-accent hover:shadow-[0_0_20px_theme(colors.accent/0.4)] hover:scale-105"
                 }`}
             >
-                {isSaving ? "GUARDANDO..." : saveStatus === "success" ? "GUARDADO EXITOSO" : "GUARDAR CAMBIOS"} 
+                {isSaving ? "GUARDANDO..." : saveStatus === "success" ? "GUARDADO" : saveStatus === "error" ? "ERROR" : "GUARDAR CAMBIOS"} 
                 <Save className="w-5 h-5" />
             </button>
         </div>
@@ -260,11 +280,16 @@ export default function AdminPage() {
                         </span>
 
                         <div className="relative aspect-video mb-5 bg-zinc-900 rounded-lg overflow-hidden border border-border group-hover:border-accent/30 transition-colors">
-                            <img src={s.previewUrl || s.img || "/placeholder.jpg"} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
+                            <img src={s.previewUrl || s.img || `https://placehold.co/600x400/242853/a4c851?text=SIN+IMAGEN`} alt={s.t || s.titulo} className="w-full h-full object-cover" />
+                            
+                            <div className="absolute inset-0 opacity-40 mix-blend-screen pointer-events-none">
+                                <BlueprintBackground type={s.t || s.titulo || ""} />
+                            </div>
+
                             <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 bg-background/70 transition-all duration-300">
                                 <Upload className="w-8 h-8 text-accent mb-2" />
                                 <span className="text-[10px] uppercase font-bold text-foreground tracking-widest">Cambiar Imagen</span>
-                                <input type="file" className="hidden" onChange={(e) => e.target.files?.[0] && handleImageFile(i, e.target.files[0])} />
+                                <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleImageFile(i, e.target.files[0])} />
                             </label>
                         </div>
 
