@@ -315,7 +315,7 @@ export default function AdminPage() {
         </div>
 
         <SectionCard title="Gestión de Aliados (Marcas)" icon={<Award />}>
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {configForm.marcas.map((marca: any, i: number) => (
                 <div key={i} className="flex items-center gap-4 bg-background/30 p-3 rounded-lg border border-border">
                   <div className="relative w-16 h-10 bg-background/50 rounded flex items-center justify-center overflow-hidden border border-border">
@@ -462,5 +462,3 @@ function Label({ text }: { text: string }) {
         <label className="text-[10px] text-muted-foreground font-bold uppercase mb-2 block tracking-widest">{text}</label>
     )
 }
-
-    
