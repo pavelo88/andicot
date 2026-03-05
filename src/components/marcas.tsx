@@ -5,7 +5,7 @@ import Image from "next/image"
 
 export function Marcas({ brands }: { brands: any[] }) {
   const [rotation, setRotation] = useState(0)
-  const [radius, setRadius] = useState(400) // Radio inicial PC
+  const [radius, setRadius] = useState(320) // Radio ajustado para PC
   const requestRef = useRef<number>()
 
   const defaultBrandNames = [
@@ -24,7 +24,8 @@ export function Marcas({ brands }: { brands: any[] }) {
 
   useEffect(() => {
     const handleResize = () => {
-      setRadius(window.innerWidth < 768 ? 165 : 400)
+      // Radio más pequeño en PC para juntar las etiquetas
+      setRadius(window.innerWidth < 768 ? 165 : 320) 
     }
 
     handleResize()
