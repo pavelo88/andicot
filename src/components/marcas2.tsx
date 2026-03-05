@@ -4,9 +4,9 @@ import { useEffect, useState, useRef } from "react"
 import Image from "next/image"
 
 const logoMap: { [key: string]: string } = {
-  'PELCO': 'https://upload.wikimedia.org/wikipedia/commons/4/4b/Pelco_logo.svg',
-  'AVIGILON': 'https://upload.wikimedia.org/wikipedia/commons/a/a4/Avigilon_logo.svg',
-  'MOTOROLA': 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Motorola_Solutions_Logo.svg',
+  'PELCO': 'https://upload.wikimedia.org/wikipedia/commons/8/8b/Pelco_wordmark_tm_Clean_PMS300C.png',
+  'AVIGILON': 'https://www.groupeclr.com/wp-content/uploads/2023/10/Avigilon-Logo-White-1024x292.png',
+  'MOTOROLA': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Motorola_logo.svg/512px-Motorola_logo.svg.png',
   'BOSCH': 'https://upload.wikimedia.org/wikipedia/commons/1/16/Bosch-logo.svg',
   'TYCO': 'https://upload.wikimedia.org/wikipedia/commons/9/93/Tyco-Logo.svg',
   'HIKVISION': 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Hikvision_logo.svg',
