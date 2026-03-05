@@ -22,7 +22,7 @@ const logoMap: { [key: string]: string } = {
 
 export function Marcas2({ brands }: { brands: any[] }) {
   const [rotation, setRotation] = useState(0)
-  const [radius, setRadius] = useState(400)
+  const [radius, setRadius] = useState(320)
   const requestRef = useRef<number>()
 
   // Lógica robusta para obtener los logos:
@@ -47,7 +47,7 @@ export function Marcas2({ brands }: { brands: any[] }) {
 
   useEffect(() => {
     const handleResize = () => {
-      setRadius(window.innerWidth < 768 ? 165 : 400)
+      setRadius(window.innerWidth < 768 ? 165 : 320)
     }
 
     handleResize()
@@ -72,10 +72,9 @@ export function Marcas2({ brands }: { brands: any[] }) {
   return (
     <section
       id="alianzas2"
-      className="relative z-10 pt-8 md:pt-12 pb-8 md:pb-24 overflow-hidden transition-all duration-500
+      className="relative z-10 py-8 md:py-24 overflow-hidden border-y border-border transition-all duration-500
                  bg-secondary/10 dark:bg-[radial-gradient(circle_at_center,theme(colors.accent/0.08)_0%,transparent_70%)]"
     >
-       {/* Título añadido para ser igual a Marcas 1 */}
        <div className="text-center mb-4 md:mb-8 relative z-20">
         <h2 className="font-headline font-black uppercase leading-tight">
           <span className="text-foreground text-2xl md:text-5xl block md:inline md:mr-3">
