@@ -6,6 +6,7 @@ import { useSystemData } from "@/hooks/useStarkData"
 import { Nav } from "@/components/nav"
 import { Hero } from "@/components/hero"
 import { Marcas } from "@/components/marcas"
+import { Marcas2 } from "@/components/marcas2"
 import { Servicios } from "@/components/servicios"
 import { Cotizador } from "@/components/cotizador"
 import { Contacto } from "@/components/contacto"
@@ -103,6 +104,7 @@ export default function Home() {
         />
 
         <Marcas brands={data.marcas} />
+        <Marcas2 brands={data.marcas} />
         
         {/* SERVICIOS: Recibe el ID resaltado y la función de click */}
         <Servicios 
