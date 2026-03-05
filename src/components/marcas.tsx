@@ -154,5 +154,3 @@ export function Marcas({ brands }: { brands: Brand[] }) {
     </section>
   )
 }
-
-    
