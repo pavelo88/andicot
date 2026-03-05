@@ -4,19 +4,19 @@ import { useEffect, useState, useRef } from "react"
 import Image from "next/image"
 
 const logoMap: { [key: string]: string } = {
-    'PELCO': 'https://www.pelco.com/wp-content/uploads/2023/10/logo-pelco-blue.svg',
-    'AVIGILON': 'https://www.motorolasolutions.com/content/dam/msi/images/products/video-security-and-access-control/avigilon-logo-black-rgb.svg',
-    'MOTOROLA': 'https://www.motorolasolutions.com/content/dam/msi/images/header/ms-logo-black.svg',
-    'LENEL': 'https://www.lenels2.com/media/default/images/lenels2-logo-blue.svg',
-    'EDWARDS': 'https://www.edwardsfiresafety.com/wp-content/themes/edwards/assets/images/logo.svg',
-    'BOSCH': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Bosch-logo.svg/2560px-Bosch-logo.svg.png',
-    'NOTIFIER': 'https://www.security.honeywell.com/-/media/Honeywell_Security/Images/Logos/Notifier/Notifier-by-Honeywell_Logo_K_300.png',
-    'TYCO': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Tyco_logo.svg/2560px-Tyco_logo.svg.png',
-    'HIKVISION': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Hikvision_logo.svg/2560px-Hikvision_logo.svg.png',
-    'CISCO': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Cisco_logo.svg/2560px-Cisco_logo.svg.png',
-    'HONEYWELL': 'https://www.honeywell.com/etc.clientlibs/honeywell/clientlibs/global/resources/images/Honeywell_Logo_Red.svg',
-    'DSC': 'https://www.dsc.com/assets/img/dsc-logo-color.svg',
-    'APC': 'https://www.se.com/ww/en/assets/brand/236-apc-logo/apc-logo-cmyk-green-s.svg',
+  'PELCO': 'https://upload.wikimedia.org/wikipedia/commons/4/4b/Pelco_logo.svg',
+  'AVIGILON': 'https://upload.wikimedia.org/wikipedia/commons/a/a4/Avigilon_logo.svg',
+  'MOTOROLA': 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Motorola_Solutions_Logo.svg',
+  'BOSCH': 'https://upload.wikimedia.org/wikipedia/commons/1/16/Bosch-logo.svg',
+  'TYCO': 'https://upload.wikimedia.org/wikipedia/commons/9/93/Tyco-Logo.svg',
+  'HIKVISION': 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Hikvision_logo.svg',
+  'CISCO': 'https://upload.wikimedia.org/wikipedia/commons/6/64/Cisco_logo.svg',
+  'HONEYWELL': 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Honeywell_logo.svg',
+  'APC': 'https://upload.wikimedia.org/wikipedia/commons/b/b4/LogoAPC.svg',
+  'LENEL': 'https://www.lenels2.com/wp-content/themes/lenels2/assets/images/logo.svg',
+  'EDWARDS': 'https://www.edwardsfiresafety.com/wp-content/uploads/carrier-edwards-logo.svg',
+  'NOTIFIER': 'https://www.security.honeywell.com/etc.clientlibs/honeywell/clientlibs/secure/resources/images/notifier-logo.svg',
+  'DSC': 'https://www.dsc.com/assets/images/logo.png'  
 };
 
 export function Marcas2({ brands }: { brands: any[] }) {
