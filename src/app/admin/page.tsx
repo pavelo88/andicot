@@ -5,8 +5,7 @@ import { useSystemData } from "@/hooks/useStarkData"
 import { db, storage } from "@/lib/firebase"
 import { doc, writeBatch } from "firebase/firestore" 
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
-import { Save, Lock, Globe, Database, Upload, Tag, ShieldCheck, BarChart3, Award, DollarSign, Share2, LogOut } from "lucide-react"
-import { BlueprintBackground } from "@/components/imagenes"
+import { Save, Lock, Globe, Database, Upload, Tag, ShieldCheck, BarChart3, Award, DollarSign, Share2, LogOut, Trash2 } from "lucide-react"
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -71,6 +70,14 @@ export default function AdminPage() {
     updated[index].previewUrl = URL.createObjectURL(file)
     setServicesForm(updated)
   }
+
+  const handleDeleteImage = (index: number) => {
+    const updated = [...servicesForm];
+    updated[index].img = "";
+    updated[index].previewUrl = null;
+    updated[index].newFile = null;
+    setServicesForm(updated);
+  };
 
   const saveAllChanges = async () => {
     setIsSaving(true)
@@ -282,9 +289,15 @@ export default function AdminPage() {
                         <div className="relative aspect-video mb-5 bg-zinc-900 rounded-lg overflow-hidden border border-border group-hover:border-accent/30 transition-colors">
                             <img src={s.previewUrl || s.img || `https://placehold.co/600x400/242853/a4c851?text=SIN+IMAGEN`} alt={s.t || s.titulo} className="w-full h-full object-cover" />
                             
-                            <div className="absolute inset-0 opacity-40 mix-blend-screen pointer-events-none">
-                                <BlueprintBackground type={s.t || s.titulo || ""} />
-                            </div>
+                            {(s.img || s.previewUrl) && (
+                                <button 
+                                    onClick={() => handleDeleteImage(i)}
+                                    className="absolute top-2 right-2 bg-destructive/80 text-destructive-foreground p-1.5 rounded-full hover:bg-destructive transition-all z-10"
+                                    title="Eliminar Imagen"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            )}
 
                             <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 bg-background/70 transition-all duration-300">
                                 <Upload className="w-8 h-8 text-accent mb-2" />

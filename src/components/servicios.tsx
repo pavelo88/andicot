@@ -168,6 +168,9 @@ function ServiceCard({ service, onClick, isActive, isMobile }: { service: Servic
         {img ? (
           <>
             <Image src={img} alt={title} fill className="object-contain p-2 drop-shadow-xl group-hover:scale-105 transition-transform duration-700" />
+            <div className="absolute inset-0 opacity-40 mix-blend-screen pointer-events-none">
+                <BlueprintBackground type={title} />
+            </div>
             <div className="absolute top-2 right-2 bg-background/60 backdrop-blur px-2 py-1 rounded text-[8px] text-accent font-code border border-accent/30">LIVE ●</div>
           </>
         ) : (
