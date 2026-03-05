@@ -28,13 +28,23 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
-      // AQUÍ ESTÁ EL NUEVO PERMISO PARA TUS IMÁGENES DE FIREBASE
       {
         protocol: 'https',
         hostname: 'firebasestorage.googleapis.com',
         port: '',
         pathname: '/**',
       },
+      // Logos de marcas permitidos
+      { protocol: 'https', hostname: 'upload.wikimedia.org' },
+      { protocol: 'https', hostname: 'www.pelco.com' },
+      { protocol: 'https', hostname: 'www.motorolasolutions.com' },
+      { protocol: 'https', hostname: 'www.lenels2.com' },
+      { protocol: 'https', hostname: 'www.edwardsfiresafety.com' },
+      { protocol: 'https', hostname: 'www.security.honeywell.com' },
+      { protocol: 'https', hostname: 'www.cisco.com' },
+      { protocol: 'https', hostname: 'www.honeywell.com' },
+      { protocol: 'https', hostname: 'www.dsc.com' },
+      { protocol: 'https', hostname: 'download.schneider-electric.com' },
     ],
   },
 };
