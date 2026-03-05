@@ -4,19 +4,19 @@ import { useEffect, useState, useRef } from "react"
 import Image from "next/image"
 
 const logoMap: { [key: string]: string } = {
-    'PELCO': 'https://www.pelco.com/wp-content/uploads/2021/08/pelco-logo-white-1.svg',
-    'AVIGILON': 'https://www.motorolasolutions.com/content/dam/msi/images/products/video-security-and-access-control/avigilon-logo-white-rgb.svg',
-    'MOTOROLA': 'https://www.motorolasolutions.com/content/dam/msi/images/global-images/logo-motorola-solutions-white.svg',
-    'LENEL': 'https://www.lenels2.com/media/default/images/lenels2-logo-white.svg',
-    'EDWARDS': 'https://www.edwardsfiresafety.com/wp-content/themes/edwards/assets/images/logo-white.svg',
+    'PELCO': 'https://www.pelco.com/wp-content/uploads/2023/10/logo-pelco-blue.svg',
+    'AVIGILON': 'https://www.motorolasolutions.com/content/dam/msi/images/products/video-security-and-access-control/avigilon-logo-black-rgb.svg',
+    'MOTOROLA': 'https://www.motorolasolutions.com/content/dam/msi/images/header/ms-logo-black.svg',
+    'LENEL': 'https://www.lenels2.com/media/default/images/lenels2-logo-blue.svg',
+    'EDWARDS': 'https://www.edwardsfiresafety.com/wp-content/themes/edwards/assets/images/logo.svg',
     'BOSCH': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Bosch-logo.svg/2560px-Bosch-logo.svg.png',
-    'NOTIFIER': 'https://www.security.honeywell.com/-/media/Honeywell_Security/Images/Logos/Notifier/Notifier-by-Honeywell_Logo_White_RGB_300.png',
+    'NOTIFIER': 'https://www.security.honeywell.com/-/media/Honeywell_Security/Images/Logos/Notifier/Notifier-by-Honeywell_Logo_K_300.png',
     'TYCO': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Tyco_logo.svg/2560px-Tyco_logo.svg.png',
     'HIKVISION': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Hikvision_logo.svg/2560px-Hikvision_logo.svg.png',
-    'CISCO': 'https://www.cisco.com/c/dam/m/en_us/header/cisco-logo-white.svg',
-    'HONEYWELL': 'https://www.honeywell.com/etc.clientlibs/honeywell/clientlibs/global/resources/images/Honeywell_Logo_White.svg',
-    'DSC': 'https://www.dsc.com/assets/img/dsc-logo-white.svg',
-    'APC': 'https://download.schneider-electric.com/files?p_File_Name=APC_corp_logo_white_RGB.svg&p_Doc_Ref=APC_corp_logo_white_RGB_svg',
+    'CISCO': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Cisco_logo.svg/2560px-Cisco_logo.svg.png',
+    'HONEYWELL': 'https://www.honeywell.com/etc.clientlibs/honeywell/clientlibs/global/resources/images/Honeywell_Logo_Red.svg',
+    'DSC': 'https://www.dsc.com/assets/img/dsc-logo-color.svg',
+    'APC': 'https://www.se.com/ww/en/assets/brand/236-apc-logo/apc-logo-cmyk-green-s.svg',
 };
 
 export function Marcas2({ brands }: { brands: any[] }) {
@@ -106,7 +106,7 @@ export function Marcas2({ brands }: { brands: any[] }) {
                         src={brand.logoUrl}
                         alt={`${brand.name} Logo`}
                         fill
-                        className="object-contain filter-none"
+                        className="object-contain"
                         sizes="(max-width: 768px) 110px, 180px"
                     />
                 </div>

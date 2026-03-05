@@ -44,7 +44,7 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'www.cisco.com' },
       { protocol: 'https', hostname: 'www.honeywell.com' },
       { protocol: 'https', hostname: 'www.dsc.com' },
-      { protocol: 'https', hostname: 'download.schneider-electric.com' },
+      { protocol: 'https', hostname: 'www.se.com' },
     ],
   },
 };
