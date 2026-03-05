@@ -3,24 +3,24 @@
 import { useEffect, useState, useRef } from "react"
 import Image from "next/image"
 
-interface Brand {
-  name: string;
-  logo: string;
-}
-
-export function Marcas({ brands }: { brands: Brand[] }) {
+export function Marcas({ brands }: { brands: any[] }) {
   const [rotation, setRotation] = useState(0)
   const [radius, setRadius] = useState(400) // Radio inicial PC
   const requestRef = useRef<number>()
 
-  const defaultBrands: Brand[] = [
-    { name: 'BOSCH', logo: '' }, { name: 'HONEYWELL', logo: '' }, { name: 'CISCO', logo: '' },
-    { name: 'HIKVISION', logo: '' }, { name: 'SAMSUNG', logo: '' }, { name: 'DSC', logo: '' },
-    { name: 'APC', logo: '' }, { name: 'PELCO', logo: '' }
-  ]
+  const defaultBrandNames = [
+    'BOSCH', 'HONEYWELL', 'CISCO', 'HIKVISION', 'SAMSUNG', 'DSC', 'APC', 'PELCO'
+  ];
 
-  const displayBrands = brands && brands.length > 0 ? brands : defaultBrands
-  const brandsWithLogos = displayBrands.filter(b => b.logo)
+  const brandNames = (brands && brands.length > 0 ? brands : defaultBrandNames).map(brand => {
+    if (typeof brand === 'string') {
+      return brand; // Handles old format (string[])
+    }
+    if (typeof brand === 'object' && brand.name) {
+      return brand.name; // Handles new format ({ name, logo })
+    }
+    return ''; // Fallback for malformed data
+  }).filter(Boolean); // Remove any empty strings
 
   useEffect(() => {
     const handleResize = () => {
@@ -31,7 +31,7 @@ export function Marcas({ brands }: { brands: Brand[] }) {
     window.addEventListener('resize', handleResize)
 
     const animate = () => {
-      setRotation(prev => prev - 0.08) 
+      setRotation(prev => prev - 0.08)
       requestRef.current = requestAnimationFrame(animate)
     }
     requestRef.current = requestAnimationFrame(animate)
@@ -42,13 +42,16 @@ export function Marcas({ brands }: { brands: Brand[] }) {
     }
   }, [])
 
+  if (!brandNames || brandNames.length === 0) {
+    return null;
+  }
+
   return (
-    <section 
-        id="alianzas" 
-        className="relative z-10 py-8 md:py-24 overflow-hidden border-y border-border transition-all duration-500
-                   bg-secondary/10 dark:bg-[radial-gradient(circle_at_center,theme(colors.accent/0.08)_0%,transparent_70%)]"
+    <section
+      id="alianzas"
+      className="relative z-10 py-8 md:py-24 overflow-hidden border-y border-border transition-all duration-500
+                 bg-secondary/10 dark:bg-[radial-gradient(circle_at_center,theme(colors.accent/0.08)_0%,transparent_70%)]"
     >
-      
       <div className="text-center mb-4 md:mb-8 relative z-20">
         <h2 className="font-headline font-black uppercase leading-tight">
           <span className="text-foreground text-2xl md:text-5xl block md:inline md:mr-3">
@@ -61,23 +64,23 @@ export function Marcas({ brands }: { brands: Brand[] }) {
         </h2>
       </div>
 
-      {/* Anillo de Texto */}
-      <div 
-        className="relative flex justify-center items-center" 
-        style={{ 
-            perspective: "1200px", 
-            height: radius < 200 ? "250px" : "320px" 
+      {/* Anillo de Texto (El original) */}
+      <div
+        className="relative flex justify-center items-center"
+        style={{
+          perspective: "1200px",
+          height: radius < 200 ? "250px" : "320px"
         }}
       >
         <div
           className="absolute w-full h-full"
           style={{
             transformStyle: "preserve-3d",
-            transform: `rotateX(-10deg) rotateY(${rotation}deg)` 
+            transform: `rotateX(-10deg) rotateY(${rotation}deg)`
           }}
         >
-          {displayBrands.map((brand, i) => {
-            const angle = (i / displayBrands.length) * 360
+          {brandNames.map((brandName, i) => {
+            const angle = (i / brandNames.length) * 360
             const isMobile = radius < 200
 
             return (
@@ -88,69 +91,20 @@ export function Marcas({ brands }: { brands: Brand[] }) {
                            font-headline font-bold shadow-[0_0_15px_theme(colors.accent/0.1)]
                            backface-visible transition-all hover:bg-accent/10"
                 style={{
-                  width: isMobile ? "115px" : "185px", 
+                  width: isMobile ? "115px" : "185px",
                   height: isMobile ? "45px" : "78px",
-                  marginLeft: isMobile ? "-57.5px" : "-92.5px", 
-                  marginTop: isMobile ? "-22.5px" : "-39px", 
+                  marginLeft: isMobile ? "-57.5px" : "-92.5px",
+                  marginTop: isMobile ? "-22.5px" : "-39px",
                   fontSize: isMobile ? "0.7rem" : "1.1rem",
                   transform: `rotateY(${angle}deg) translateZ(${radius}px)`
                 }}
               >
-                <span className="bg-transparent pointer-events-none">{brand.name}</span>
+                <span className="bg-transparent pointer-events-none">{brandName}</span>
               </div>
             )
           })}
         </div>
       </div>
-
-      {/* Anillo de Logos (si existen) */}
-      {brandsWithLogos.length > 0 && (
-        <div 
-          className="relative flex justify-center items-center mt-8 md:mt-16" 
-          style={{ 
-              perspective: "1200px", 
-              height: radius < 200 ? "250px" : "320px" 
-          }}
-        >
-          <div
-            className="absolute w-full h-full"
-            style={{
-              transformStyle: "preserve-3d",
-              transform: `rotateX(-10deg) rotateY(${rotation * 0.8}deg)` // Rotación ligeramente más lenta
-            }}
-          >
-            {brandsWithLogos.map((brand, i) => {
-              const angle = (i / brandsWithLogos.length) * 360
-              const isMobile = radius < 200
-
-              return (
-                <div
-                  key={i}
-                  className="absolute left-1/2 top-1/2 flex items-center justify-center
-                             tech-glass p-2 bg-background/50
-                             shadow-[0_0_15px_theme(colors.accent/0.1)]
-                             backface-visible transition-all hover:bg-accent/10"
-                  style={{
-                    width: isMobile ? "115px" : "185px", 
-                    height: isMobile ? "45px" : "78px",
-                    marginLeft: isMobile ? "-57.5px" : "-92.5px", 
-                    marginTop: isMobile ? "-22.5px" : "-39px", 
-                    transform: `rotateY(${angle}deg) translateZ(${radius}px)`
-                  }}
-                >
-                  <Image 
-                    src={brand.logo}
-                    alt={`${brand.name} logo`}
-                    fill
-                    className="object-contain p-2 filter drop-shadow-lg"
-                    sizes="(max-width: 768px) 115px, 185px"
-                  />
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
     </section>
   )
 }
