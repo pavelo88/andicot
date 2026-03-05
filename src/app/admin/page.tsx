@@ -31,7 +31,6 @@ export default function AdminPage() {
         finanzas: data.finanzas || { iva: "15", descuento: "0" },
       }
       
-      // Manejo retrocompatible de marcas (string[] vs object[])
       const initialMarcas = (data.marcas || []).map((m: any) => 
         typeof m === 'string' 
         ? { name: m, logo: '', newFile: null, previewUrl: null }
@@ -87,7 +86,6 @@ export default function AdminPage() {
     setServicesForm(updated);
   };
   
-  // --- Nuevos Handlers para Marcas ---
   const handleBrandChange = (index: number, value: string) => {
     const updatedMarcas = [...configForm.marcas];
     updatedMarcas[index].name = value;
@@ -118,7 +116,6 @@ export default function AdminPage() {
     updatedMarcas[index].newFile = null;
     setConfigForm({ ...configForm, marcas: updatedMarcas });
   };
-  // ------------------------------------
 
   const saveAllChanges = async () => {
     setIsSaving(true)
@@ -126,7 +123,6 @@ export default function AdminPage() {
     try {
       const batch = writeBatch(db)
 
-      // 1. Handle services update
       const finalServices = await Promise.all(servicesForm.map(async (service) => {
           let imageUrl = service.img;
           if (service.newFile) {
@@ -136,9 +132,9 @@ export default function AdminPage() {
           }
           return {
               id: service.id,
-              titulo: service.t || service.titulo,
-              descripcion: service.d || service.descripcion,
-              precio_base: Number(service.p || service.precio_base || 0),
+              titulo: service.t || "",
+              descripcion: service.d || "",
+              precio_base: Number(service.p || 0),
               tags: service.tags || "",
               img: imageUrl,
           };
@@ -148,11 +144,7 @@ export default function AdminPage() {
           const { id, ...dataToSave } = s;
           batch.update(doc(db, "servicios", id), dataToSave);
       });
-
-      // 2. Handle general config update
-      const finalConfig: any = { ...configForm };
       
-      // 2.1 Procesar logos de marcas
       const finalMarcas = await Promise.all(configForm.marcas.map(async (marca: any) => {
           let logoUrl = marca.logo;
           if (marca.newFile) {
@@ -160,19 +152,14 @@ export default function AdminPage() {
               await uploadBytes(storageRef, marca.newFile);
               logoUrl = await getDownloadURL(storageRef);
           }
-          return {
-              name: marca.name,
-              logo: logoUrl || '',
-          };
+          return { name: marca.name, logo: logoUrl || '' };
       }));
-      finalConfig.marcas = finalMarcas;
-
-      // Limpiar campos temporales del formulario
+      
+      const finalConfig = { ...configForm, marcas: finalMarcas };
       delete finalConfig.marcasString;
       
       batch.update(doc(db, "configuracion", "web_data"), finalConfig)
 
-      // 3. Commit all changes
       await batch.commit()
       setSaveStatus("success")
       setTimeout(() => setSaveStatus(""), 3000)
@@ -315,21 +302,22 @@ export default function AdminPage() {
         </div>
 
         <SectionCard title="Gestión de Aliados (Marcas)" icon={<Award />}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4">
               {configForm.marcas.map((marca: any, i: number) => (
                 <div key={i} className="flex items-center gap-4 bg-background/30 p-3 rounded-lg border border-border">
-                  <div className="relative w-16 h-10 bg-background/50 rounded flex items-center justify-center overflow-hidden border border-border">
+                  <input 
+                    value={marca.name}
+                    onChange={(e) => handleBrandChange(i, e.target.value)}
+                    className="flex-1 bg-transparent border-b border-border pb-1 font-bold text-foreground outline-none focus:border-accent transition-colors"
+                    placeholder="Nombre de la marca"
+                  />
+                  <div className="relative w-24 h-12 bg-background/50 rounded flex items-center justify-center overflow-hidden border border-border">
                     <img src={marca.previewUrl || marca.logo || `https://placehold.co/100x40/242853/a4c851?text=LOGO`} alt={marca.name} className="w-full h-full object-contain" />
                     <label className="absolute inset-0 flex items-center justify-center bg-black/70 opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
                       <Upload className="w-5 h-5 text-accent" />
                       <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleBrandImageFile(i, e.target.files[0])} />
                     </label>
                   </div>
-                  <input 
-                    value={marca.name}
-                    onChange={(e) => handleBrandChange(i, e.target.value)}
-                    className="flex-1 bg-transparent border-b border-border pb-1 font-bold text-foreground outline-none focus:border-accent transition-colors"
-                  />
                   {(marca.logo || marca.previewUrl) && (
                     <button onClick={() => handleDeleteBrandImage(i)} className="p-2 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors" title="Eliminar Logo">
                       <Trash2 className="w-4 h-4" />
@@ -360,7 +348,7 @@ export default function AdminPage() {
                         </span>
 
                         <div className="relative aspect-video mb-5 bg-zinc-900 rounded-lg overflow-hidden border border-border group-hover:border-accent/30 transition-colors">
-                            <img src={s.previewUrl || s.img || `https://placehold.co/600x400/242853/a4c851?text=SIN+IMAGEN`} alt={s.t || s.titulo} className="w-full h-full object-cover" />
+                            <img src={s.previewUrl || s.img || `https://placehold.co/600x400/242853/a4c851?text=SIN+IMAGEN`} alt={s.t} className="w-full h-full object-cover" />
                             
                             {(s.img || s.previewUrl) && (
                                 <button 
@@ -381,7 +369,7 @@ export default function AdminPage() {
 
                         <div className="space-y-4">
                             <input 
-                                value={s.t || s.titulo} 
+                                value={s.t} 
                                 onChange={(e) => handleServiceChange(i, "t", e.target.value)} 
                                 className="w-full bg-transparent border-b border-border pb-2 font-headline text-lg font-bold uppercase text-accent outline-none focus:border-accent transition-colors placeholder:text-muted-foreground" 
                                 placeholder="TÍTULO DEL SERVICIO" 
@@ -404,7 +392,7 @@ export default function AdminPage() {
                                 <span className="text-xs text-emerald-400 font-bold uppercase tracking-wider">Precio Base ($)</span>
                                 <input 
                                     type="number" 
-                                    value={s.p || s.precio_base} 
+                                    value={s.p} 
                                     onChange={(e) => handleServiceChange(i, "p", e.target.value)} 
                                     className="bg-transparent text-right font-code text-foreground font-bold outline-none w-24 text-lg" 
                                 />

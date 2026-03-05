@@ -3,17 +3,16 @@
 import { useEffect, useState, useRef } from "react"
 import Image from "next/image"
 
-// Mapa de logos como fallback (logos blancos o claros para buena visibilidad)
 const logoMap: { [key: string]: string } = {
     'PELCO': 'https://www.pelco.com/wp-content/uploads/2021/08/pelco-logo-white-1.svg',
     'AVIGILON': 'https://www.motorolasolutions.com/content/dam/msi/images/products/video-security-and-access-control/avigilon-logo-white-rgb.svg',
     'MOTOROLA': 'https://www.motorolasolutions.com/content/dam/msi/images/global-images/logo-motorola-solutions-white.svg',
     'LENEL': 'https://www.lenels2.com/media/default/images/lenels2-logo-white.svg',
     'EDWARDS': 'https://www.edwardsfiresafety.com/wp-content/themes/edwards/assets/images/logo-white.svg',
-    'BOSCH': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Bosch-logo.svg/2560px-Bosch-logo.svg.png', // Este es rojo, se verá bien.
+    'BOSCH': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Bosch-logo.svg/2560px-Bosch-logo.svg.png',
     'NOTIFIER': 'https://www.security.honeywell.com/-/media/Honeywell_Security/Images/Logos/Notifier/Notifier-by-Honeywell_Logo_White_RGB_300.png',
-    'TYCO': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Tyco_logo.svg/2560px-Tyco_logo.svg.png', // Azul
-    'HIKVISION': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Hikvision_logo.svg/2560px-Hikvision_logo.svg.png', // Rojo
+    'TYCO': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Tyco_logo.svg/2560px-Tyco_logo.svg.png',
+    'HIKVISION': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Hikvision_logo.svg/2560px-Hikvision_logo.svg.png',
     'CISCO': 'https://www.cisco.com/c/dam/m/en_us/header/cisco-logo-white.svg',
     'HONEYWELL': 'https://www.honeywell.com/etc.clientlibs/honeywell/clientlibs/global/resources/images/Honeywell_Logo_White.svg',
     'DSC': 'https://www.dsc.com/assets/img/dsc-logo-white.svg',
@@ -25,12 +24,13 @@ export function Marcas2({ brands }: { brands: any[] }) {
   const [radius, setRadius] = useState(400)
   const requestRef = useRef<number>()
 
-  // Filtramos y preparamos las marcas con un logo válido
   const brandsWithLogos = (brands || [])
     .map(brand => {
-      if (typeof brand === 'object' && brand.logo) {
+      // Prioridad 1: Un logo válido subido desde el admin
+      if (typeof brand === 'object' && brand.logo && brand.logo.startsWith('http')) {
         return { name: brand.name, logoUrl: brand.logo };
       }
+      // Prioridad 2: Un logo de respaldo del mapa
       const name = typeof brand === 'object' ? brand.name : brand;
       if (name && logoMap[name.toUpperCase()]) {
         return { name: name, logoUrl: logoMap[name.toUpperCase()] };
@@ -48,7 +48,7 @@ export function Marcas2({ brands }: { brands: any[] }) {
     window.addEventListener('resize', handleResize)
 
     const animate = () => {
-      setRotation(prev => prev + 0.08) // Invertimos la rotación para variar
+      setRotation(prev => prev + 0.08)
       requestRef.current = requestAnimationFrame(animate)
     }
     requestRef.current = requestAnimationFrame(animate)
@@ -106,7 +106,7 @@ export function Marcas2({ brands }: { brands: any[] }) {
                         src={brand.logoUrl}
                         alt={`${brand.name} Logo`}
                         fill
-                        className="object-contain filter-none" // Mantenemos colores originales
+                        className="object-contain filter-none"
                         sizes="(max-width: 768px) 110px, 180px"
                     />
                 </div>
