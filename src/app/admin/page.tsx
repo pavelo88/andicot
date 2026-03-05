@@ -5,7 +5,7 @@ import { useSystemData } from "@/hooks/useStarkData"
 import { db, storage } from "@/lib/firebase"
 import { doc, writeBatch } from "firebase/firestore" 
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
-import { Save, Lock, Globe, Database, Upload, Tag, ShieldCheck, BarChart3, Award, DollarSign, Share2, LogOut, Trash2 } from "lucide-react"
+import { Save, Lock, Globe, Database, Upload, Tag, ShieldCheck, BarChart3, Award, DollarSign, Share2, LogOut, Trash2, Plus } from "lucide-react"
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -21,7 +21,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!loading && data && services.length > 0) {
-      const safeData = {
+      const safeData: any = {
         ...data,
         hero: data.hero || { titulo_principal: "", titulo_resaltado: "", subtitulo: "" },
         garantia: data.garantia || { titulo: "Garantía STARK", desc: "", btn: "VER PÓLIZA" },
@@ -29,11 +29,19 @@ export default function AdminPage() {
         contacto: data.contacto || { email: "", tel: "", direccion: "" },
         redes: data.redes || { facebook: "", instagram: "", tiktok: "" },
         finanzas: data.finanzas || { iva: "15", descuento: "0" },
-        marcasString: data.marcas && Array.isArray(data.marcas) ? data.marcas.join(", ") : ""
       }
+      
+      // Manejo retrocompatible de marcas (string[] vs object[])
+      const initialMarcas = (data.marcas || []).map((m: any) => 
+        typeof m === 'string' 
+        ? { name: m, logo: '', newFile: null, previewUrl: null }
+        : { ...m, newFile: null, previewUrl: null }
+      )
+      safeData.marcas = initialMarcas
+
       setConfigForm(safeData)
 
-      const mapped = services.map(s => ({
+      const mappedServices = services.map(s => ({
         ...s,
         t: s.t || s.titulo || "",
         d: s.d || s.descripcion || "",
@@ -43,7 +51,7 @@ export default function AdminPage() {
         newFile: null,
         previewUrl: null
       }))
-      setServicesForm(mapped)
+      setServicesForm(mappedServices)
     }
   }, [data, services, loading])
 
@@ -63,7 +71,7 @@ export default function AdminPage() {
     updated[index] = { ...updated[index], [field]: value }
     setServicesForm(updated)
   }
-
+  
   const handleImageFile = (index: number, file: File) => {
     const updated = [...servicesForm]
     updated[index].newFile = file
@@ -78,6 +86,39 @@ export default function AdminPage() {
     updated[index].newFile = null;
     setServicesForm(updated);
   };
+  
+  // --- Nuevos Handlers para Marcas ---
+  const handleBrandChange = (index: number, value: string) => {
+    const updatedMarcas = [...configForm.marcas];
+    updatedMarcas[index].name = value;
+    setConfigForm({ ...configForm, marcas: updatedMarcas });
+  };
+  
+  const handleAddBrand = () => {
+    const newBrand = { name: "NUEVA MARCA", logo: "", newFile: null, previewUrl: null };
+    setConfigForm({ ...configForm, marcas: [...configForm.marcas, newBrand] });
+  };
+
+  const handleRemoveBrand = (index: number) => {
+    const updatedMarcas = configForm.marcas.filter((_: any, i: number) => i !== index);
+    setConfigForm({ ...configForm, marcas: updatedMarcas });
+  };
+  
+  const handleBrandImageFile = (index: number, file: File) => {
+    const updatedMarcas = [...configForm.marcas];
+    updatedMarcas[index].newFile = file;
+    updatedMarcas[index].previewUrl = URL.createObjectURL(file);
+    setConfigForm({ ...configForm, marcas: updatedMarcas });
+  };
+  
+  const handleDeleteBrandImage = (index: number) => {
+    const updatedMarcas = [...configForm.marcas];
+    updatedMarcas[index].logo = "";
+    updatedMarcas[index].previewUrl = null;
+    updatedMarcas[index].newFile = null;
+    setConfigForm({ ...configForm, marcas: updatedMarcas });
+  };
+  // ------------------------------------
 
   const saveAllChanges = async () => {
     setIsSaving(true)
@@ -109,12 +150,26 @@ export default function AdminPage() {
       });
 
       // 2. Handle general config update
-      const finalConfig = { ...configForm }
-      if (finalConfig.marcasString) {
-          finalConfig.marcas = finalConfig.marcasString.split(",").map((m: string) => m.trim()).filter(Boolean)
-      }
-      delete finalConfig.marcasString; // Clean up temp field
+      const finalConfig: any = { ...configForm };
+      
+      // 2.1 Procesar logos de marcas
+      const finalMarcas = await Promise.all(configForm.marcas.map(async (marca: any) => {
+          let logoUrl = marca.logo;
+          if (marca.newFile) {
+              const storageRef = ref(storage, `marcas/${Date.now()}_${marca.newFile.name}`);
+              await uploadBytes(storageRef, marca.newFile);
+              logoUrl = await getDownloadURL(storageRef);
+          }
+          return {
+              name: marca.name,
+              logo: logoUrl || '',
+          };
+      }));
+      finalConfig.marcas = finalMarcas;
 
+      // Limpiar campos temporales del formulario
+      delete finalConfig.marcasString;
+      
       batch.update(doc(db, "configuracion", "web_data"), finalConfig)
 
       // 3. Commit all changes
@@ -209,7 +264,7 @@ export default function AdminPage() {
                 <InputField label="Título Línea 2 (Acento)" value={configForm.hero.titulo_resaltado} onChange={(v) => handleConfigChange("hero", "titulo_resaltado", v)} />
                 <div>
                     <Label text="Subtítulo Descriptivo" />
-                    <TextArea value={configForm.hero.subtitulo} onChange={(e) => handleConfigChange("hero", "subtitulo", e.target.value)} rows={3} />
+                    <TextArea value={configForm.hero.subtitulo} onChange={(e: any) => handleConfigChange("hero", "subtitulo", e.target.value)} rows={3} />
                 </div>
             </SectionCard>
 
@@ -260,19 +315,37 @@ export default function AdminPage() {
         </div>
 
         <SectionCard title="Gestión de Aliados (Marcas)" icon={<Award />}>
-            <div>
-                <Label text="Lista de Marcas (Separar por comas)" />
-                <TextArea 
-                    value={configForm.marcasString || ""} 
-                    onChange={(e) => handleConfigChange("root", "marcasString", e.target.value)} 
-                    rows={4}
-                    placeholder="Ej: BOSCH, SAMSUNG, HIKVISION, PELCO, DSC..."
-                />
-                <p className="text-xs text-accent mt-2 font-code flex items-center gap-2">
-                    <Database className="w-3 h-3" /> Las marcas se actualizarán automáticamente en el anillo 3D.
-                </p>
+            <div className="space-y-4">
+              {configForm.marcas.map((marca: any, i: number) => (
+                <div key={i} className="flex items-center gap-4 bg-background/30 p-3 rounded-lg border border-border">
+                  <div className="relative w-16 h-10 bg-background/50 rounded flex items-center justify-center overflow-hidden border border-border">
+                    <img src={marca.previewUrl || marca.logo || `https://placehold.co/100x40/242853/a4c851?text=LOGO`} alt={marca.name} className="w-full h-full object-contain" />
+                    <label className="absolute inset-0 flex items-center justify-center bg-black/70 opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
+                      <Upload className="w-5 h-5 text-accent" />
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleBrandImageFile(i, e.target.files[0])} />
+                    </label>
+                  </div>
+                  <input 
+                    value={marca.name}
+                    onChange={(e) => handleBrandChange(i, e.target.value)}
+                    className="flex-1 bg-transparent border-b border-border pb-1 font-bold text-foreground outline-none focus:border-accent transition-colors"
+                  />
+                  {(marca.logo || marca.previewUrl) && (
+                    <button onClick={() => handleDeleteBrandImage(i)} className="p-2 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors" title="Eliminar Logo">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                  <button onClick={() => handleRemoveBrand(i)} className="p-2 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors" title="Eliminar Marca">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
             </div>
+            <button onClick={handleAddBrand} className="mt-4 w-full flex items-center justify-center gap-2 bg-foreground/5 border border-accent/30 text-accent p-3 rounded-lg text-xs font-bold uppercase hover:bg-accent/10 transition-all">
+                <Plus className="w-4 h-4" /> Añadir Marca
+            </button>
         </SectionCard>
+
 
         <div className="pt-10 border-t border-border">
             <h3 className="text-foreground font-black font-headline text-2xl mb-8 flex items-center gap-3 uppercase">
@@ -316,7 +389,7 @@ export default function AdminPage() {
                             
                             <div>
                                 <Label text="Descripción Corta" />
-                                <TextArea value={s.d} onChange={(e) => handleServiceChange(i, "d", e.target.value)} rows={3} />
+                                <TextArea value={s.d} onChange={(e: any) => handleServiceChange(i, "d", e.target.value)} rows={3} />
                             </div>
                             
                             <div>
@@ -389,3 +462,5 @@ function Label({ text }: { text: string }) {
         <label className="text-[10px] text-muted-foreground font-bold uppercase mb-2 block tracking-widest">{text}</label>
     )
 }
+
+    

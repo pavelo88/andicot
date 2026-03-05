@@ -1,15 +1,26 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
+import Image from "next/image"
 
-export function Marcas({ brands }: { brands: string[] }) {
+interface Brand {
+  name: string;
+  logo: string;
+}
+
+export function Marcas({ brands }: { brands: Brand[] }) {
   const [rotation, setRotation] = useState(0)
   const [radius, setRadius] = useState(400) // Radio inicial PC
   const requestRef = useRef<number>()
 
-  const displayBrands = brands && brands.length > 0 
-    ? brands 
-    : ['BOSCH', 'HONEYWELL', 'CISCO', 'HIKVISION', 'SAMSUNG', 'DSC', 'APC', 'PELCO']
+  const defaultBrands: Brand[] = [
+    { name: 'BOSCH', logo: '' }, { name: 'HONEYWELL', logo: '' }, { name: 'CISCO', logo: '' },
+    { name: 'HIKVISION', logo: '' }, { name: 'SAMSUNG', logo: '' }, { name: 'DSC', logo: '' },
+    { name: 'APC', logo: '' }, { name: 'PELCO', logo: '' }
+  ]
+
+  const displayBrands = brands && brands.length > 0 ? brands : defaultBrands
+  const brandsWithLogos = displayBrands.filter(b => b.logo)
 
   useEffect(() => {
     const handleResize = () => {
@@ -47,10 +58,10 @@ export function Marcas({ brands }: { brands: string[] }) {
             TECNOLÓGICOS
           </span>
           <div className="h-1 w-20 bg-accent mt-4 mx-auto shadow-[0_0_20px_theme(colors.accent/0.6)]"></div>
-
         </h2>
       </div>
 
+      {/* Anillo de Texto */}
       <div 
         className="relative flex justify-center items-center" 
         style={{ 
@@ -85,12 +96,63 @@ export function Marcas({ brands }: { brands: string[] }) {
                   transform: `rotateY(${angle}deg) translateZ(${radius}px)`
                 }}
               >
-                <span className="bg-transparent pointer-events-none">{brand}</span>
+                <span className="bg-transparent pointer-events-none">{brand.name}</span>
               </div>
             )
           })}
         </div>
       </div>
+
+      {/* Anillo de Logos (si existen) */}
+      {brandsWithLogos.length > 0 && (
+        <div 
+          className="relative flex justify-center items-center mt-8 md:mt-16" 
+          style={{ 
+              perspective: "1200px", 
+              height: radius < 200 ? "250px" : "320px" 
+          }}
+        >
+          <div
+            className="absolute w-full h-full"
+            style={{
+              transformStyle: "preserve-3d",
+              transform: `rotateX(-10deg) rotateY(${rotation * 0.8}deg)` // Rotación ligeramente más lenta
+            }}
+          >
+            {brandsWithLogos.map((brand, i) => {
+              const angle = (i / brandsWithLogos.length) * 360
+              const isMobile = radius < 200
+
+              return (
+                <div
+                  key={i}
+                  className="absolute left-1/2 top-1/2 flex items-center justify-center
+                             tech-glass p-2 bg-background/50
+                             shadow-[0_0_15px_theme(colors.accent/0.1)]
+                             backface-visible transition-all hover:bg-accent/10"
+                  style={{
+                    width: isMobile ? "115px" : "185px", 
+                    height: isMobile ? "45px" : "78px",
+                    marginLeft: isMobile ? "-57.5px" : "-92.5px", 
+                    marginTop: isMobile ? "-22.5px" : "-39px", 
+                    transform: `rotateY(${angle}deg) translateZ(${radius}px)`
+                  }}
+                >
+                  <Image 
+                    src={brand.logo}
+                    alt={`${brand.name} logo`}
+                    fill
+                    className="object-contain p-2 filter drop-shadow-lg"
+                    sizes="(max-width: 768px) 115px, 185px"
+                  />
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </section>
   )
 }
+
+    
