@@ -7,6 +7,8 @@ import Image from "next/image"
 const BrandCard = ({ brand, isMobile, angle, radius }: { brand: { name: string, logoUrl: string }, isMobile: boolean, angle: number, radius: number }) => {
   const [hasError, setHasError] = useState(false);
 
+  // Cada vez que la URL del logo cambie, reseteamos el estado de error.
+  // Esto es útil si los datos se actualizan en tiempo real.
   useEffect(() => {
     setHasError(false);
   }, [brand.logoUrl]);
@@ -31,31 +33,30 @@ const BrandCard = ({ brand, isMobile, angle, radius }: { brand: { name: string, 
       }}
     >
       {hasError || !brand.logoUrl ? (
-        // Si hay un error o no hay logo, muestra el nombre de la marca con efecto hover
+        // Si hay un error o no hay logo, muestra el nombre de la marca
+        // Al hacer hover, el texto tomará el color de acento
         <span className="text-muted-foreground transition-colors duration-300 group-hover:text-accent font-code text-xs md:text-sm uppercase">
           {brand.name}
         </span>
       ) : (
-        // Si no hay error y hay logo, muestra la imagen
-        <div className="relative w-full h-full flex justify-center items-center">
-          {/* ================================================ */}
-          {/* === INICIO: TAMAÑO DE IMAGEN (logo) === */}
-          {/* Este div controla el tamaño del logo. */}
-          {/* Cambia w-[XX%] y h-[XX%] para ajustar el tamaño. */}
-          {/* Por ejemplo: w-[70%] h-[70%] hará el logo más pequeño. */}
-          {/* w-[100%] h-[100%] lo hará más grande. */}
-          {/* ================================================ */}
-          <div className="relative w-[85%] h-[85%]">
-            <Image
-              src={brand.logoUrl}
-              alt={`${brand.name} Logo`}
-              fill
-              className="object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
-              sizes="(max-width: 768px) 110px, 160px"
-              onError={() => setHasError(true)}
-            />
-          </div>
+        // Si no hay error y hay logo, muestra la imagen.
+        // El tamaño del logo se controla con el div contenedor de abajo.
+        // ================================================
+        // === INICIO: TAMAÑO DE IMAGEN (logo) ===
+        // Para hacer el logo más pequeño, reduce el porcentaje (ej. w-[70%] h-[70%]).
+        // Para hacerlo más grande, auméntalo (ej. w-[100%] h-[100%]).
+        // ================================================
+        <div className="relative w-[85%] h-[85%]">
+          <Image
+            src={brand.logoUrl}
+            alt={`${brand.name} Logo`}
+            fill
+            className="object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
+            sizes="(max-width: 768px) 110px, 160px"
+            onError={() => setHasError(true)}
+          />
         </div>
+        // === FIN: TAMAÑO DE IMAGEN (logo) ===
       )}
     </div>
   );
@@ -99,19 +100,13 @@ export function Marcas({ brands }: { brands: any[] }) {
 
   useEffect(() => {
     const handleResize = () => {
-      setRadius(window.innerWidth < 768 ? 160 : 280) // Aumentado para separar más
+      setRadius(window.innerWidth < 768 ? 160 : 280)
     }
     handleResize()
     window.addEventListener('resize', handleResize)
 
     const animate = () => {
-      // ========================================================
-      // === INICIO: VELOCIDAD DE ROTACIÓN ======================
-      // Aumenta este valor para un giro más rápido,
-      // redúcelo para un giro más lento.
-      // ========================================================
-      const speed = 0.1;
-      // === FIN: VELOCIDAD DE ROTACIÓN =========================
+      const speed = 0.1; // Velocidad de rotación constante
       setRotation(prev => prev - speed)
       requestRef.current = requestAnimationFrame(animate)
     }
