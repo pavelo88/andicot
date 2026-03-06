@@ -51,9 +51,9 @@ export const Dashboard = ({ children, activeTab, setActiveTab, onSave, onLogout,
   );
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row font-headline text-gray-900 bg-secondary w-full">
+    <div className="flex h-screen w-full font-headline bg-secondary">
       {/* Sidebar Desktop */}
-      <aside className="hidden md:flex w-64 bg-secondary text-white flex-col flex-shrink-0 sticky top-0 h-screen shadow-xl">
+      <aside className="hidden md:flex w-64 bg-secondary text-white flex-col flex-shrink-0">
         <div className="h-20 flex items-center px-6 border-b border-white/10 bg-[#1e2246]">
           <div className="flex items-center gap-2">
             <Cpu className="text-primary" size={24} />
@@ -96,7 +96,7 @@ export const Dashboard = ({ children, activeTab, setActiveTab, onSave, onLogout,
       </header>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 w-full bg-slate-50">
+      <div className="flex-1 flex flex-col w-full bg-slate-50 text-slate-900">
         <header className="h-20 bg-white border-b border-gray-200 shadow-sm hidden md:flex items-center justify-between px-8 flex-shrink-0 sticky top-0 z-30">
           <h2 className="text-2xl font-bold text-secondary capitalize">
             {activeTab === 'metrics' && 'Panel de Estadísticas'}
@@ -130,7 +130,6 @@ export const Dashboard = ({ children, activeTab, setActiveTab, onSave, onLogout,
         )}
 
         <div className="flex-1 p-4 md:p-8 overflow-y-auto">
-            {/* IMPROVEMENT: Added responsive title for mobile view */}
             <div className="md:hidden mb-6">
                 <h2 className="text-2xl font-bold text-secondary capitalize">
                 {activeTab === 'metrics' && 'Estadísticas'}

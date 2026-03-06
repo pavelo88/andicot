@@ -266,7 +266,6 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50 text-slate-900 w-full overflow-x-hidden">
       <Dashboard 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
@@ -397,6 +396,5 @@ export default function AdminPage() {
           
         </main>
       </Dashboard>
-    </div>
   );
 }
