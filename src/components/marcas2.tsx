@@ -47,7 +47,7 @@ export function Marcas2({ brands }: { brands: any[] }) {
 
   useEffect(() => {
     const handleResize = () => {
-      setRadius(window.innerWidth < 768 ? 165 : 320)
+      setRadius(window.innerWidth < 768 ? 165 : 240)
     }
 
     handleResize()
@@ -72,7 +72,7 @@ export function Marcas2({ brands }: { brands: any[] }) {
   return (
     <section
       id="alianzas2"
-      className="relative z-10 py-8 md:py-24 overflow-hidden border-y border-border transition-all duration-500
+      className="relative z-10 pt-4 md:pt-12 pb-8 md:pb-24 overflow-hidden border-y border-border transition-all duration-500
                  bg-secondary/10 dark:bg-[radial-gradient(circle_at_center,theme(colors.accent/0.08)_0%,transparent_70%)]"
     >
        <div className="text-center mb-4 md:mb-8 relative z-20">

@@ -5,7 +5,7 @@ import Image from "next/image"
 
 export function Marcas({ brands }: { brands: any[] }) {
   const [rotation, setRotation] = useState(0)
-  const [radius, setRadius] = useState(320) // Radio ajustado para PC
+  const [radius, setRadius] = useState(320)
   const requestRef = useRef<number>()
 
   const defaultBrandNames = [
@@ -25,7 +25,7 @@ export function Marcas({ brands }: { brands: any[] }) {
   useEffect(() => {
     const handleResize = () => {
       // Radio más pequeño en PC para juntar las etiquetas
-      setRadius(window.innerWidth < 768 ? 165 : 320) 
+      setRadius(window.innerWidth < 768 ? 165 : 240) 
     }
 
     handleResize()
@@ -50,7 +50,7 @@ export function Marcas({ brands }: { brands: any[] }) {
   return (
     <section
       id="alianzas"
-      className="relative z-10 py-8 md:py-24 overflow-hidden border-y border-border transition-all duration-500
+      className="relative z-10 pt-8 md:pt-24 pb-4 md:pb-12 overflow-hidden border-t border-border transition-all duration-500
                  bg-secondary/10 dark:bg-[radial-gradient(circle_at_center,theme(colors.accent/0.08)_0%,transparent_70%)]"
     >
       <div className="text-center mb-4 md:mb-8 relative z-20">
