@@ -1,26 +1,45 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from 'react';
+import { Lock, Cpu, Loader2, Sparkles, UploadCloud, Plus, Trash2, Globe, LayoutDashboard, Settings, BarChart3, TrendingUp, Users as UsersIcon, Save } from 'lucide-react';
+import { doc, onSnapshot, writeBatch, collection } from 'firebase/firestore';
+import { db, storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+
+import { Dashboard } from '@/components/admin/Dashboard';
+import { CRMLeads } from '@/components/admin/CRMLeads';
 import { useSystemData } from "@/hooks/useStarkData"
-import { db, storage } from "@/lib/firebase"
-import { doc, writeBatch } from "firebase/firestore" 
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
-import { Save, Lock, Globe, Database, Upload, Tag, ShieldCheck, BarChart3, Award, DollarSign, Share2, LogOut, Trash2, Plus } from "lucide-react"
+import { generateSeoMetadata } from '@/ai/flows/generate-seo-metadata-flow';
+import { generateServiceDescription } from '@/ai/flows/generate-service-description-flow';
+
+const ImagePreview = ({ src, alt, fallbackIcon: Icon }: { src: string, alt: string, fallbackIcon: any }) => {
+  const [error, setError] = useState(false);
+  if (!src || error) return <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-50 rounded-xl"><Icon size={32}/></div>;
+  return <img src={src} alt={alt} onError={() => setError(true)} className="w-full h-full object-cover" />;
+};
+
+const BrandPreview = ({ src, name }: { src: string, name: string }) => {
+  const [error, setError] = useState(false);
+  if (!src || error) return <div className="h-full flex items-center justify-center p-4 bg-gray-50 w-full rounded border text-xs font-bold text-gray-400 uppercase">{name}</div>;
+  return <img src={src} alt={name} onError={() => setError(true)} className="max-h-full h-full w-full object-contain" />;
+};
+
 
 export default function AdminPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [password, setPassword] = useState("")
-  const [authError, setAuthError] = useState(false)
-
-  const { data, services, loading } = useSystemData()
-  const [configForm, setConfigForm] = useState<any>(null)
-  const [servicesForm, setServicesForm] = useState<any[]>([])
+  const [isLogged, setIsLogged] = useState(false);
+  const [password, setPassword] = useState('');
+  const [activeTab, setActiveTab] = useState('general');
   
-  const [isSaving, setIsSaving] = useState(false)
-  const [saveStatus, setSaveStatus] = useState<"success" | "error" | "">("")
+  const { data, services, loading } = useSystemData();
+  const [configForm, setConfigForm] = useState<any>(null);
+  const [servicesForm, setServicesForm] = useState<any[]>([]);
+  const [leadsCount, setLeadsCount] = useState(0);
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [loadingAI, setLoadingAI] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!loading && data && services.length > 0) {
+    if (!loading && data) {
       const safeData: any = {
         ...data,
         hero: data.hero || { titulo_principal: "", titulo_resaltado: "", subtitulo: "" },
@@ -29,426 +48,348 @@ export default function AdminPage() {
         contacto: data.contacto || { email: "", tel: "", direccion: "" },
         redes: data.redes || { facebook: "", instagram: "", tiktok: "" },
         finanzas: data.finanzas || { iva: "15", descuento: "0" },
-      }
+        seo: data.seo || { title: '', description: '', keywords: '' },
+      };
       
       const initialMarcas = (data.marcas || []).map((m: any) => 
         typeof m === 'string' 
         ? { name: m, logo: '', newFile: null, previewUrl: null }
         : { ...m, newFile: null, previewUrl: null }
-      )
-      safeData.marcas = initialMarcas
+      );
+      safeData.marcas = initialMarcas;
+      setConfigForm(safeData);
+    }
+  }, [data, loading]);
 
-      setConfigForm(safeData)
-
+  useEffect(() => {
+    if (services.length > 0) {
       const mappedServices = services.map(s => ({
         ...s,
-        t: s.t || s.titulo || "",
-        d: s.d || s.descripcion || "",
-        p: s.p || s.precio_base || 0,
+        t: s.titulo || "",
+        d: s.descripcion || "",
+        p: s.precio_base || 0,
         tags: s.tags || "",
         img: s.img || "",
         newFile: null,
         previewUrl: null
-      }))
-      setServicesForm(mappedServices)
+      }));
+      setServicesForm(mappedServices);
     }
-  }, [data, services, loading])
+  }, [services]);
+
+  useEffect(() => {
+    const unsubLeads = onSnapshot(collection(db, 'contact_messages'), (snapshot) => {
+      setLeadsCount(snapshot.size);
+    });
+    return () => unsubLeads();
+  }, []);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    const adminPass = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "Andicot2026";
+    if (password === adminPass) setIsLogged(true);
+    else alert('Clave incorrecta');
+  };
+
+  const handleSave = async () => {
+    if (!configForm || !servicesForm) return alert('Datos no cargados.');
+    setIsSaving(true);
+    try {
+      const batch = writeBatch(db);
+
+      // Guardar servicios
+      const finalServices = await Promise.all(servicesForm.map(async (service) => {
+        let imageUrl = service.img;
+        if (service.newFile) {
+          const storageRef = ref(storage, `servicios/${service.id}/${Date.now()}_${service.newFile.name}`);
+          await uploadBytes(storageRef, service.newFile);
+          imageUrl = await getDownloadURL(storageRef);
+        }
+        return {
+          id: service.id,
+          titulo: service.t || "",
+          descripcion: service.d || "",
+          precio_base: Number(service.p || 0),
+          tags: service.tags || "",
+          img: imageUrl,
+        };
+      }));
+
+      finalServices.forEach(s => {
+        const { id, ...dataToSave } = s;
+        if (id) batch.update(doc(db, "servicios", id), dataToSave);
+      });
+
+      // Guardar marcas
+      const finalMarcas = await Promise.all(configForm.marcas.map(async (marca: any) => {
+        let logoUrl = marca.logo;
+        if (marca.newFile) {
+          const storageRef = ref(storage, `marcas/${Date.now()}_${marca.newFile.name}`);
+          await uploadBytes(storageRef, marca.newFile);
+logoUrl = await getDownloadURL(storageRef);
+        }
+        return { name: marca.name, logo: logoUrl || '' };
+      }));
+
+      const finalConfig = { ...configForm, marcas: finalMarcas };
+      // Limpiar datos temporales de los formularios
+      delete finalConfig.newFile;
+      delete finalConfig.previewUrl;
+      
+      batch.update(doc(db, "configuracion", "web_data"), finalConfig);
+
+      await batch.commit();
+      alert('Publicado correctamente');
+    } catch (err) {
+      console.error(err);
+      alert('Error al guardar');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+  
+  const handleGenSEO = async () => {
+    if (!configForm) return;
+    setLoadingAI('seo');
+    try {
+      const res = await generateSeoMetadata({ heroTitle: configForm.hero.titulo_principal, heroSubtitle: configForm.hero.subtitulo });
+      setConfigForm({
+        ...configForm,
+        seo: {
+          ...configForm.seo,
+          description: res.metaDescription,
+          keywords: res.keywords.join(', ')
+        }
+      });
+    } finally {
+      setLoadingAI(null);
+    }
+  };
+  
+  const handleGenDesc = async (serviceIndex: number) => {
+    const service = servicesForm[serviceIndex];
+    if (!service) return;
+    setLoadingAI(`desc-${service.id}`);
+    try {
+        const { description } = await generateServiceDescription({ title: service.t });
+        const updatedServices = [...servicesForm];
+        updatedServices[serviceIndex].d = description;
+        setServicesForm(updatedServices);
+    } finally {
+        setLoadingAI(null);
+    }
+  };
 
   const handleConfigChange = (section: string, field: string, value: string) => {
+    if (!configForm) return;
     if (section === "root") {
-        setConfigForm((prev: any) => ({ ...prev, [field]: value }))
+        setConfigForm((prev: any) => ({ ...prev, [field]: value }));
     } else {
         setConfigForm((prev: any) => ({
             ...prev,
             [section]: { ...prev[section], [field]: value }
-        }))
+        }));
     }
-  }
+  };
 
   const handleServiceChange = (index: number, field: string, value: any) => {
-    const updated = [...servicesForm]
-    updated[index] = { ...updated[index], [field]: value }
-    setServicesForm(updated)
-  }
-  
-  const handleImageFile = (index: number, file: File) => {
-    const updated = [...servicesForm]
-    updated[index].newFile = file
-    updated[index].previewUrl = URL.createObjectURL(file)
-    setServicesForm(updated)
-  }
-
-  const handleDeleteImage = (index: number) => {
     const updated = [...servicesForm];
-    updated[index].img = "";
-    updated[index].previewUrl = null;
-    updated[index].newFile = null;
+    updated[index] = { ...updated[index], [field]: value };
     setServicesForm(updated);
   };
   
-  const handleBrandChange = (index: number, value: string) => {
-    const updatedMarcas = [...configForm.marcas];
-    updatedMarcas[index].name = value;
-    setConfigForm({ ...configForm, marcas: updatedMarcas });
+  const handleImageFile = (index: number, file: File) => {
+    const updated = [...servicesForm];
+    updated[index].newFile = file;
+    updated[index].previewUrl = URL.createObjectURL(file);
+    setServicesForm(updated);
   };
   
   const handleAddBrand = () => {
+    if (!configForm) return;
     const newBrand = { name: "NUEVA MARCA", logo: "", newFile: null, previewUrl: null };
     setConfigForm({ ...configForm, marcas: [...configForm.marcas, newBrand] });
   };
 
   const handleRemoveBrand = (index: number) => {
+    if (!configForm) return;
     const updatedMarcas = configForm.marcas.filter((_: any, i: number) => i !== index);
     setConfigForm({ ...configForm, marcas: updatedMarcas });
   };
   
   const handleBrandImageFile = (index: number, file: File) => {
+    if (!configForm) return;
     const updatedMarcas = [...configForm.marcas];
     updatedMarcas[index].newFile = file;
     updatedMarcas[index].previewUrl = URL.createObjectURL(file);
     setConfigForm({ ...configForm, marcas: updatedMarcas });
   };
-  
-  const handleDeleteBrandImage = (index: number) => {
-    const updatedMarcas = [...configForm.marcas];
-    updatedMarcas[index].logo = "";
-    updatedMarcas[index].previewUrl = null;
-    updatedMarcas[index].newFile = null;
-    setConfigForm({ ...configForm, marcas: updatedMarcas });
-  };
 
-  const saveAllChanges = async () => {
-    setIsSaving(true)
-    setSaveStatus("")
-    try {
-      const batch = writeBatch(db)
-
-      const finalServices = await Promise.all(servicesForm.map(async (service) => {
-          let imageUrl = service.img;
-          if (service.newFile) {
-              const storageRef = ref(storage, `servicios/${service.id}/${Date.now()}_${service.newFile.name}`);
-              await uploadBytes(storageRef, service.newFile);
-              imageUrl = await getDownloadURL(storageRef);
-          }
-          return {
-              id: service.id,
-              titulo: service.t || "",
-              descripcion: service.d || "",
-              precio_base: Number(service.p || 0),
-              tags: service.tags || "",
-              img: imageUrl,
-          };
-      }));
-
-      finalServices.forEach(s => {
-          const { id, ...dataToSave } = s;
-          batch.update(doc(db, "servicios", id), dataToSave);
-      });
-      
-      const finalMarcas = await Promise.all(configForm.marcas.map(async (marca: any) => {
-          let logoUrl = marca.logo;
-          if (marca.newFile) {
-              const storageRef = ref(storage, `marcas/${Date.now()}_${marca.newFile.name}`);
-              await uploadBytes(storageRef, marca.newFile);
-              logoUrl = await getDownloadURL(storageRef);
-          }
-          return { name: marca.name, logo: logoUrl || '' };
-      }));
-      
-      const finalConfig = { ...configForm, marcas: finalMarcas };
-      delete finalConfig.marcasString;
-      
-      batch.update(doc(db, "configuracion", "web_data"), finalConfig)
-
-      await batch.commit()
-      setSaveStatus("success")
-      setTimeout(() => setSaveStatus(""), 3000)
-
-    } catch (e) {
-      console.error("Error al guardar cambios:", e)
-      setSaveStatus("error")
-      setTimeout(() => setSaveStatus(""), 4000)
-    } finally { 
-      setIsSaving(false)
-    }
-  }
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
-      setIsAuthenticated(true)
-      setAuthError(false)
-    } else {
-      setAuthError(true)
-    }
-  }
-
-  if (!isAuthenticated) return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6">
-      <form onSubmit={handleLogin} className="tech-glass p-10 max-w-md w-full border-accent/30 bg-background/90 shadow-2xl">
-        <Lock className="w-12 h-12 text-accent mx-auto mb-6" />
-        <h1 className="text-2xl md:text-6xl font-headline text-center mb-8 uppercase tracking-tighter text-foreground">PANEL DE CONTROL</h1>
-        <input 
-            type="password" 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)} 
-            className="w-full bg-background border border-accent/50 p-4 text-accent outline-none mb-6 text-center font-code text-lg rounded" 
-            placeholder="CLAVE DE ACCESO..." 
-        />
-        <button type="submit" className="w-full bg-accent text-accent-foreground font-bold py-4 uppercase text-sm tracking-[0.2em] hover:brightness-110 transition-all rounded shadow-[0_0_20px_theme(colors.accent/0.4)]">
-            INICIAR SESIÓN
-        </button>
-        {authError && <p className="text-destructive text-center mt-6 text-xs font-code animate-pulse">ACCESO DENEGADO</p>}
-      </form>
-    </div>
-  )
-
-  if (loading || !configForm) return <div className="h-screen bg-background flex items-center justify-center text-accent font-code text-lg animate-pulse">SINCRONIZANDO SISTEMA...</div>
-
-  return (
-    <main className="min-h-screen bg-background text-foreground p-4 sm:p-6 md:p-12 pb-40 font-sans">
-      
-      <header className="flex flex-col md:flex-row justify-between items-center mb-12 md:mb-16 gap-6 sticky top-4 bg-background/80 backdrop-blur-xl z-50 py-4 px-6 border border-border rounded-2xl shadow-2xl">
-        <div className="flex items-center gap-4">
-            <div className="bg-accent/10 p-2 rounded-lg border border-accent/20">
-                <Database className="w-6 h-6 text-accent" />
+  if (!isLogged) {
+    return (
+      <div className="min-h-screen bg-secondary flex items-center justify-center p-6">
+        <div className="w-full max-w-md bg-secondary/80 backdrop-blur-xl p-10 rounded-3xl border border-primary/20 shadow-2xl">
+          <div className="flex justify-center mb-8">
+            <div className="w-16 h-16 bg-background rounded-2xl flex items-center justify-center border border-primary/50">
+              <Lock size={32} className="text-primary" />
             </div>
-            <div>
-                <h1 className="text-xl md:text-2xl font-black font-headline text-foreground">
-                    SYSTEM <span className="text-accent">ADMIN</span>
-                </h1>
-                <p className="text-[10px] font-code text-muted-foreground uppercase tracking-[0.2em]">Panel de Control Global</p>
-            </div>
-        </div>
-        
-        <div className="flex gap-4 w-full md:w-auto">
-            <button onClick={() => setIsAuthenticated(false)} className="p-3 rounded-lg border border-destructive/30 text-destructive hover:bg-destructive/10 transition-all">
-                <LogOut className="w-5 h-5" />
-            </button>
-            <button 
-                onClick={saveAllChanges} 
-                disabled={isSaving} 
-                className={`flex-1 md:flex-none px-8 py-3 font-bold uppercase text-sm flex items-center justify-center gap-3 transition-all rounded-lg border ${
-                    isSaving ? "bg-amber-500 border-amber-400 text-white animate-pulse" :
-                    saveStatus === "success" 
-                    ? "bg-green-600 border-green-500 text-white shadow-[0_0_20px_rgba(34,197,94,0.4)]" 
-                    : saveStatus === "error"
-                    ? "bg-red-600 border-red-500 text-white"
-                    : "bg-accent text-accent-foreground border-accent hover:shadow-[0_0_20px_theme(colors.accent/0.4)] hover:scale-105"
-                }`}
-            >
-                {isSaving ? "GUARDANDO..." : saveStatus === "success" ? "GUARDADO" : saveStatus === "error" ? "ERROR" : "GUARDAR CAMBIOS"} 
-                <Save className="w-5 h-5" />
-            </button>
-        </div>
-      </header>
-
-      <div className="space-y-10 max-w-7xl mx-auto">
-        
-        <div className="grid lg:grid-cols-2 gap-8">
-            <SectionCard title="Contenido Hero Principal" icon={<Globe />}>
-                <InputField label="Título Línea 1 (Blanco)" value={configForm.hero.titulo_principal} onChange={(v) => handleConfigChange("hero", "titulo_principal", v)} />
-                <InputField label="Título Línea 2 (Acento)" value={configForm.hero.titulo_resaltado} onChange={(v) => handleConfigChange("hero", "titulo_resaltado", v)} />
-                <div>
-                    <Label text="Subtítulo Descriptivo" />
-                    <TextArea value={configForm.hero.subtitulo} onChange={(e: any) => handleConfigChange("hero", "subtitulo", e.target.value)} rows={3} />
-                </div>
-            </SectionCard>
-
-            <SectionCard title="Estadísticas (Hero)" icon={<BarChart3 />}>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <InputField label="Proyectos (ej: 500+)" value={configForm.estadisticas.proyectos} onChange={(v) => handleConfigChange("estadisticas", "proyectos", v)} />
-                    <InputField label="Años Exp. (ej: 15+)" value={configForm.estadisticas.años} onChange={(v) => handleConfigChange("estadisticas", "años", v)} />
-                    <InputField label="Uptime (ej: 99.9%)" value={configForm.estadisticas.uptime} onChange={(v) => handleConfigChange("estadisticas", "uptime", v)} />
-                    <InputField label="Soporte (ej: 24/7)" value={configForm.estadisticas.soporte} onChange={(v) => handleConfigChange("estadisticas", "soporte", v)} />
-                </div>
-            </SectionCard>
-        </div>
-
-        <div className="grid lg:grid-cols-2 gap-8">
-            <SectionCard title="Garantía & Finanzas" icon={<DollarSign />}>
-                <div className="p-4 border border-border rounded-lg bg-foreground/5 mb-6">
-                    <h4 className="text-accent text-xs font-bold uppercase mb-4 flex items-center gap-2"><ShieldCheck className="w-4 h-4"/> Configuración Garantía</h4>
-                    <div className="space-y-4">
-                        <InputField label="Título Garantía" value={configForm.garantia.titulo} onChange={(v) => handleConfigChange("garantia", "titulo", v)} />
-                        <InputField label="Texto Botón" value={configForm.garantia.btn} onChange={(v) => handleConfigChange("garantia", "btn", v)} />
-                    </div>
-                </div>
-                <div className="p-4 border border-border rounded-lg bg-emerald-500/5">
-                    <h4 className="text-emerald-400 text-xs font-bold uppercase mb-4 flex items-center gap-2"><Tag className="w-4 h-4"/> Configuración Cotizador</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <InputField label="IVA (%)" value={configForm.finanzas.iva} onChange={(v) => handleConfigChange("finanzas", "iva", v)} />
-                        <InputField label="Descuento Global (%)" value={configForm.finanzas.descuento} onChange={(v) => handleConfigChange("finanzas", "descuento", v)} />
-                    </div>
-                </div>
-            </SectionCard>
-
-            <SectionCard title="Contacto & Redes Sociales" icon={<Share2 />}>
-                <div className="space-y-5">
-                    <InputField label="Email Corporativo" value={configForm.contacto.email} onChange={(v) => handleConfigChange("contacto", "email", v)} />
-                    <InputField label="WhatsApp / Teléfono" value={configForm.contacto.tel} onChange={(v) => handleConfigChange("contacto", "tel", v)} />
-                    <InputField label="Dirección Física" value={configForm.contacto.direccion} onChange={(v) => handleConfigChange("contacto", "direccion", v)} />
-                    
-                    <div className="border-t border-border pt-5 mt-5">
-                        <Label text="Enlaces Redes Sociales" />
-                        <div className="space-y-3">
-                            <InputField label="Facebook URL" value={configForm.redes.facebook} onChange={(v) => handleConfigChange("redes", "facebook", v)} />
-                            <InputField label="Instagram URL" value={configForm.redes.instagram} onChange={(v) => handleConfigChange("redes", "instagram", v)} />
-                            <InputField label="TikTok URL" value={configForm.redes.tiktok} onChange={(v) => handleConfigChange("redes", "tiktok", v)} />
-                        </div>
-                    </div>
-                </div>
-            </SectionCard>
-        </div>
-
-        <SectionCard title="Gestión de Aliados (Marcas)" icon={<Award />}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {configForm.marcas.map((marca: any, i: number) => (
-                <div key={i} className="bg-background/30 p-4 rounded-lg border border-border flex flex-col gap-4">
-                  <input 
-                    value={marca.name}
-                    onChange={(e) => handleBrandChange(i, e.target.value)}
-                    className="w-full bg-transparent border-b border-border pb-2 font-bold text-foreground outline-none focus:border-accent transition-colors"
-                    placeholder="Nombre de la marca"
-                  />
-                  <div className="relative w-full h-20 bg-background/50 rounded flex items-center justify-center overflow-hidden border border-border">
-                    <img src={marca.previewUrl || marca.logo || `https://placehold.co/120x60/242853/a4c851?text=LOGO`} alt={marca.name} className="max-w-full max-h-full object-contain" />
-                    <label className="absolute inset-0 flex items-center justify-center bg-black/70 opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
-                      <Upload className="w-5 h-5 text-accent" />
-                      <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleBrandImageFile(i, e.target.files[0])} />
-                    </label>
-                  </div>
-                  <div className="flex items-center justify-end gap-2">
-                    {(marca.logo || marca.previewUrl) && (
-                      <button onClick={() => handleDeleteBrandImage(i)} className="p-2 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors" title="Eliminar Logo">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                    <button onClick={() => handleRemoveBrand(i)} className="p-2 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors" title="Eliminar Marca">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <button onClick={handleAddBrand} className="mt-6 w-full flex items-center justify-center gap-2 bg-foreground/5 border border-accent/30 text-accent p-3 rounded-lg text-xs font-bold uppercase hover:bg-accent/10 transition-all">
-                <Plus className="w-4 h-4" /> Añadir Marca
-            </button>
-        </SectionCard>
-
-
-        <div className="pt-10 border-t border-border">
-            <h3 className="text-foreground font-black font-headline text-2xl mb-8 flex items-center gap-3 uppercase">
-                <Database className="text-accent w-8 h-8" /> Catálogo de Servicios
-            </h3>
-            
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {servicesForm.map((s, i) => (
-                    <div key={s.id} className="tech-glass p-6 border-border hover:border-accent/40 transition-all group relative bg-background/40">
-                        <span className="absolute top-2 right-2 text-[10px] font-code text-muted-foreground bg-background/50 px-2 py-1 rounded border border-border">
-                            ID: {s.id.slice(0,6)}
-                        </span>
-
-                        <div className="relative aspect-video mb-5 bg-zinc-900 rounded-lg overflow-hidden border border-border group-hover:border-accent/30 transition-colors">
-                            <img src={s.previewUrl || s.img || `https://placehold.co/600x400/242853/a4c851?text=SIN+IMAGEN`} alt={s.t} className="w-full h-full object-cover" />
-                            
-                            {(s.img || s.previewUrl) && (
-                                <button 
-                                    onClick={() => handleDeleteImage(i)}
-                                    className="absolute top-2 right-2 bg-destructive/80 text-destructive-foreground p-1.5 rounded-full hover:bg-destructive transition-all z-10"
-                                    title="Eliminar Imagen"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                            )}
-
-                            <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 bg-background/70 transition-all duration-300">
-                                <Upload className="w-8 h-8 text-accent mb-2" />
-                                <span className="text-[10px] uppercase font-bold text-foreground tracking-widest">Cambiar Imagen</span>
-                                <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleImageFile(i, e.target.files[0])} />
-                            </label>
-                        </div>
-
-                        <div className="space-y-4">
-                            <input 
-                                value={s.t} 
-                                onChange={(e) => handleServiceChange(i, "t", e.target.value)} 
-                                className="w-full bg-transparent border-b border-border pb-2 font-headline text-lg font-bold uppercase text-accent outline-none focus:border-accent transition-colors placeholder:text-muted-foreground" 
-                                placeholder="TÍTULO DEL SERVICIO" 
-                            />
-                            
-                            <div>
-                                <Label text="Descripción Corta" />
-                                <TextArea value={s.d} onChange={(e: any) => handleServiceChange(i, "d", e.target.value)} rows={3} />
-                            </div>
-                            
-                            <div>
-                                <Label text="Tags de Búsqueda" />
-                                <div className="flex items-center gap-2 bg-background/40 border border-border rounded p-2 focus-within:border-accent/50 transition-colors">
-                                    <Tag className="w-4 h-4 text-accent/50" />
-                                    <input value={s.tags} onChange={(e) => handleServiceChange(i, "tags", e.target.value)} className="w-full bg-transparent text-xs text-accent font-code outline-none" placeholder="camara, sensor, alarma..." />
-                                </div>
-                            </div>
-
-                            <div className="flex justify-between items-center bg-emerald-900/10 p-3 rounded border border-emerald-500/20">
-                                <span className="text-xs text-emerald-400 font-bold uppercase tracking-wider">Precio Base ($)</span>
-                                <input 
-                                    type="number" 
-                                    value={s.p} 
-                                    onChange={(e) => handleServiceChange(i, "p", e.target.value)} 
-                                    className="bg-transparent text-right font-code text-foreground font-bold outline-none w-24 text-lg" 
-                                />
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
+          </div>
+          <h2 className="text-2xl font-bold text-center mb-8 text-white font-headline">Admin Portal</h2>
+          <form onSubmit={handleLogin} className="space-y-6">
+            <input 
+              type="password" 
+              required 
+              value={password} 
+              onChange={e => setPassword(e.target.value)} 
+              className="w-full bg-background border border-gray-700 rounded-lg p-4 text-center text-xl focus:border-primary outline-none text-white font-code" 
+              placeholder="••••••••" 
+            />
+            <button type="submit" className="w-full bg-primary text-secondary font-bold py-4 rounded-lg hover:bg-white transition-colors">Entrar</button>
+          </form>
         </div>
       </div>
-    </main>
-  )
-}
+    );
+  }
 
-function SectionCard({ title, icon, children }: any) {
-    return (
-        <section className="tech-glass p-6 sm:p-8 border-border bg-background/20 hover:bg-background/40 transition-colors">
-            <h3 className="text-accent font-bold font-code text-sm mb-6 flex items-center gap-3 uppercase tracking-[0.15em] border-b border-accent/10 pb-4">
-                {icon} {title}
-            </h3>
-            <div className="space-y-5">
-                {children}
+  if (loading || !configForm) {
+      return (
+          <div className="h-screen bg-slate-50 flex items-center justify-center text-slate-500 font-code text-lg animate-pulse">
+              <Loader2 className="w-8 h-8 mr-4 animate-spin"/>
+              SINCRONIZANDO CON FIREBASE...
+          </div>
+      )
+  }
+
+  return (
+    <div className="flex min-h-screen bg-slate-50 text-slate-900 w-full overflow-x-hidden">
+      <Dashboard 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        onSave={handleSave} 
+        onLogout={() => setIsLogged(false)}
+        isSaving={isSaving}
+      >
+        <main className="w-full">
+          
+          {activeTab === 'metrics' && (
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="bg-white p-8 rounded-3xl border shadow-sm hover:shadow-lg transition-shadow">
+                  <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4"><UsersIcon size={24} /></div>
+                  <p className="text-sm text-gray-500 font-bold uppercase tracking-wider">Usuarios Hoy</p>
+                  <p className="text-5xl font-black text-slate-900 mt-2">0</p>
+                  <p className="text-xs text-green-600 font-bold mt-2 flex items-center gap-1"><TrendingUp size={12} /> +0% vs ayer</p>
+                </div>
+                <div className="bg-white p-8 rounded-3xl border shadow-sm hover:shadow-lg transition-shadow">
+                  <div className="w-12 h-12 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center mb-4"><LayoutDashboard size={24} /></div>
+                  <p className="text-sm text-gray-500 font-bold uppercase tracking-wider">Leads Totales</p>
+                  <p className="text-5xl font-black text-slate-900 mt-2">{leadsCount}</p>
+                  <p className="text-xs text-orange-600 font-bold mt-2">Prospectos en CRM</p>
+                </div>
+              </div>
+              <div className="bg-white p-8 rounded-3xl border shadow-sm"><h3 className="font-bold text-lg mb-6 flex items-center gap-2"><BarChart3 size={20} className="text-primary" /> Rendimiento de la Página</h3><div className="h-64 bg-slate-50 rounded-2xl border-2 border-dashed flex items-center justify-center text-gray-400"><p className="text-center p-6">Aquí se visualizarán las gráficas de Google Analytics <br/><span className="text-xs">(Próxima integración con API de Google)</span></p></div></div>
             </div>
-        </section>
-    )
-}
+          )}
 
-function InputField({ label, value, onChange }: { label: string, value: string, onChange: (v: string) => void }) {
-    return (
-        <div>
-            <Label text={label} />
-            <input 
-                value={value || ""} 
-                onChange={(e) => onChange(e.target.value)} 
-                className="w-full bg-background/40 border border-border p-3 text-sm text-foreground rounded outline-none focus:border-accent/60 focus:bg-background/60 transition-all font-medium" 
-            />
-        </div>
-    )
-}
+          {activeTab === 'general' && (
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="bg-white p-8 rounded-3xl border shadow-sm space-y-6">
+                    <h3 className="font-bold text-lg border-b pb-4">Textos Principales (Hero)</h3>
+                    <div className="space-y-5">
+                      <div><label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Título Principal</label><input value={configForm.hero.titulo_principal} onChange={e => handleConfigChange("hero", "titulo_principal", e.target.value)} className="w-full border p-3 rounded-xl mt-1 focus:ring-1 focus:ring-primary outline-none" /></div>
+                      <div><label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Título Resaltado (Color)</label><input value={configForm.hero.titulo_resaltado} onChange={e => handleConfigChange("hero", "titulo_resaltado", e.target.value)} className="w-full border p-3 rounded-xl mt-1 focus:ring-1 focus:ring-primary outline-none" /></div>
+                      <div><label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Subtítulo Hero</label><textarea value={configForm.hero.subtitulo} onChange={e => handleConfigChange("hero", "subtitulo", e.target.value)} className="w-full border p-3 rounded-xl mt-1 focus:ring-1 focus:ring-primary outline-none" rows={3} /></div>
+                    </div>
+                  </div>
+                  <div className="bg-white p-8 rounded-3xl border shadow-sm space-y-6">
+                    <h3 className="font-bold text-lg border-b pb-4">Contacto & Redes</h3>
+                    <div className="space-y-5">
+                      <div><label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Email Corporativo</label><input value={configForm.contacto.email} onChange={e => handleConfigChange("contacto", "email", e.target.value)} className="w-full border p-3 rounded-xl mt-1 focus:ring-1 focus:ring-primary outline-none" /></div>
+                      <div><label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Teléfono / WhatsApp</label><input value={configForm.contacto.tel} onChange={e => handleConfigChange("contacto", "tel", e.target.value)} className="w-full border p-3 rounded-xl mt-1 focus:ring-1 focus:ring-primary outline-none" /></div>
+                      <div><label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Facebook URL</label><input value={configForm.redes.facebook} onChange={e => handleConfigChange("redes", "facebook", e.target.value)} className="w-full border p-3 rounded-xl mt-1 focus:ring-1 focus:ring-primary outline-none" /></div>
+                    </div>
+                  </div>
+              </div>
 
-function TextArea({ value, onChange, rows = 3, placeholder }: any) {
-    return (
-        <textarea 
-            value={value || ""} 
-            onChange={onChange} 
-            rows={rows}
-            placeholder={placeholder}
-            className="w-full bg-background/40 border border-border p-3 text-sm text-muted-foreground rounded outline-none focus:border-accent/60 focus:bg-background/60 transition-all resize-none leading-relaxed" 
-        />
-    )
-}
+               <div className="bg-white p-8 rounded-3xl border shadow-sm w-full">
+                  <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
+                     <h3 className="font-bold text-lg border-b pb-2 w-full sm:w-auto">Optimización SEO Global</h3>
+                     <button onClick={handleGenSEO} disabled={loadingAI === 'seo'} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-green-50 text-green-700 px-6 py-3 rounded-xl text-sm font-bold border border-green-200 hover:bg-green-100 transition-colors">
+                        {loadingAI === 'seo' ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />} Sugerir con IA
+                     </button>
+                  </div>
+                  <div className="space-y-6">
+                    <div><label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Meta Descripción</label><textarea value={configForm.seo?.description || ''} onChange={e => setConfigForm({...configForm, seo: {...configForm.seo, description: e.target.value}})} className="w-full border p-4 rounded-xl focus:ring-1 focus:ring-primary outline-none" rows={4} /><p className="text-[10px] text-gray-400 mt-1 uppercase font-bold">Límite: 160 caracteres.</p></div>
+                    <div><label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Palabras Clave</label><textarea value={configForm.seo?.keywords || ''} onChange={e => setConfigForm({...configForm, seo: {...configForm.seo, keywords: e.target.value}})} className="w-full border p-4 rounded-xl focus:ring-1 focus:ring-primary outline-none" rows={3} /></div>
+                  </div>
+                </div>
+            </div>
+          )}
 
-function Label({ text }: { text: string }) {
-    return (
-        <label className="text-[10px] text-muted-foreground font-bold uppercase mb-2 block tracking-widest">{text}</label>
-    )
+          {activeTab === 'ecosystems' && (
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {servicesForm.map((s, i) => (
+                  <div key={s.id} className="bg-white p-6 rounded-3xl border flex flex-col sm:flex-row gap-6 group hover:border-primary/50 transition-all">
+                    <div className="shrink-0">
+                      <div className="w-44 h-44 bg-slate-50 rounded-2xl overflow-hidden border-2 border-slate-100">
+                        <ImagePreview src={s.previewUrl || s.img} alt={s.t} fallbackIcon={Cpu} />
+                      </div>
+                      <div className="mt-3 flex flex-col gap-2">
+                        <label className="cursor-pointer bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:bg-slate-200 transition-colors"><UploadCloud size={14} /> Subir Foto<input type="file" accept="image/*" className="hidden" onChange={e => e.target.files && handleImageFile(i, e.target.files[0])} /></label>
+                        <button onClick={() => handleGenDesc(i)} disabled={loadingAI === `desc-${s.id}`} className="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:bg-blue-100 transition-colors">{loadingAI === `desc-${s.id}` ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />} Generar Desc</button>
+                      </div>
+                    </div>
+                    <div className="flex-1 space-y-4">
+                      <div>
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Nombre del Servicio</label>
+                        <input value={s.t} onChange={e => handleServiceChange(i, "t", e.target.value)} className="w-full font-bold text-xl border-b-2 border-slate-100 py-2 outline-none focus:border-primary bg-transparent" placeholder="Ej: CCTV Avanzado" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Descripción Comercial</label>
+                        <textarea value={s.d} onChange={e => handleServiceChange(i, "d", e.target.value)} className="w-full text-sm border p-3 rounded-xl focus:ring-1 focus:ring-primary outline-none" rows={3} placeholder="Describe el impacto..." />
+                      </div>
+                       <div>
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Tags (separados por comas)</label>
+                        <input value={s.tags} onChange={e => handleServiceChange(i, "tags", e.target.value)} className="w-full border p-3 rounded-xl mt-1 focus:ring-1 focus:ring-primary outline-none text-xs" placeholder="cámara, ia, seguridad..." />
+                      </div>
+                       <div>
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Precio Base ($)</label>
+                        <input type="number" value={s.p} onChange={e => handleServiceChange(i, "p", e.target.value)} className="w-full border p-3 rounded-xl mt-1 focus:ring-1 focus:ring-primary outline-none" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'brands' && (
+             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-secondary">Aliados Estratégicos</h3>
+                <button onClick={handleAddBrand} className="bg-secondary text-white px-6 py-3 rounded-xl flex items-center gap-2 text-sm font-bold hover:bg-opacity-90 shadow-lg"><Plus size={18} /> Nueva Marca</button>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+                {configForm.marcas.map((b: any, i: number) => (
+                  <div key={i} className="bg-white p-6 rounded-2xl border relative flex flex-col items-center gap-4 shadow-sm group hover:border-primary/50 transition-all">
+                    <button onClick={() => handleRemoveBrand(i)} className="absolute top-2 right-2 text-red-300 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100"><Trash2 size={16}/></button>
+                    <div className="h-28 flex items-center justify-center p-2 bg-slate-50 w-full rounded-xl border border-slate-100 overflow-hidden">
+                       <BrandPreview src={b.previewUrl || b.logo} name={b.name} />
+                    </div>
+                    <input value={b.name} onChange={e => { const items = [...configForm.marcas]; items[i].name = e.target.value; setConfigForm({...configForm, marcas: items}); }} className="w-full text-center font-bold text-xs p-2 border rounded-lg focus:ring-1 focus:ring-primary outline-none" />
+                    <label className="cursor-pointer bg-secondary text-white px-6 py-2 rounded-full text-[10px] font-bold hover:bg-opacity-90 transition-all w-full text-center">Subir Logo<input type="file" accept="image/*" className="hidden" onChange={e => e.target.files && handleBrandImageFile(i, e.target.files[0])} /></label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'crm' && <CRMLeads />}
+          
+        </main>
+      </Dashboard>
+    </div>
+  );
 }
