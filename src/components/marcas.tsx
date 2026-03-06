@@ -5,7 +5,6 @@ import Image from "next/image"
 
 export function Marcas({ brands }: { brands: any[] }) {
   const [rotation, setRotation] = useState(0)
-  // Valor por defecto para PC, ajustado según tu petición.
   const [radius, setRadius] = useState(216)
   const requestRef = useRef<number>()
 
@@ -28,7 +27,6 @@ export function Marcas({ brands }: { brands: any[] }) {
       // ==================================================================
       // AQUÍ PUEDES CAMBIAR EL RADIO (qué tan juntas están las etiquetas)
       // Un número más pequeño las junta más.
-      // El primer valor es para móvil, el segundo para PC.
       // ==================================================================
       setRadius(window.innerWidth < 768 ? 165 : 216) 
     }
@@ -69,7 +67,6 @@ export function Marcas({ brands }: { brands: any[] }) {
         </h2>
       </div>
 
-      {/* Anillo de Texto (El original) */}
       <div
         className="relative flex justify-center items-center"
         style={{
@@ -83,7 +80,7 @@ export function Marcas({ brands }: { brands: any[] }) {
             transformStyle: "preserve-3d",
             // ==================================================================
             // AQUÍ PUEDES CAMBIAR LA INCLINACIÓN ("lo tumbado") DEL ANILLO
-            // El valor actual es -13deg. Un número más negativo (ej: -15deg) lo inclina más.
+            // Un número más negativo (ej: -15deg) lo inclina más.
             // ==================================================================
             transform: `rotateX(-13deg) rotateY(${rotation}deg)`
           }}
@@ -100,10 +97,13 @@ export function Marcas({ brands }: { brands: any[] }) {
                            font-headline font-bold shadow-[0_0_15px_theme(colors.accent/0.1)]
                            backface-visible transition-all hover:bg-accent/10"
                 style={{
+                  // ==================================================================
+                  // AJUSTE MANUAL: Ancho de las etiquetas (PC y Móvil)
+                  // ==================================================================
                   width: isMobile ? "115px" : "185px",
                   height: isMobile ? "45px" : "78px",
-                  marginLeft: isMobile ? "-57.5px" : "-92.5px",
-                  marginTop: isMobile ? "-22.5px" : "-39px",
+                  marginLeft: isMobile ? "-57.5px" : "-92.5px", // Mitad del ancho, en negativo
+                  marginTop: isMobile ? "-22.5px" : "-39px",   // Mitad de la altura, en negativo
                   fontSize: isMobile ? "0.7rem" : "1.1rem",
                   transform: `rotateY(${angle}deg) translateZ(${radius}px)`
                 }}

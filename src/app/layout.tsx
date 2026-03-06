@@ -97,7 +97,7 @@ export default function RootLayout({
         />
       </head>
       
-      <body className="light-mode antialiased overflow-x-hidden selection:bg-accent/30 selection:text-accent-foreground">
+      <body className="antialiased overflow-x-hidden selection:bg-accent/30 selection:text-accent-foreground">
         {/* FONDO ANIMADO "CEREBRO" */}
         <BrainBg />
         

@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef } from "react"
 import Image from "next/image"
 
-// Mapa de logos de respaldo (fallback) con URLs de alta calidad.
 const logoMap: { [key: string]: string } = {
   'PELCO': 'https://upload.wikimedia.org/wikipedia/commons/8/8b/Pelco_wordmark_tm_Clean_PMS300C.png',
   'AVIGILON': 'https://www.groupeclr.com/wp-content/uploads/2023/10/Avigilon-Logo-White-1024x292.png',
@@ -29,11 +28,9 @@ export function Marcas2({ brands }: { brands: any[] }) {
     .map(brand => {
       const name = (typeof brand === 'object' ? brand.name : brand)?.toUpperCase() || '';
       
-      // Prioridad 1: Usar el logo subido en el admin si existe
       if (typeof brand === 'object' && brand.logo && brand.logo.startsWith('http')) {
         return { name: brand.name, logoUrl: brand.logo };
       }
-      // Prioridad 2: Usar el logo de respaldo del logoMap
       if (logoMap[name]) {
         return { name: name, logoUrl: logoMap[name] };
       }
@@ -46,7 +43,6 @@ export function Marcas2({ brands }: { brands: any[] }) {
       // ==================================================================
       // AQUÍ PUEDES CAMBIAR EL RADIO (qué tan juntas están las etiquetas)
       // Un número más pequeño las junta más.
-      // El primer valor es para móvil, el segundo para PC.
       // ==================================================================
       setRadius(window.innerWidth < 768 ? 165 : 216)
     }
@@ -100,7 +96,7 @@ export function Marcas2({ brands }: { brands: any[] }) {
             transformStyle: "preserve-3d",
             // ==================================================================
             // AQUÍ PUEDES CAMBIAR LA INCLINACIÓN ("lo tumbado") DEL ANILLO
-            // El valor actual es -13deg. Un número más negativo (ej: -15deg) lo inclina más.
+            // Un número más negativo (ej: -15deg) lo inclina más.
             // ==================================================================
             transform: `rotateX(-13deg) rotateY(${rotation}deg)`
           }}
@@ -117,10 +113,13 @@ export function Marcas2({ brands }: { brands: any[] }) {
                            p-4 overflow-hidden
                            backface-visible transition-all"
                 style={{
+                  // ==================================================================
+                  // AJUSTE MANUAL: Ancho de las etiquetas (PC y Móvil)
+                  // ==================================================================
                   width: isMobile ? "110px" : "180px",
                   height: isMobile ? "60px" : "80px",
-                  marginLeft: isMobile ? "-55px" : "-90px",
-                  marginTop: isMobile ? "-30px" : "-40px",
+                  marginLeft: isMobile ? "-55px" : "-90px", // Mitad del ancho, en negativo
+                  marginTop: isMobile ? "-30px" : "-40px",  // Mitad de la altura, en negativo
                   transform: `rotateY(${angle}deg) translateZ(${radius}px)`
                 }}
               >
