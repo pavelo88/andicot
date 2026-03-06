@@ -3,44 +3,95 @@
 import { useEffect, useState, useRef } from "react"
 import Image from "next/image"
 
-// --- LOGO MAP: Usado como respaldo si no hay un logo en Firebase ---
-const logoMap: { [key: string]: string } = {
-  'PELCO': 'https://upload.wikimedia.org/wikipedia/commons/8/8b/Pelco_wordmark_tm_Clean_PMS300C.png',
-  'AVIGILON': 'https://www.groupeclr.com/wp-content/uploads/2023/10/Avigilon-Logo-White-1024x292.png',
-  'MOTOROLA': 'https://upload.wikimedia.org/wikipedia/commons/4/45/Motorola-logo-black-and-white.png',
-  'BOSCH': 'https://upload.wikimedia.org/wikipedia/commons/1/16/Bosch-logo.svg',
-  'TYCO': 'https://upload.wikimedia.org/wikipedia/commons/9/93/Tyco-Logo.svg',
-  'HIKVISION': 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Hikvision_logo.svg',
-  'CISCO': 'https://upload.wikimedia.org/wikipedia/commons/6/64/Cisco_logo.svg',
-  'HONEYWELL': 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Honeywell_logo.svg',
-  'APC': 'https://upload.wikimedia.org/wikipedia/commons/b/b4/LogoAPC.svg',
-  'LENEL': 'https://www.lenels2.com/wp-content/uploads/2020/03/LenelS2_logo-color.svg',
-  'EDWARDS': 'https://www.edwardsfiresafety.com/wp-content/uploads/carrier-edwards-logo.svg',
-  'NOTIFIER': 'https://www.notifier.es/wp-content/uploads/sites/11/2022/10/NOTIFIER_Powered_by_Honeywell_BLK_RGB_es.png',
-  'DSC': 'https://www.dsc.com/assets/images/logo.png'  
-};
+// --- SUBCOMPONENTE PARA CADA TARJETA DE MARCA ---
+function BrandCard({ brand, isMobile, angle, radius }: { brand: { name: string, logoUrl: string }, isMobile: boolean, angle: number, radius: number }) {
+  // Estado para controlar si la imagen falló al cargar
+  const [imageError, setImageError] = useState(false);
+
+  return (
+    <div
+      className="group absolute left-1/2 top-1/2 flex items-center justify-center
+                 tech-glass
+                 font-headline font-bold shadow-[0_0_15px_theme(colors.accent/0.1)]
+                 backface-visible transition-all duration-300 bg-background/80 border-border"
+      style={{
+        // ================================================
+        // === INICIO: TAMAÑO DE ETIQUETAS (TARJETAS) ===
+        // Aquí puedes cambiar el tamaño de las tarjetas.
+        // ================================================
+        width: isMobile ? "120px" : "160px",
+        height: isMobile ? "50px" : "70px",
+        // === FIN: TAMAÑO DE ETIQUETAS (TARJETAS) ===
+        marginLeft: isMobile ? "-60px" : "-80px",
+        marginTop: isMobile ? "-25px" : "-35px",
+        transform: `rotateY(${angle}deg) translateZ(${radius}px)`
+      }}
+    >
+      {imageError ? (
+        // Si hay un error, muestra el nombre de la marca con efecto hover
+        <span className="text-muted-foreground transition-colors duration-300 group-hover:text-accent font-code text-xs md:text-sm uppercase">
+          {brand.name}
+        </span>
+      ) : (
+        // Si no hay error, muestra la imagen
+        // ================================================
+        // === INICIO: TAMAÑO DE IMAGEN (logo) ===
+        // Cambia el padding (p-X) para hacer el logo más grande o pequeño.
+        // Más padding (p-10, p-12) = logo más pequeño.
+        // Menos padding (p-6, p-4) = logo más grande.
+        // ================================================
+        <div className="relative w-full h-full p-10">
+        {/* === FIN: TAMAÑO DE IMAGEN (logo) === */}
+          <Image
+            src={brand.logoUrl}
+            alt={`${brand.name} Logo`}
+            fill
+            className="object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
+            sizes="(max-width: 768px) 110px, 140px"
+            // Aquí está la magia: si la imagen falla, actualizamos el estado
+            onError={() => setImageError(true)}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 export function Marcas({ brands }: { brands: any[] }) {
   const [rotation, setRotation] = useState(0)
   const [isSlowed, setIsSlowed] = useState(false)
-  const [radius, setRadius] = useState(216) // Ajustado desde 240
+  const [radius, setRadius] = useState(260) // Aumentado para separar etiquetas
   const requestRef = useRef<number>()
 
+  // Lógica unificada para procesar los datos de las marcas vengan de donde vengan (Firebase o data.ts)
   const brandsWithData = (brands || []).map(brand => {
-    const name = (typeof brand === 'object' ? brand.name : brand)?.toUpperCase() || '';
-    const logoUrl = (typeof brand === 'object' && brand.logo) ? brand.logo : logoMap[name];
-    return { name, logoUrl };
-  }).filter(b => b.name && b.logoUrl);
+    if (typeof brand === 'object' && brand.name) {
+      // El formato de Firebase es { name, logo }
+      // El formato de data.ts puede ser { id, name, url } o string
+      const logoUrl = brand.logo || brand.url;
+      if (logoUrl) {
+        return { name: brand.name.toUpperCase(), logoUrl };
+      }
+    }
+    // Fallback para el array de strings original
+    if (typeof brand === 'string') {
+        // En este caso, no tenemos una URL de logo definida, así que la lógica de error se activará.
+        return { name: brand.toUpperCase(), logoUrl: '' };
+    }
+    return null;
+  }).filter(Boolean) as { name: string, logoUrl: string }[];
+
 
   useEffect(() => {
     const handleResize = () => {
-      setRadius(window.innerWidth < 768 ? 144 : 216)
+      setRadius(window.innerWidth < 768 ? 144 : 260)
     }
     handleResize()
     window.addEventListener('resize', handleResize)
 
     const animate = () => {
-      const speed = isSlowed ? 0.01 : 0.091; // Incrementado ~7% desde 0.085
+      const speed = isSlowed ? 0.01 : 0.091;
       setRotation(prev => prev - speed)
       requestRef.current = requestAnimationFrame(animate)
     }
@@ -93,36 +144,13 @@ export function Marcas({ brands }: { brands: any[] }) {
             const isMobile = radius < 200
 
             return (
-              <div
+              <BrandCard
                 key={i}
-                className="group absolute left-1/2 top-1/2 flex items-center justify-center
-                           tech-glass
-                           font-headline font-bold shadow-[0_0_15px_theme(colors.accent/0.1)]
-                           backface-visible transition-all duration-300 bg-background/80 border-border"
-                style={{
-                  // Aquí puedes cambiar el tamaño de las tarjetas (etiquetas).
-                  // === INICIO: TAMAÑO DE ETIQUETAS (TARJETAS) ===
-                  width: isMobile ? "120px" : "160px",
-                  height: isMobile ? "50px" : "70px",
-                  // === FIN: TAMAÑO DE ETIQUETAS (TARJETAS) ===
-                  marginLeft: isMobile ? "-60px" : "-80px",
-                  marginTop: isMobile ? "-25px" : "-35px",
-                  transform: `rotateY(${angle}deg) translateZ(${radius}px)`
-                }}
-              >
-                {/* El padding (p-X) controla qué tan pequeña se ve la imagen dentro de la tarjeta. */}
-                {/* === INICIO: TAMAÑO DE IMAGEN (logo) === */}
-                <div className="relative w-full h-full p-4"> 
-                {/* === FIN: TAMAÑO DE IMAGEN (logo) === */}
-                    <Image
-                        src={brand.logoUrl}
-                        alt={`${brand.name} Logo`}
-                        fill
-                        className="object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
-                        sizes="(max-width: 768px) 110px, 140px"
-                    />
-                </div>
-              </div>
+                brand={brand}
+                isMobile={isMobile}
+                angle={angle}
+                radius={radius}
+              />
             )
           })}
         </div>
