@@ -132,7 +132,7 @@ export function AIChatbot() {
         <div className="tech-glass p-0 flex flex-col h-full border-primary/30 shadow-2xl rounded-2xl overflow-hidden">
           <header className="p-4 border-b border-primary/20 flex justify-between items-center">
             <div className="font-headline text-primary flex items-center gap-2">
-              <Cpu size={20} /> Asistente de Ventas
+              <Cpu size={20} /> Consultor IA
             </div>
             <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-foreground h-7 w-7">
               <X size={18} />
