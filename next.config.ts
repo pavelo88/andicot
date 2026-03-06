@@ -46,6 +46,8 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'www.dsc.com' },
       { protocol: 'https', hostname: 'www.se.com' },
       { protocol: 'https', hostname: 'www.groupeclr.com' },
+      { protocol: 'https', hostname: 'vectorlogoseek.com' },
+      { protocol: 'https', hostname: 'www.notifier.es' },
     ],
   },
 };
