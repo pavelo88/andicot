@@ -11,6 +11,7 @@ import { Cotizador } from "@/components/cotizador"
 import { Contacto } from "@/components/contacto"
 import { Footer } from "@/components/footer"
 import { WhatsappFloat } from "@/components/whatsapp-float"
+import { ExpertAssistantFloat } from "@/components/expert-assistant-float"
 import { useState } from "react"
 
 export default function Home() {
@@ -127,6 +128,7 @@ export default function Home() {
 
       <Footer />
       
+      <ExpertAssistantFloat services={services} brands={data.marcas} />
       <WhatsappFloat />
     </div>
   )
