@@ -22,21 +22,21 @@ const BrandCard = ({ brand, isMobile, angle, radius }: { brand: { name: string, 
         // === INICIO: TAMAÑO DE ETIQUETAS (TARJETAS) ===
         // Aquí puedes cambiar el tamaño de las tarjetas.
         // ================================================
-        width: isMobile ? "120px" : "160px",
-        height: isMobile ? "50px" : "70px",
+        width: isMobile ? "120px" : "150px", // Reducido para escritorio
+        height: isMobile ? "50px" : "60px",
         // === FIN: TAMAÑO DE ETIQUETAS (TARJETAS) ===
-        marginLeft: isMobile ? "-60px" : "-80px",
-        marginTop: isMobile ? "-25px" : "-35px",
+        marginLeft: isMobile ? "-60px" : "-75px",
+        marginTop: isMobile ? "-25px" : "-30px",
         transform: `rotateY(${angle}deg) translateZ(${radius}px)`
       }}
     >
-      {hasError ? (
-        // Si hay un error, muestra el nombre de la marca con efecto hover
+      {hasError || !brand.logoUrl ? (
+        // Si hay un error o no hay logo, muestra el nombre de la marca con efecto hover
         <span className="text-muted-foreground transition-colors duration-300 group-hover:text-accent font-code text-xs md:text-sm uppercase">
           {brand.name}
         </span>
       ) : (
-        // Si no hay error, muestra la imagen
+        // Si no hay error y hay logo, muestra la imagen
         // ================================================
         // === INICIO: TAMAÑO DE IMAGEN (logo) ===
         // Cambia el padding (p-X) para hacer el logo más grande o pequeño.
@@ -67,17 +67,21 @@ export function Marcas({ brands }: { brands: any[] }) {
   const defaultBrands = [
     { id: 1, name: 'PELCO', url: 'https://upload.wikimedia.org/wikipedia/commons/8/8b/Pelco_wordmark_tm_Clean_PMS300C.png' },
     { id: 2, name: 'AVIGILON', url: 'https://www.groupeclr.com/wp-content/uploads/2023/10/Avigilon-Logo-White-1024x292.png' },
-    { id: 3, name: 'MOTOROLA', url: 'https://upload.wikimedia.org/wikipedia/commons/4/45/Motorola-logo-black-and-white.png' },
+    { id: 3, name: 'MOTOROLA', url: 'https://www.motorolasolutions.com/content/dam/msi/images/business/products/two-way-radios/mototrbo-logo.png' },
     { id: 4, name: 'BOSCH', url: 'https://upload.wikimedia.org/wikipedia/commons/1/16/Bosch-logo.svg' },
-    { id: 5, name: 'TYCO', url: 'https://upload.wikimedia.org/wikipedia/commons/9/93/Tyco-Logo.svg' },
-    { id: 6, name: 'HIKVISION', url: 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Hikvision_logo.svg' },
-    { id: 7, name: 'CISCO', url: 'https://upload.wikimedia.org/wikipedia/commons/6/64/Cisco_logo.svg' },
-    { id: 8, name: 'HONEYWELL', url: 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Honeywell_logo.svg' },
-    { id: 9, name: 'APC', url: 'https://upload.wikimedia.org/wikipedia/commons/b/b4/LogoAPC.svg' }
+    { id: 5, name: 'LENEL', url: 'https://www.lenels2.com/themes/custom/lenels2/images/lenels2-logo-v-2023.svg' },
+    { id: 6, name: 'EDWARDS', url: 'https://www.edwardsfiresafety.com/themes/custom/edwards/images/logo_color.svg' },
+    { id: 7, name: 'CISCO', url: 'https://www.cisco.com/c/dam/m/en_us/about/brand-center/cisco-logo-positive.svg' },
+    { id: 8, name: 'HONEYWELL', url: 'https://www.security.honeywell.com/img/honeywell-logo-white.svg' },
+    { id: 9, name: 'DSC', url: 'https://www.dsc.com/images/new-dsc-logo-2021.svg' },
+    { id: 10, name: 'TYCO', url: 'https://vectorlogoseek.com/wp-content/uploads/2019/12/tyco-vector-logo-small.png' },
+    { id: 11, name: 'HIKVISION', url: 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Hikvision_logo.svg' },
+    { id: 12, name: 'APC', url: 'https://upload.wikimedia.org/wikipedia/commons/b/b4/LogoAPC.svg' },
+    { id: 13, name: 'NOTIFIER', url: 'https://www.notifier.es/wp-content/uploads/sites/11/2023/04/logo-notifier-by-honeywell.svg'}
   ];
   
   // Lógica de procesamiento de marcas mejorada
-  const brandsWithData = (brands && brands.length > 0 ? brands : defaultBrands.map(b => b.name)).map(brand => {
+  const brandsWithData = (brands && brands.length > 0 ? brands : []).map(brand => {
     let brandName: string;
     let logoFromDb: string | undefined;
 
@@ -97,13 +101,13 @@ export function Marcas({ brands }: { brands: any[] }) {
 
   useEffect(() => {
     const handleResize = () => {
-      setRadius(window.innerWidth < 768 ? 160 : 280) // Aumentado para separar más
+      setRadius(window.innerWidth < 768 ? 160 : 320) // Aumentado para separar más
     }
     handleResize()
     window.addEventListener('resize', handleResize)
 
     const animate = () => {
-      const speed = isSlowed ? 0.01 : 0.091;
+      const speed = isSlowed ? 0.01 : 0.098; // +7%
       setRotation(prev => prev - speed)
       requestRef.current = requestAnimationFrame(animate)
     }
@@ -125,6 +129,10 @@ export function Marcas({ brands }: { brands: any[] }) {
       onClick={() => setIsSlowed(prev => !prev)}
       className="relative z-10 overflow-hidden border-b border-t border-border pt-12 md:pt-20 pb-20 bg-background cursor-pointer"
     >
+      <div className="absolute inset-0 bg-gradient-to-b from-background to-transparent opacity-80"></div>
+      
+      <div className="absolute inset-0 bg-background/95 -z-10"></div>
+      
       <div className="text-center mb-4 md:mb-8 relative z-20">
         <h2 className="font-headline font-black uppercase leading-tight">
           <span className="text-foreground text-2xl md:text-5xl block md:inline md:mr-3">
