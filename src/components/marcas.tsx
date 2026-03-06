@@ -5,7 +5,7 @@ import Image from "next/image"
 
 export function Marcas({ brands }: { brands: any[] }) {
   const [rotation, setRotation] = useState(0)
-  const [radius, setRadius] = useState(320)
+  const [radius, setRadius] = useState(240) // Default to desktop
   const requestRef = useRef<number>()
 
   const defaultBrandNames = [
@@ -14,13 +14,13 @@ export function Marcas({ brands }: { brands: any[] }) {
 
   const brandNames = (brands && brands.length > 0 ? brands : defaultBrandNames).map(brand => {
     if (typeof brand === 'string') {
-      return brand; // Handles old format (string[])
+      return brand;
     }
     if (typeof brand === 'object' && brand.name) {
-      return brand.name; // Handles new format ({ name, logo })
+      return brand.name;
     }
-    return ''; // Fallback for malformed data
-  }).filter(Boolean); // Remove any empty strings
+    return '';
+  }).filter(Boolean);
 
   useEffect(() => {
     const handleResize = () => {

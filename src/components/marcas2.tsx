@@ -22,22 +22,16 @@ const logoMap: { [key: string]: string } = {
 
 export function Marcas2({ brands }: { brands: any[] }) {
   const [rotation, setRotation] = useState(0)
-  const [radius, setRadius] = useState(320)
+  const [radius, setRadius] = useState(240) // Default to desktop
   const requestRef = useRef<number>()
 
-  // Lógica robusta para obtener los logos:
-  // 1. Prioriza el logo subido desde el panel de admin.
-  // 2. Si no hay logo del admin, usa el logo de respaldo del `logoMap`.
-  // 3. Si no hay ninguno de los dos, la marca no se muestra para evitar imágenes rotas.
   const brandsWithLogos = (brands || [])
     .map(brand => {
       const name = (typeof brand === 'object' ? brand.name : brand)?.toUpperCase() || '';
       
-      // Prioridad 1: Un logo válido subido desde el admin.
       if (typeof brand === 'object' && brand.logo && brand.logo.startsWith('http')) {
         return { name: brand.name, logoUrl: brand.logo };
       }
-      // Prioridad 2: Un logo de respaldo del mapa.
       if (logoMap[name]) {
         return { name: name, logoUrl: logoMap[name] };
       }
