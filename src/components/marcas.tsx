@@ -23,6 +23,7 @@ const logoMap: { [key: string]: string } = {
 
 export function Marcas({ brands }: { brands: any[] }) {
   const [rotation, setRotation] = useState(0)
+  const [isSlowed, setIsSlowed] = useState(false) // Estado para controlar velocidad
   // ==================================================================
   // AJUSTE MANUAL: Radio del anillo (qué tan juntas están las etiquetas)
   // Un número más grande las separa más.
@@ -43,14 +44,15 @@ export function Marcas({ brands }: { brands: any[] }) {
       // ==================================================================
       // AJUSTE MANUAL: Radio del anillo (Móvil vs PC)
       // ==================================================================
-      setRadius(window.innerWidth < 768 ? 180 : 240)
+      setRadius(window.innerWidth < 768 ? 160 : 210)
     }
 
     handleResize()
     window.addEventListener('resize', handleResize)
 
     const animate = () => {
-      setRotation(prev => prev - 0.08)
+      const speed = isSlowed ? 0.01 : 0.085; // Velocidad lenta vs normal (aumentada 7%)
+      setRotation(prev => prev - speed)
       requestRef.current = requestAnimationFrame(animate)
     }
     requestRef.current = requestAnimationFrame(animate)
@@ -59,7 +61,7 @@ export function Marcas({ brands }: { brands: any[] }) {
       window.removeEventListener('resize', handleResize)
       if (requestRef.current) cancelAnimationFrame(requestRef.current)
     }
-  }, [])
+  }, [isSlowed]) // Re-ejecutar el efecto si 'isSlowed' cambia
 
   if (!brandsWithData || brandsWithData.length === 0) {
     return null;
@@ -68,7 +70,8 @@ export function Marcas({ brands }: { brands: any[] }) {
   return (
     <section
       id="alianzas"
-      className="relative z-10 overflow-hidden border-y border-border pt-12 md:pt-20 pb-20 bg-secondary dark:bg-background"
+      onClick={() => setIsSlowed(prev => !prev)} // Alterna la velocidad al hacer clic
+      className="relative z-10 overflow-hidden border-y border-border pt-12 md:pt-20 pb-20 bg-secondary dark:bg-background cursor-pointer"
     >
       <div className="text-center mb-4 md:mb-8 relative z-20">
         <h2 className="font-headline font-black uppercase leading-tight">
@@ -114,10 +117,10 @@ export function Marcas({ brands }: { brands: any[] }) {
                   // ==================================================================
                   // AJUSTE MANUAL: Ancho de las etiquetas (PC y Móvil)
                   // ==================================================================
-                  width: isMobile ? "115px" : "160px",
-                  height: isMobile ? "45px" : "75px",
-                  marginLeft: isMobile ? "-57.5px" : "-80px", // Mitad del ancho, en negativo
-                  marginTop: isMobile ? "-22.5px" : "-39px",   // Mitad de la altura, en negativo
+                  width: isMobile ? "110px" : "140px",
+                  height: isMobile ? "45px" : "65px",
+                  marginLeft: isMobile ? "-55px" : "-70px",
+                  marginTop: isMobile ? "-22.5px" : "-32.5px",
                   transform: `rotateY(${angle}deg) translateZ(${radius}px)`
                 }}
               >
@@ -127,7 +130,7 @@ export function Marcas({ brands }: { brands: any[] }) {
                         alt={`${brand.name} Logo`}
                         fill
                         className="object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
-                        sizes="(max-width: 768px) 110px, 160px"
+                        sizes="(max-width: 768px) 110px, 140px"
                     />
                 </div>
               </div>
