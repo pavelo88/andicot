@@ -209,6 +209,14 @@ export default function AdminPage() {
     updated[index].previewUrl = URL.createObjectURL(file);
     setServicesForm(updated);
   };
+
+  const handleRemoveServiceImage = (index: number) => {
+    const updatedServices = [...servicesForm];
+    updatedServices[index].img = '';
+    updatedServices[index].previewUrl = null;
+    updatedServices[index].newFile = null;
+    setServicesForm(updatedServices);
+  };
   
   const handleAddBrand = () => {
     if (!configForm) return;
@@ -333,13 +341,17 @@ export default function AdminPage() {
 
           {activeTab === 'ecosystems' && (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {/* IMPROVEMENT: Changed to lg:grid-cols-2 for better responsiveness */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {servicesForm.map((s, i) => (
-                  <div key={s.id} className="bg-white p-6 rounded-3xl border flex flex-col sm:flex-row gap-6 group hover:border-primary/50 transition-all">
+                  <div key={s.id} className="bg-white p-6 rounded-3xl border flex flex-col sm:flex-row gap-6 hover:border-primary/50 transition-all">
                     <div className="shrink-0">
-                      <div className="w-44 h-44 bg-slate-50 rounded-2xl overflow-hidden border-2 border-slate-100">
+                      <div className="relative w-44 h-44 bg-slate-50 rounded-2xl overflow-hidden border-2 border-slate-100 group">
                         <ImagePreview src={s.previewUrl || s.img} alt={s.t} fallbackIcon={Cpu} />
+                        {(s.previewUrl || s.img) &&
+                            <button onClick={() => handleRemoveServiceImage(i)} className="absolute top-2 right-2 p-1.5 bg-black/40 text-white/80 rounded-full hover:bg-red-600 hover:text-white transition-all opacity-0 group-hover:opacity-100" aria-label="Eliminar imagen">
+                                <Trash2 size={14}/>
+                            </button>
+                        }
                       </div>
                       <div className="mt-3 flex flex-col gap-2">
                         <label className="cursor-pointer bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:bg-slate-200 transition-colors"><UploadCloud size={14} /> Subir Foto<input type="file" accept="image/*" className="hidden" onChange={e => e.target.files && handleImageFile(i, e.target.files[0])} /></label>
