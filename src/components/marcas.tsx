@@ -69,8 +69,8 @@ export function Marcas({ brands }: { brands: any[] }) {
 
   const defaultBrands = [
     { id: 1, name: 'PELCO', url: 'https://upload.wikimedia.org/wikipedia/commons/8/8b/Pelco_wordmark_tm_Clean_PMS300C.png' },
-    { id: 2, name: 'AVIGILON', url: 'https://www.groupeclr.com/wp-content/uploads/2023/10/Avigilon-Logo-White-1024x292.png' },
-    { id: 3, name: 'MOTOROLA', url: 'https://upload.wikimedia.org/wikipedia/commons/4/45/Motorola-logo-black-and-white.png' },
+    { id: 2, name: 'AVIGILON', url: 'https://cdn.worldvectorlogo.com/logos/avigilon-logo.svg' },
+    { id: 3, name: 'MOTOROLA', url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Motorola-Logo.svg/1920px-Motorola-Logo.svg.png'},
     { id: 4, name: 'BOSCH', url: 'https://upload.wikimedia.org/wikipedia/commons/1/16/Bosch-logo.svg' },
     { id: 5, name: 'TYCO', url: 'https://upload.wikimedia.org/wikipedia/commons/9/93/Tyco-Logo.svg' },
     { id: 6, name: 'HIKVISION', url: 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Hikvision_logo.svg' },

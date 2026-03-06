@@ -1,52 +1,42 @@
-import type { LucideIcon } from "lucide-react";
 
-export type WebData = {
-  hero: {
-    titulo: string;
-    subtitulo: string;
-    version: string;
-    placeholder: string;
-  };
-  estadisticas: {
-    proyectos: string;
-    años: string;
-    uptime: string;
-    soporte: string;
-  };
-  contacto: {
-    tel: string;
-    email: string;
-    direccion: string;
-    wa_link: string;
-  };
-  redes: {
-    fb: string;
-    ig: string;
-    tt: string;
-  };
-  garantia: {
-    btn: string;
-    titulo:string;
-    items: string[];
-    btn_cierre: string;
-  };
-  paleta_colores: {
-    dark_primary: string;
-    dark_bg: string;
-    light_primary: string;
-    light_bg: string;
-  };
-  finanzas: {
-    iva: string;
-    descuento: string;
-  };
-  marcas: string[];
-};
+export interface SEO {
+  title: string;
+  description: string;
+  keywords: string;
+}
 
-export type Service = {
+export interface Service {
+  id: number;
+  title: string;
+  desc: string;
+  imgUrl: string;
+  icon: string;
+}
+
+export interface Brand {
+  id: number;
+  name: string;
+  url: string;
+}
+
+export interface SiteContent {
+  heroTitle: string;
+  heroSubtitle: string;
+  ctaText: string;
+  whatsappNumber: string;
+  address: string;
+  mapUrl: string;
+  seo: SEO;
+  services: Service[];
+  brands: Brand[];
+}
+
+export interface Lead {
   id: string;
-  titulo: string;
-  icono: string; // Name of the lucide-react icon
-  descripcion: string;
-  precio_base: number;
-};
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+  status: 'Nuevo' | 'En Proceso' | 'Venta Realizada' | 'Cerrada';
+  createdAt: number;
+}
