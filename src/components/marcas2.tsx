@@ -6,13 +6,13 @@ import Image from "next/image"
 // Mapa de logos de respaldo (fallback) con URLs de alta calidad.
 const logoMap: { [key: string]: string } = {
   'PELCO': 'https://upload.wikimedia.org/wikipedia/commons/8/8b/Pelco_wordmark_tm_Clean_PMS300C.png',
-  'AVIGILON': 'https://www.motorolasolutions.com/content/dam/msi/images/business/products/video-security-access-control/avigilon-logo-blue-video-security-and-access-control-logo.png',
+  'AVIGILON': 'https://www.groupeclr.com/wp-content/uploads/2023/10/Avigilon-Logo-White-1024x292.png',
   'MOTOROLA': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Motorola_logo.svg/512px-Motorola_logo.svg.png',
   'BOSCH': 'https://upload.wikimedia.org/wikipedia/commons/1/16/Bosch-logo.svg',
   'TYCO': 'https://upload.wikimedia.org/wikipedia/commons/9/93/Tyco-Logo.svg',
   'HIKVISION': 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Hikvision_logo.svg',
   'CISCO': 'https://upload.wikimedia.org/wikipedia/commons/6/64/Cisco_logo.svg',
-  'HONEYWELL': 'https://www.security.honeywell.com/etc.clientlibs/honeywell/clientlibs/secure/resources/images/notifier-logo.svg',
+  'HONEYWELL': 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Honeywell_logo.svg',
   'APC': 'https://upload.wikimedia.org/wikipedia/commons/b/b4/LogoAPC.svg',
   'LENEL': 'https://www.lenels2.com/wp-content/themes/lenels2/assets/images/logo.svg',
   'EDWARDS': 'https://www.edwardsfiresafety.com/wp-content/uploads/carrier-edwards-logo.svg',
@@ -29,9 +29,11 @@ export function Marcas2({ brands }: { brands: any[] }) {
     .map(brand => {
       const name = (typeof brand === 'object' ? brand.name : brand)?.toUpperCase() || '';
       
+      // Prioridad 1: Usar el logo subido en el admin si existe
       if (typeof brand === 'object' && brand.logo && brand.logo.startsWith('http')) {
         return { name: brand.name, logoUrl: brand.logo };
       }
+      // Prioridad 2: Usar el logo de respaldo del logoMap
       if (logoMap[name]) {
         return { name: name, logoUrl: logoMap[name] };
       }
@@ -41,6 +43,11 @@ export function Marcas2({ brands }: { brands: any[] }) {
 
   useEffect(() => {
     const handleResize = () => {
+      // ==================================================================
+      // AQUÍ PUEDES CAMBIAR EL RADIO (qué tan juntas están las etiquetas)
+      // Un número más pequeño las junta más.
+      // El primer valor es para móvil, el segundo para PC.
+      // ==================================================================
       setRadius(window.innerWidth < 768 ? 165 : 216)
     }
 
@@ -66,9 +73,7 @@ export function Marcas2({ brands }: { brands: any[] }) {
   return (
     <section
       id="alianzas2"
-      className="relative z-10 pt-6 md:pt-12 pb-8 md:pb-24 overflow-hidden border-y border-border transition-all duration-500
-                 bg-gradient-to-b from-secondary/70 to-transparent
-                 dark:bg-[radial-gradient(circle_at_center,theme(colors.accent/0.08)_0%,transparent_70%)]"
+      className="relative z-10 overflow-hidden border-b border-border bg-secondary pt-6 pb-12 md:pb-20"
     >
        <div className="text-center mb-8 md:mb-12 relative z-20">
         <h2 className="font-headline font-black uppercase leading-tight">
@@ -86,13 +91,17 @@ export function Marcas2({ brands }: { brands: any[] }) {
         className="relative flex justify-center items-center"
         style={{
           perspective: "1200px",
-          height: radius < 200 ? "230px" : "380px"
+          height: radius < 200 ? "230px" : "320px"
         }}
       >
         <div
           className="absolute w-full h-full"
           style={{
             transformStyle: "preserve-3d",
+            // ==================================================================
+            // AQUÍ PUEDES CAMBIAR LA INCLINACIÓN ("lo tumbado") DEL ANILLO
+            // El valor actual es -13deg. Un número más negativo (ej: -15deg) lo inclina más.
+            // ==================================================================
             transform: `rotateX(-13deg) rotateY(${rotation}deg)`
           }}
         >

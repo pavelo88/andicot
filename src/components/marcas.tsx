@@ -25,8 +25,12 @@ export function Marcas({ brands }: { brands: any[] }) {
 
   useEffect(() => {
     const handleResize = () => {
-       // ==================================================================
-      setRadius(window.innerWidth < 768 ? 165 : 260) 
+      // ==================================================================
+      // AQUÍ PUEDES CAMBIAR EL RADIO (qué tan juntas están las etiquetas)
+      // Un número más pequeño las junta más.
+      // El primer valor es para móvil, el segundo para PC.
+      // ==================================================================
+      setRadius(window.innerWidth < 768 ? 165 : 216) 
     }
 
     handleResize()
@@ -51,8 +55,7 @@ export function Marcas({ brands }: { brands: any[] }) {
   return (
     <section
       id="alianzas"
-      className="relative z-10 pt-8 md:pt-24 pb-2 md:pb-6 overflow-hidden border-t border-border transition-all duration-500
-                 bg-secondary/10 dark:bg-[radial-gradient(circle_at_center,theme(colors.accent/0.08)_0%,transparent_70%)]"
+      className="relative z-10 overflow-hidden border-t border-border bg-secondary pt-12 md:pt-20 pb-6"
     >
       <div className="text-center mb-4 md:mb-8 relative z-20">
         <h2 className="font-headline font-black uppercase leading-tight">
@@ -82,7 +85,7 @@ export function Marcas({ brands }: { brands: any[] }) {
             // AQUÍ PUEDES CAMBIAR LA INCLINACIÓN ("lo tumbado") DEL ANILLO
             // El valor actual es -13deg. Un número más negativo (ej: -15deg) lo inclina más.
             // ==================================================================
-            transform: `rotateX(-15deg) rotateY(${rotation}deg)`
+            transform: `rotateX(-13deg) rotateY(${rotation}deg)`
           }}
         >
           {brandNames.map((brandName, i) => {
