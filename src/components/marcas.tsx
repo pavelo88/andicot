@@ -37,22 +37,24 @@ const BrandCard = ({ brand, isMobile, angle, radius }: { brand: { name: string, 
         </span>
       ) : (
         // Si no hay error y hay logo, muestra la imagen
-        // ================================================
-        // === INICIO: TAMAÑO DE IMAGEN (logo) ===
-        // Cambia el padding (p-X) para hacer el logo más grande o pequeño.
-        // Tailwind usa una escala: p-8, p-10, p-12, p-16, etc.
-        // Más padding (ej: p-12) = logo más pequeño.
-        // Menos padding (ej: p-8) = logo más grande.
-        // ================================================
-        <div className="relative w-full h-full p-10">
-          <Image
-            src={brand.logoUrl}
-            alt={`${brand.name} Logo`}
-            fill
-            className="object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
-            sizes="(max-width: 768px) 110px, 160px"
-            onError={() => setHasError(true)}
-          />
+        <div className="relative w-full h-full flex justify-center items-center">
+          {/* ================================================ */}
+          {/* === INICIO: TAMAÑO DE IMAGEN (logo) === */}
+          {/* Este div controla el tamaño del logo. */}
+          {/* Cambia w-[XX%] y h-[XX%] para ajustar el tamaño. */}
+          {/* Por ejemplo: w-[70%] h-[70%] hará el logo más pequeño. */}
+          {/* w-[100%] h-[100%] lo hará más grande. */}
+          {/* ================================================ */}
+          <div className="relative w-[85%] h-[85%]">
+            <Image
+              src={brand.logoUrl}
+              alt={`${brand.name} Logo`}
+              fill
+              className="object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
+              sizes="(max-width: 768px) 110px, 160px"
+              onError={() => setHasError(true)}
+            />
+          </div>
         </div>
       )}
     </div>
@@ -103,7 +105,13 @@ export function Marcas({ brands }: { brands: any[] }) {
     window.addEventListener('resize', handleResize)
 
     const animate = () => {
+      // ========================================================
+      // === INICIO: VELOCIDAD DE ROTACIÓN ======================
+      // Aumenta este valor para un giro más rápido,
+      // redúcelo para un giro más lento.
+      // ========================================================
       const speed = 0.1;
+      // === FIN: VELOCIDAD DE ROTACIÓN =========================
       setRotation(prev => prev - speed)
       requestRef.current = requestAnimationFrame(animate)
     }
