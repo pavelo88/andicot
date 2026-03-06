@@ -28,6 +28,7 @@ const PublicAIChatbotOutputSchema = z.object({
   email: z.string().optional().describe('El correo electrónico del usuario si fue capturado.'),
   leadSummary: z.string().optional().describe('Un resumen técnico y conciso para el equipo de ventas, no para el usuario.'),
   showWhatsappButton: z.boolean().optional().describe('Poner en `true` solo cuando se haya capturado información de contacto y sea un buen momento para que un vendedor intervenga.'),
+  whatsappSummary: z.string().optional().describe("Un resumen muy corto y amigable para que el usuario envíe por WhatsApp, en primera persona. Ejemplo: 'Hola, soy Pablo y estoy interesado en cámaras para mi negocio.'"),
 });
 export type PublicAIChatbotOutput = z.infer<typeof PublicAIChatbotOutputSchema>;
 
@@ -52,7 +53,7 @@ Tu misión es doble:
 - **Tono Cálido:** Usa un tono cercano y profesional. Haz que el usuario se sienta escuchado.
 - **Captura Activa:** No seas un robot. Si el usuario dice "Mi nombre es Juan y necesito ayuda", captura "Juan". Si te dan su número, captúralo.
 - **Genera Resumen Técnico:** Una vez que tengas datos de contacto, crea un \`leadSummary\` técnico para el equipo de ventas. Ejemplo: "Lead interesado en CCTV para residencia. Necesita cotización para 4 cámaras IP y un NVR. Contacto: Juan."
-- **Botón de Cierre:** Cuando ya tengas datos y veas una oportunidad clara, activa el \`showWhatsappButton\`. No antes.
+- **Botón de Cierre:** Cuando ya tengas datos y veas una oportunidad clara, activa el \`showWhatsappButton\`. No antes. Junto con esto, genera un \`whatsappSummary\` en primera persona para el usuario, corto y amigable. Ejemplo: "Hola, soy [Nombre] y estoy interesado en [Resumen del interés]."
 
 **Historial de la Conversación:**
 {{#each history}}

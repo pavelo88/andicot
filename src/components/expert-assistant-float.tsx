@@ -1,13 +1,16 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
-import { Cpu, Loader2, Send, Sparkles, X, Bot } from 'lucide-react';
+import { Cpu, Loader2, Send, Sparkles, X, Bot, MessageCircle } from 'lucide-react';
 import { publicAIChatbot } from '@/ai/flows/publicAIChatbot';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+
 
 // Tipos para los mensajes y el historial
 type Message = {
@@ -15,11 +18,23 @@ type Message = {
   content: string;
 };
 
-// Placeholder para la función de guardar en Firestore
+// Guarda el prospecto en la colección 'contact_messages'
 async function saveLeadToFirestore(leadData: { name?: string; phone?: string; email?: string; leadSummary?: string; }) {
-  console.log('Lead guardado (simulación):', leadData);
-  // Aquí iría la lógica real de Firebase
-  return true;
+  try {
+    await addDoc(collection(db, "contact_messages"), {
+      name: leadData.name || 'N/A',
+      phone: leadData.phone || '',
+      email: leadData.email || '',
+      message: leadData.leadSummary || 'Generado por IA',
+      createdAt: serverTimestamp(),
+      status: 'pendiente', // Estado inicial para el CRM
+      source: 'AIChatbot', // Origen del prospecto
+    });
+    return true;
+  } catch (error) {
+    console.error("Error al guardar prospecto en Firestore:", error);
+    return false;
+  }
 }
 
 export function AIChatbot() {
@@ -27,6 +42,7 @@ export function AIChatbot() {
   const [history, setHistory] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [whatsappLink, setWhatsappLink] = useState('');
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -58,25 +74,31 @@ export function AIChatbot() {
     try {
       const response = await publicAIChatbot({ history: newHistory });
 
-      // Aquí se manejaría el guardado del lead si la IA detecta datos
+      // Guardar prospecto si se capturan datos
       if (response.name || response.phone || response.email) {
-          await saveLeadToFirestore({
+          const saved = await saveLeadToFirestore({
               name: response.name,
               phone: response.phone,
               email: response.email,
               leadSummary: response.leadSummary
           });
-          toast({
-              title: "¡Datos de Contacto Recibidos!",
-              description: "Un especialista se pondrá en contacto contigo pronto.",
-          });
+          if (saved) {
+              toast({
+                  title: "¡Datos de Contacto Recibidos!",
+                  description: "Un especialista se pondrá en contacto contigo pronto.",
+              });
+          }
       }
 
+      // Añadir la respuesta de la IA al historial
       const aiMessage: Message = { role: 'model', content: response.response };
       setHistory(prev => [...prev, aiMessage]);
 
-      // Aquí se manejaría la aparición del botón de WhatsApp
-      // (Se implementará en el siguiente paso)
+      // Mostrar el botón de WhatsApp si la IA lo indica
+      if (response.showWhatsappButton && response.whatsappSummary) {
+          const whatsappMsg = encodeURIComponent(response.whatsappSummary);
+          setWhatsappLink(`https://wa.me/593984467411?text=${whatsappMsg}`);
+      }
 
     } catch (error) {
       console.error("Error al llamar al chatbot:", error);
@@ -141,6 +163,20 @@ export function AIChatbot() {
                          <div className="rounded-xl p-3 bg-secondary text-secondary-foreground">
                               <Loader2 className="w-5 h-5 animate-spin text-primary" />
                          </div>
+                      </div>
+                  )}
+
+                  {/* Botón dinámico de WhatsApp */}
+                  {whatsappLink && (
+                      <div className="p-4 flex justify-center">
+                          <a
+                              href={whatsappLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center justify-center gap-2 w-full bg-emerald-600 text-white p-3 rounded-lg text-sm font-bold uppercase hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-900/20 animate-in fade-in-0"
+                          >
+                              <MessageCircle className="w-5 h-5" /> Continuar por WhatsApp
+                          </a>
                       </div>
                   )}
               </div>
