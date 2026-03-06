@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Sun, Menu, X, Moon, Laptop2, MessageSquare, Calculator } from "lucide-react"
+import Link from "next/link"
+import { Sun, Menu, X, Moon, Laptop2, MessageSquare, Calculator, Lock } from "lucide-react"
 
 export function Nav() {
   const [isOpen, setIsOpen] = useState(false)
@@ -114,18 +115,31 @@ export function Nav() {
             
             <div className="h-6 w-px bg-current opacity-20"></div>
 
-            <button 
-              onClick={toggleTheme} 
-              className={`
-                p-2 rounded-full transition-all border
-                ${isLightMode 
-                    ? "text-orange-500 border-orange-500/30 hover:bg-orange-100" 
-                    : "text-accent border-accent/30 hover:bg-accent/10 hover:shadow-[0_0_15px_theme(colors.accent/0.6)]"
-                }
-              `}
-            >
-              {isLightMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={toggleTheme} 
+                className={`
+                  p-2 rounded-full transition-all border
+                  ${isLightMode 
+                      ? "text-orange-500 border-orange-500/30 hover:bg-orange-100" 
+                      : "text-accent border-accent/30 hover:bg-accent/10 hover:shadow-[0_0_15px_theme(colors.accent/0.6)]"
+                  }
+                `}
+              >
+                {isLightMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </button>
+              
+              <Link href="/admin" className={`
+                  flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all border font-code
+                  ${isLightMode 
+                      ? "border-primary/50 text-primary bg-primary/10 hover:bg-primary/20"
+                      : "border-accent/30 text-accent bg-accent/10 hover:bg-accent/20"
+                  }
+              `}>
+                  <Lock className="w-3 h-3" />
+                  ADMINISTRACIÓN
+              </Link>
+            </div>
           </div>
 
           {/* === BOTÓN HAMBURGUESA (MÓVIL) === */}
