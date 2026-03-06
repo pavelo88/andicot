@@ -51,7 +51,7 @@ export const Dashboard = ({ children, activeTab, setActiveTab, onSave, onLogout,
   );
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row font-headline text-gray-900 bg-slate-50 w-full overflow-x-hidden">
+    <div className="min-h-screen flex flex-col md:flex-row font-headline text-gray-900 bg-secondary w-full">
       {/* Sidebar Desktop */}
       <aside className="hidden md:flex w-64 bg-secondary text-white flex-col flex-shrink-0 sticky top-0 h-screen shadow-xl">
         <div className="h-20 flex items-center px-6 border-b border-white/10 bg-[#1e2246]">
@@ -61,7 +61,7 @@ export const Dashboard = ({ children, activeTab, setActiveTab, onSave, onLogout,
           </div>
         </div>
         {navItems}
-        <div className="p-4 border-t border-white/10">
+        <div className="p-4 border-t border-white/10 mt-auto">
           <button onClick={onLogout} className="w-full flex items-center justify-center gap-2 text-gray-400 hover:text-white py-2 text-sm transition-colors">
             <LogOut size={16} /> Salir
           </button>
@@ -96,8 +96,8 @@ export const Dashboard = ({ children, activeTab, setActiveTab, onSave, onLogout,
       </header>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 w-full">
-        <header className="h-20 bg-white border-b border-gray-200 hidden md:flex items-center justify-between px-8 flex-shrink-0 sticky top-0 z-30">
+      <div className="flex-1 flex flex-col min-w-0 w-full bg-slate-50">
+        <header className="h-20 bg-white border-b border-gray-200 shadow-sm hidden md:flex items-center justify-between px-8 flex-shrink-0 sticky top-0 z-30">
           <h2 className="text-2xl font-bold text-secondary capitalize">
             {activeTab === 'metrics' && 'Panel de Estadísticas'}
             {activeTab === 'general' && 'Configuración General'}

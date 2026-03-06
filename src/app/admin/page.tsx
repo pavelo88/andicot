@@ -232,24 +232,24 @@ export default function AdminPage() {
 
   if (!isLogged) {
     return (
-      <div className="min-h-screen bg-secondary flex items-center justify-center p-6">
-        <div className="w-full max-w-md bg-secondary/80 backdrop-blur-xl p-10 rounded-3xl border border-primary/20 shadow-2xl">
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="w-full max-w-md p-10 rounded-3xl">
           <div className="flex justify-center mb-8">
-            <div className="w-16 h-16 bg-background rounded-2xl flex items-center justify-center border border-primary/50">
+            <div className="w-16 h-16 bg-background/50 backdrop-blur-md rounded-2xl flex items-center justify-center border border-primary/50">
               <Lock size={32} className="text-primary" />
             </div>
           </div>
-          <h2 className="text-2xl font-bold text-center mb-8 text-white font-headline">Admin Portal</h2>
+          <h2 className="text-3xl font-bold text-center mb-8 text-white font-headline">Admin Portal</h2>
           <form onSubmit={handleLogin} className="space-y-6">
             <input 
               type="password" 
               required 
               value={password} 
               onChange={e => setPassword(e.target.value)} 
-              className="w-full bg-background border border-gray-700 rounded-lg p-4 text-center text-xl focus:border-primary outline-none text-white font-code" 
+              className="w-full bg-background/50 border border-gray-700 rounded-lg p-4 text-center text-xl focus:border-primary outline-none text-white font-code" 
               placeholder="••••••••" 
             />
-            <button type="submit" className="w-full bg-primary text-secondary font-bold py-4 rounded-lg hover:bg-white transition-colors">Entrar</button>
+            <button type="submit" className="w-full bg-primary text-secondary font-bold py-4 rounded-lg hover:brightness-110 transition-all">Entrar</button>
           </form>
         </div>
       </div>
