@@ -6,4 +6,4 @@ import '@/ai/flows/suggest-color-palette.ts';
 import '@/ai/flows/generate-seo-metadata-flow.ts';
 import '@/ai/flows/analyze-lead-flow.ts';
 import '@/ai/flows/generate-proposal-flow.ts';
-import '@/ai/flows/expert-assistant-flow.ts';
+import '@/ai/flows/publicAIChatbot.ts';

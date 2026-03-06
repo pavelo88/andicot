@@ -33,7 +33,7 @@ const prompt = ai.definePrompt({
   name: 'generateSeoMetadataPrompt',
   input: {schema: GenerateSeoMetadataInputSchema},
   output: {schema: GenerateSeoMetadataOutputSchema},
-  prompt: `Eres un experto en SEO especializado en sitios web para empresas de tecnología y seguridad.
+  prompt: `Eres un experto en SEO especializado en sitios web para empresas de tecnología y seguridad en Ecuador.
 Basado en el título y subtítulo proporcionados, genera una meta descripción optimizada (menos de 160 caracteres) y una lista de 5 a 10 palabras clave relevantes.
 
 Título Principal: {{{heroTitle}}}

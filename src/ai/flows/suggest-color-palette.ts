@@ -1,11 +1,11 @@
 'use server';
 
 /**
- * @fileOverview Suggests a cohesive and accessible color palette for both dark and light modes based on a primary color input.
+ * @fileOverview Sugiere una paleta de colores cohesiva y accesible para los modos claro y oscuro, basada en un color primario.
  *
- * - suggestColorPalette - A function that suggests the color palette.
- * - SuggestColorPaletteInput - The input type for the suggestColorPalette function.
- * - SuggestColorPaletteOutput - The return type for the suggestColorPalette function.
+ * - suggestColorPalette - Una función que sugiere la paleta de colores.
+ * - SuggestColorPaletteInput - El tipo de entrada para la función suggestColorPalette.
+ * - SuggestColorPaletteOutput - El tipo de retorno para la función suggestColorPalette.
  */
 
 import {ai} from '@/ai/genkit';
@@ -14,20 +14,20 @@ import {z} from 'genkit';
 const SuggestColorPaletteInputSchema = z.object({
   primaryColor: z
     .string()
-    .describe('The primary color in hexadecimal format (e.g., #00f2ff).'),
+    .describe('El color primario en formato hexadecimal (ej., #00f2ff).'),
 });
 export type SuggestColorPaletteInput = z.infer<typeof SuggestColorPaletteInputSchema>;
 
 const SuggestColorPaletteOutputSchema = z.object({
   darkMode: z.object({
-    primary: z.string().describe('Primary color for dark mode.'),
-    background: z.string().describe('Background color for dark mode.'),
-    accent: z.string().describe('Accent color for dark mode.'),
+    primary: z.string().describe('Color primario para el modo oscuro.'),
+    background: z.string().describe('Color de fondo para el modo oscuro.'),
+    accent: z.string().describe('Color de acento para el modo oscuro.'),
   }),
   lightMode: z.object({
-    primary: z.string().describe('Primary color for light mode.'),
-    background: z.string().describe('Background color for light mode.'),
-    accent: z.string().describe('Accent color for light mode.'),
+    primary: z.string().describe('Color primario para el modo claro.'),
+    background: z.string().describe('Color de fondo para el modo claro.'),
+    accent: z.string().describe('Color de acento para el modo claro.'),
   }),
 });
 export type SuggestColorPaletteOutput = z.infer<typeof SuggestColorPaletteOutputSchema>;
@@ -40,23 +40,23 @@ const prompt = ai.definePrompt({
   name: 'suggestColorPalettePrompt',
   input: {schema: SuggestColorPaletteInputSchema},
   output: {schema: SuggestColorPaletteOutputSchema},
-  prompt: `You are a color palette expert. Based on the given primary color, suggest a cohesive and accessible color palette for both dark and light modes.
+  prompt: `Eres un experto en paletas de colores. Basado en el color primario dado, sugiere una paleta de colores cohesiva y accesible para los modos claro y oscuro.
 
-Primary Color: {{{primaryColor}}}
+Color Primario: {{{primaryColor}}}
 
-Consider accessibility when choosing colors to ensure sufficient contrast.
+Considera la accesibilidad al elegir los colores para asegurar suficiente contraste.
 
-Output the color palette in the following JSON format:
+Genera la paleta de colores en el siguiente formato JSON:
 {
   "darkMode": {
-    "primary": "Primary color for dark mode (hex code)",
-    "background": "Background color for dark mode (hex code)",
-    "accent": "Accent color for dark mode (hex code)",
+    "primary": "Color primario para modo oscuro (código hex)",
+    "background": "Color de fondo para modo oscuro (código hex)",
+    "accent": "Color de acento para modo oscuro (código hex)",
   },
   "lightMode": {
-    "primary": "Primary color for light mode (hex code)",
-    "background": "Background color for light mode (hex code)",
-    "accent": "Accent color for light mode (hex code)",
+    "primary": "Color primario para modo claro (código hex)",
+    "background": "Color de fondo para modo claro (código hex)",
+    "accent": "Color de acento para modo claro (código hex)",
   },
 }`,
 });

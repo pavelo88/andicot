@@ -32,7 +32,7 @@ const generateServiceDescriptionPrompt = ai.definePrompt({
   name: 'generateServiceDescriptionPrompt',
   input: {schema: GenerateServiceDescriptionInputSchema},
   output: {schema: GenerateServiceDescriptionOutputSchema},
-  prompt: `Eres un redactor publicitario experto, especializado en crear descripciones de servicios atractivas para empresas de tecnología y seguridad.
+  prompt: `Eres un redactor publicitario experto, especializado en crear descripciones de servicios atractivas para empresas de tecnología y seguridad en Ecuador.
 
   Basado en el título del servicio proporcionado, genera una descripción comercial concisa y cautivadora para el servicio.
 
