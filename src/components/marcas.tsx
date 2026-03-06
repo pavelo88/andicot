@@ -22,7 +22,7 @@ const BrandCard = ({ brand, isMobile, angle, radius }: { brand: { name: string, 
         // === INICIO: TAMAÑO DE ETIQUETAS (TARJETAS) ===
         // Aquí puedes cambiar el tamaño de las tarjetas.
         // ================================================
-        width: isMobile ? "120px" : "150px", // Reducido para escritorio
+        width: isMobile ? "120px" : "150px",
         height: isMobile ? "50px" : "60px",
         // === FIN: TAMAÑO DE ETIQUETAS (TARJETAS) ===
         marginLeft: isMobile ? "-60px" : "-75px",
@@ -60,7 +60,6 @@ const BrandCard = ({ brand, isMobile, angle, radius }: { brand: { name: string, 
 
 export function Marcas({ brands }: { brands: any[] }) {
   const [rotation, setRotation] = useState(0)
-  const [isSlowed, setIsSlowed] = useState(false)
   const [radius, setRadius] = useState(260)
   const requestRef = useRef<number>()
 
@@ -96,7 +95,7 @@ export function Marcas({ brands }: { brands: any[] }) {
     const logoUrl = logoFromDb || defaultBrand?.url || '';
 
     return { name: brandName, logoUrl };
-  }).filter(Boolean) as { name: string, logoUrl: string }[];
+  }).filter(brand => brand.name) as { name: string, logoUrl: string }[];
 
 
   useEffect(() => {
@@ -107,7 +106,7 @@ export function Marcas({ brands }: { brands: any[] }) {
     window.addEventListener('resize', handleResize)
 
     const animate = () => {
-      const speed = isSlowed ? 0.01 : 0.098; // +7%
+      const speed = 0.098;
       setRotation(prev => prev - speed)
       requestRef.current = requestAnimationFrame(animate)
     }
@@ -117,7 +116,7 @@ export function Marcas({ brands }: { brands: any[] }) {
       window.removeEventListener('resize', handleResize)
       if (requestRef.current) cancelAnimationFrame(requestRef.current)
     }
-  }, [isSlowed])
+  }, [])
 
   if (!brandsWithData || brandsWithData.length === 0) {
     return null;
@@ -126,7 +125,6 @@ export function Marcas({ brands }: { brands: any[] }) {
   return (
     <section
       id="alianzas"
-      onClick={() => setIsSlowed(prev => !prev)}
       className="relative z-10 overflow-hidden border-b border-t border-border pt-12 md:pt-20 pb-20 bg-background cursor-pointer"
     >
       <div className="absolute inset-0 bg-gradient-to-b from-background to-transparent opacity-80"></div>
