@@ -20,11 +20,10 @@ const logoMap: { [key: string]: string } = {
   'DSC': 'https://www.dsc.com/assets/images/logo.png'  
 };
 
-
 export function Marcas({ brands }: { brands: any[] }) {
   const [rotation, setRotation] = useState(0)
   const [isSlowed, setIsSlowed] = useState(false)
-  const [radius, setRadius] = useState(240)
+  const [radius, setRadius] = useState(216) // Ajustado desde 240
   const requestRef = useRef<number>()
 
   const brandsWithData = (brands || []).map(brand => {
@@ -33,20 +32,15 @@ export function Marcas({ brands }: { brands: any[] }) {
     return { name, logoUrl };
   }).filter(b => b.name && b.logoUrl);
 
-
   useEffect(() => {
     const handleResize = () => {
-      // ==================================================================
-      // AJUSTE MANUAL: Radio del anillo (Móvil vs PC)
-      // ==================================================================
-      setRadius(window.innerWidth < 768 ? 160 : 210)
+      setRadius(window.innerWidth < 768 ? 144 : 216)
     }
-
     handleResize()
     window.addEventListener('resize', handleResize)
 
     const animate = () => {
-      const speed = isSlowed ? 0.01 : 0.085;
+      const speed = isSlowed ? 0.01 : 0.091; // Incrementado ~7% desde 0.085
       setRotation(prev => prev - speed)
       requestRef.current = requestAnimationFrame(animate)
     }
@@ -66,7 +60,7 @@ export function Marcas({ brands }: { brands: any[] }) {
     <section
       id="alianzas"
       onClick={() => setIsSlowed(prev => !prev)}
-      className="relative z-10 overflow-hidden border-y border-border pt-12 md:pt-20 pb-20 bg-secondary dark:bg-background cursor-pointer"
+      className="relative z-10 overflow-hidden border-y border-border pt-12 md:pt-20 pb-20 bg-background cursor-pointer"
     >
       <div className="text-center mb-4 md:mb-8 relative z-20">
         <h2 className="font-headline font-black uppercase leading-tight">
@@ -102,22 +96,24 @@ export function Marcas({ brands }: { brands: any[] }) {
               <div
                 key={i}
                 className="group absolute left-1/2 top-1/2 flex items-center justify-center
-                           tech-glass text-accent
+                           tech-glass
                            font-headline font-bold shadow-[0_0_15px_theme(colors.accent/0.1)]
                            backface-visible transition-all duration-300 bg-background/80 border-border"
                 style={{
-                  // ==================================================================
-                  // AJUSTE MANUAL: Ancho de las tarjetas (PC y Móvil)
-                  // ==================================================================
+                  // Aquí puedes cambiar el tamaño de las tarjetas (etiquetas).
+                  // === INICIO: TAMAÑO DE ETIQUETAS (TARJETAS) ===
                   width: isMobile ? "120px" : "160px",
                   height: isMobile ? "50px" : "70px",
+                  // === FIN: TAMAÑO DE ETIQUETAS (TARJETAS) ===
                   marginLeft: isMobile ? "-60px" : "-80px",
                   marginTop: isMobile ? "-25px" : "-35px",
                   transform: `rotateY(${angle}deg) translateZ(${radius}px)`
                 }}
               >
-                {/* Contenedor de la imagen con PADDING */}
-                <div className="relative w-full h-full p-3">
+                {/* El padding (p-X) controla qué tan pequeña se ve la imagen dentro de la tarjeta. */}
+                {/* === INICIO: TAMAÑO DE IMAGEN (logo) === */}
+                <div className="relative w-full h-full p-4"> 
+                {/* === FIN: TAMAÑO DE IMAGEN (logo) === */}
                     <Image
                         src={brand.logoUrl}
                         alt={`${brand.name} Logo`}
