@@ -66,6 +66,7 @@ export function Marcas({ brands }: { brands: any[] }) {
   const [rotation, setRotation] = useState(0)
   const [radius, setRadius] = useState(260)
   const requestRef = useRef<number>()
+  
 
   const defaultBrands = [
     { id: 1, name: 'PELCO', url: 'https://upload.wikimedia.org/wikipedia/commons/8/8b/Pelco_wordmark_tm_Clean_PMS300C.png' },
