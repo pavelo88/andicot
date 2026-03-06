@@ -10,7 +10,7 @@ import { Dashboard } from '@/components/admin/Dashboard';
 import { CRMLeads } from '@/components/admin/CRMLeads';
 import { useSystemData } from "@/hooks/useStarkData"
 import { generateSeoMetadata } from '@/ai/flows/generate-seo-metadata-flow';
-import { generateServiceDescription } from '@/ai/flows/generate-service-description-flow';
+import { generateServiceDescription } from '@/ai/flows/generate-service-description';
 
 const ImagePreview = ({ src, alt, fallbackIcon: Icon }: { src: string, alt: string, fallbackIcon: any }) => {
   const [error, setError] = useState(false);
