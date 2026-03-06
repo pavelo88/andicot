@@ -40,8 +40,9 @@ const BrandCard = ({ brand, isMobile, angle, radius }: { brand: { name: string, 
         // ================================================
         // === INICIO: TAMAÑO DE IMAGEN (logo) ===
         // Cambia el padding (p-X) para hacer el logo más grande o pequeño.
-        // Más padding (p-10, p-12) = logo más pequeño.
-        // Menos padding (p-6, p-4) = logo más grande.
+        // Tailwind usa una escala: p-8, p-10, p-12, p-16, etc.
+        // Más padding (ej: p-12) = logo más pequeño.
+        // Menos padding (ej: p-8) = logo más grande.
         // ================================================
         <div className="relative w-full h-full p-10">
           <Image
@@ -49,7 +50,7 @@ const BrandCard = ({ brand, isMobile, angle, radius }: { brand: { name: string, 
             alt={`${brand.name} Logo`}
             fill
             className="object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
-            sizes="(max-width: 768px) 110px, 140px"
+            sizes="(max-width: 768px) 110px, 160px"
             onError={() => setHasError(true)}
           />
         </div>
@@ -66,17 +67,13 @@ export function Marcas({ brands }: { brands: any[] }) {
   const defaultBrands = [
     { id: 1, name: 'PELCO', url: 'https://upload.wikimedia.org/wikipedia/commons/8/8b/Pelco_wordmark_tm_Clean_PMS300C.png' },
     { id: 2, name: 'AVIGILON', url: 'https://www.groupeclr.com/wp-content/uploads/2023/10/Avigilon-Logo-White-1024x292.png' },
-    { id: 3, name: 'MOTOROLA', url: 'https://www.motorolasolutions.com/content/dam/msi/images/business/products/two-way-radios/mototrbo-logo.png' },
+    { id: 3, name: 'MOTOROLA', url: 'https://upload.wikimedia.org/wikipedia/commons/4/45/Motorola-logo-black-and-white.png' },
     { id: 4, name: 'BOSCH', url: 'https://upload.wikimedia.org/wikipedia/commons/1/16/Bosch-logo.svg' },
-    { id: 5, name: 'LENEL', url: 'https://www.lenels2.com/themes/custom/lenels2/images/lenels2-logo-v-2023.svg' },
-    { id: 6, name: 'EDWARDS', url: 'https://www.edwardsfiresafety.com/themes/custom/edwards/images/logo_color.svg' },
-    { id: 7, name: 'CISCO', url: 'https://www.cisco.com/c/dam/m/en_us/about/brand-center/cisco-logo-positive.svg' },
-    { id: 8, name: 'HONEYWELL', url: 'https://www.security.honeywell.com/img/honeywell-logo-white.svg' },
-    { id: 9, name: 'DSC', url: 'https://www.dsc.com/images/new-dsc-logo-2021.svg' },
-    { id: 10, name: 'TYCO', url: 'https://vectorlogoseek.com/wp-content/uploads/2019/12/tyco-vector-logo-small.png' },
-    { id: 11, name: 'HIKVISION', url: 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Hikvision_logo.svg' },
-    { id: 12, name: 'APC', url: 'https://upload.wikimedia.org/wikipedia/commons/b/b4/LogoAPC.svg' },
-    { id: 13, name: 'NOTIFIER', url: 'https://www.notifier.es/wp-content/uploads/sites/11/2023/04/logo-notifier-by-honeywell.svg'}
+    { id: 5, name: 'TYCO', url: 'https://upload.wikimedia.org/wikipedia/commons/9/93/Tyco-Logo.svg' },
+    { id: 6, name: 'HIKVISION', url: 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Hikvision_logo.svg' },
+    { id: 7, name: 'CISCO', url: 'https://upload.wikimedia.org/wikipedia/commons/6/64/Cisco_logo.svg' },
+    { id: 8, name: 'HONEYWELL', url: 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Honeywell_logo.svg' },
+    { id: 9, name: 'APC', url: 'https://upload.wikimedia.org/wikipedia/commons/b/b4/LogoAPC.svg' }
   ];
   
   // Lógica de procesamiento de marcas mejorada
@@ -100,13 +97,13 @@ export function Marcas({ brands }: { brands: any[] }) {
 
   useEffect(() => {
     const handleResize = () => {
-      setRadius(window.innerWidth < 768 ? 160 : 320) // Aumentado para separar más
+      setRadius(window.innerWidth < 768 ? 160 : 280) // Aumentado para separar más
     }
     handleResize()
     window.addEventListener('resize', handleResize)
 
     const animate = () => {
-      const speed = 0.098;
+      const speed = 0.1;
       setRotation(prev => prev - speed)
       requestRef.current = requestAnimationFrame(animate)
     }
@@ -129,7 +126,7 @@ export function Marcas({ brands }: { brands: any[] }) {
     >
       <div className="absolute inset-0 bg-gradient-to-b from-background to-transparent opacity-80"></div>
       
-      <div className="absolute inset-0 bg-background/95 -z-10"></div>
+      <div className="absolute inset-0 bg-background -z-10"></div>
       
       <div className="text-center mb-4 md:mb-8 relative z-20">
         <h2 className="font-headline font-black uppercase leading-tight">
