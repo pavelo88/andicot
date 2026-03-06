@@ -69,7 +69,7 @@ export function ExpertAssistantFloat({ services, brands }: ExpertAssistantFloatP
             fixed bottom-6 left-6 z-[200]
             flex items-center justify-center
             w-14 h-14 md:w-16 md:h-16 rounded-full
-            bg-primary text-secondary
+            bg-primary text-primary-foreground
             shadow-[0_0_20px_theme(colors.primary/0.5)]
             hover:scale-110 hover:shadow-[0_0_30px_theme(colors.primary/0.8)] hover:brightness-110
             transition-all duration-300 ease-out
