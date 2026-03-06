@@ -22,16 +22,19 @@ const logoMap: { [key: string]: string } = {
 
 export function Marcas2({ brands }: { brands: any[] }) {
   const [rotation, setRotation] = useState(0)
-  const [radius, setRadius] = useState(240) // Default to desktop
+  // Valor por defecto para PC, ajustado según tu petición.
+  const [radius, setRadius] = useState(216)
   const requestRef = useRef<number>()
 
   const brandsWithLogos = (brands || [])
     .map(brand => {
       const name = (typeof brand === 'object' ? brand.name : brand)?.toUpperCase() || '';
       
+      // Prioridad 1: Usar el logo del admin si existe
       if (typeof brand === 'object' && brand.logo && brand.logo.startsWith('http')) {
         return { name: brand.name, logoUrl: brand.logo };
       }
+      // Prioridad 2: Usar el logo de respaldo si no hay logo del admin
       if (logoMap[name]) {
         return { name: name, logoUrl: logoMap[name] };
       }
@@ -41,7 +44,12 @@ export function Marcas2({ brands }: { brands: any[] }) {
 
   useEffect(() => {
     const handleResize = () => {
-      setRadius(window.innerWidth < 768 ? 165 : 240)
+      // ==================================================================
+      // AQUÍ PUEDES CAMBIAR EL RADIO DEL ANILLO (qué tan juntos están los logos)
+      // El primer valor (165) es para móviles.
+      // El segundo valor (216) es para PC. Un número más bajo junta más los logos.
+      // ==================================================================
+      setRadius(window.innerWidth < 768 ? 165 : 216)
     }
 
     handleResize()
@@ -66,7 +74,7 @@ export function Marcas2({ brands }: { brands: any[] }) {
   return (
     <section
       id="alianzas2"
-      className="relative z-10 pt-4 md:pt-12 pb-8 md:pb-24 overflow-hidden border-y border-border transition-all duration-500
+      className="relative z-10 pt-6 md:pt-12 pb-8 md:pb-24 overflow-hidden border-y border-border transition-all duration-500
                  bg-secondary/10 dark:bg-[radial-gradient(circle_at_center,theme(colors.accent/0.08)_0%,transparent_70%)]"
     >
        <div className="text-center mb-4 md:mb-8 relative z-20">
@@ -92,7 +100,11 @@ export function Marcas2({ brands }: { brands: any[] }) {
           className="absolute w-full h-full"
           style={{
             transformStyle: "preserve-3d",
-            transform: `rotateX(-10deg) rotateY(${rotation}deg)`
+            // ==================================================================
+            // AQUÍ PUEDES CAMBIAR LA INCLINACIÓN ("lo tumbado") DEL ANILLO
+            // El valor actual es -13deg. Un número más negativo (ej: -15deg) lo inclina más.
+            // ==================================================================
+            transform: `rotateX(-13deg) rotateY(${rotation}deg)`
           }}
         >
           {brandsWithLogos.map((brand, i) => {

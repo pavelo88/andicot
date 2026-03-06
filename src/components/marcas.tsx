@@ -5,7 +5,8 @@ import Image from "next/image"
 
 export function Marcas({ brands }: { brands: any[] }) {
   const [rotation, setRotation] = useState(0)
-  const [radius, setRadius] = useState(240) // Default to desktop
+  // Valor por defecto para PC, ajustado según tu petición.
+  const [radius, setRadius] = useState(216)
   const requestRef = useRef<number>()
 
   const defaultBrandNames = [
@@ -24,8 +25,12 @@ export function Marcas({ brands }: { brands: any[] }) {
 
   useEffect(() => {
     const handleResize = () => {
-      // Radio más pequeño en PC para juntar las etiquetas
-      setRadius(window.innerWidth < 768 ? 165 : 240) 
+      // ==================================================================
+      // AQUÍ PUEDES CAMBIAR EL RADIO DEL ANILLO (qué tan juntas están las etiquetas)
+      // El primer valor (165) es para móviles.
+      // El segundo valor (216) es para PC. Un número más bajo junta más las etiquetas.
+      // ==================================================================
+      setRadius(window.innerWidth < 768 ? 165 : 216) 
     }
 
     handleResize()
@@ -50,7 +55,7 @@ export function Marcas({ brands }: { brands: any[] }) {
   return (
     <section
       id="alianzas"
-      className="relative z-10 pt-8 md:pt-24 pb-4 md:pb-12 overflow-hidden border-t border-border transition-all duration-500
+      className="relative z-10 pt-8 md:pt-24 pb-2 md:pb-6 overflow-hidden border-t border-border transition-all duration-500
                  bg-secondary/10 dark:bg-[radial-gradient(circle_at_center,theme(colors.accent/0.08)_0%,transparent_70%)]"
     >
       <div className="text-center mb-4 md:mb-8 relative z-20">
@@ -77,7 +82,11 @@ export function Marcas({ brands }: { brands: any[] }) {
           className="absolute w-full h-full"
           style={{
             transformStyle: "preserve-3d",
-            transform: `rotateX(-10deg) rotateY(${rotation}deg)`
+            // ==================================================================
+            // AQUÍ PUEDES CAMBIAR LA INCLINACIÓN ("lo tumbado") DEL ANILLO
+            // El valor actual es -13deg. Un número más negativo (ej: -15deg) lo inclina más.
+            // ==================================================================
+            transform: `rotateX(-13deg) rotateY(${rotation}deg)`
           }}
         >
           {brandNames.map((brandName, i) => {
