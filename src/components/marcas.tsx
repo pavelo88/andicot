@@ -6,8 +6,8 @@ import Image from "next/image"
 // --- LOGO MAP: Usado como respaldo si no hay un logo en Firebase ---
 const logoMap: { [key: string]: string } = {
   'PELCO': 'https://upload.wikimedia.org/wikipedia/commons/8/8b/Pelco_wordmark_tm_Clean_PMS300C.png',
-  'AVIGILON': 'https://vectorlogoseek.com/wp-content/uploads/2019/09/avigilon-vector-logo.png',
-  'MOTOROLA': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Motorola_logo.svg/512px-Motorola_logo.svg.png',
+  'AVIGILON': 'https://www.groupeclr.com/wp-content/uploads/2023/10/Avigilon-Logo-White-1024x292.png',
+  'MOTOROLA': 'https://upload.wikimedia.org/wikipedia/commons/4/45/Motorola-logo-black-and-white.png',
   'BOSCH': 'https://upload.wikimedia.org/wikipedia/commons/1/16/Bosch-logo.svg',
   'TYCO': 'https://upload.wikimedia.org/wikipedia/commons/9/93/Tyco-Logo.svg',
   'HIKVISION': 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Hikvision_logo.svg',
@@ -25,27 +25,25 @@ export function Marcas({ brands }: { brands: any[] }) {
   const [rotation, setRotation] = useState(0)
   // ==================================================================
   // AJUSTE MANUAL: Radio del anillo (qué tan juntas están las etiquetas)
-  // Un número más pequeño las junta más.
+  // Un número más grande las separa más.
   // ==================================================================
-  const [radius, setRadius] = useState(216)
+  const [radius, setRadius] = useState(240)
   const requestRef = useRef<number>()
 
   // --- LÓGICA DE DATOS ---
-  // Mapeamos los datos de entrada para asegurarnos de que cada marca tenga un nombre y un logo
   const brandsWithData = (brands || []).map(brand => {
-    // Obtenemos el nombre, ya sea de un string o de un objeto
     const name = (typeof brand === 'object' ? brand.name : brand)?.toUpperCase() || '';
-    
-    // Buscamos el logo. Prioridad 1: el que viene de Firebase. Prioridad 2: nuestro mapa de respaldo.
     const logoUrl = (typeof brand === 'object' && brand.logo) ? brand.logo : logoMap[name];
-
     return { name, logoUrl };
-  }).filter(b => b.name && b.logoUrl); // Nos aseguramos de tener solo marcas con datos completos
+  }).filter(b => b.name && b.logoUrl);
 
 
   useEffect(() => {
     const handleResize = () => {
-      setRadius(window.innerWidth < 768 ? 165 : 216)
+      // ==================================================================
+      // AJUSTE MANUAL: Radio del anillo (Móvil vs PC)
+      // ==================================================================
+      setRadius(window.innerWidth < 768 ? 180 : 240)
     }
 
     handleResize()
@@ -70,7 +68,7 @@ export function Marcas({ brands }: { brands: any[] }) {
   return (
     <section
       id="alianzas"
-      className="relative z-10 overflow-hidden border-t border-border bg-secondary pt-12 md:pt-20 pb-20"
+      className="relative z-10 overflow-hidden border-y border-border pt-12 md:pt-20 pb-20 bg-secondary dark:bg-background"
     >
       <div className="text-center mb-4 md:mb-8 relative z-20">
         <h2 className="font-headline font-black uppercase leading-tight">
@@ -97,7 +95,6 @@ export function Marcas({ brands }: { brands: any[] }) {
             transformStyle: "preserve-3d",
             // ==================================================================
             // AJUSTE MANUAL: Inclinación del anillo
-            // Un número más negativo (ej: -15deg) lo inclina más.
             // ==================================================================
             transform: `rotateX(-13deg) rotateY(${rotation}deg)`
           }}
@@ -112,29 +109,24 @@ export function Marcas({ brands }: { brands: any[] }) {
                 className="group absolute left-1/2 top-1/2 flex items-center justify-center
                            tech-glass text-accent
                            font-headline font-bold shadow-[0_0_15px_theme(colors.accent/0.1)]
-                           backface-visible transition-all duration-300 hover:bg-background/80 hover:border-accent/30"
+                           backface-visible transition-all duration-300 bg-background/80 border-border"
                 style={{
                   // ==================================================================
                   // AJUSTE MANUAL: Ancho de las etiquetas (PC y Móvil)
                   // ==================================================================
                   width: isMobile ? "115px" : "160px",
-                  height: isMobile ? "45px" : "78px",
+                  height: isMobile ? "45px" : "75px",
                   marginLeft: isMobile ? "-57.5px" : "-80px", // Mitad del ancho, en negativo
                   marginTop: isMobile ? "-22.5px" : "-39px",   // Mitad de la altura, en negativo
-                  fontSize: isMobile ? "0.7rem" : "1.1rem",
                   transform: `rotateY(${angle}deg) translateZ(${radius}px)`
                 }}
               >
-                {/* --- Texto por defecto --- */}
-                <span className="transition-opacity duration-300 group-hover:opacity-0">{brand.name}</span>
-                
-                {/* --- Logo que aparece en hover --- */}
-                <div className="absolute inset-0 p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                <div className="relative w-full h-full p-3 md:p-4">
                     <Image
                         src={brand.logoUrl}
                         alt={`${brand.name} Logo`}
                         fill
-                        className="object-contain"
+                        className="object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
                         sizes="(max-width: 768px) 110px, 160px"
                     />
                 </div>
