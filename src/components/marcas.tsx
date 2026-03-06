@@ -23,15 +23,10 @@ const logoMap: { [key: string]: string } = {
 
 export function Marcas({ brands }: { brands: any[] }) {
   const [rotation, setRotation] = useState(0)
-  const [isSlowed, setIsSlowed] = useState(false) // Estado para controlar velocidad
-  // ==================================================================
-  // AJUSTE MANUAL: Radio del anillo (qué tan juntas están las etiquetas)
-  // Un número más grande las separa más.
-  // ==================================================================
+  const [isSlowed, setIsSlowed] = useState(false)
   const [radius, setRadius] = useState(240)
   const requestRef = useRef<number>()
 
-  // --- LÓGICA DE DATOS ---
   const brandsWithData = (brands || []).map(brand => {
     const name = (typeof brand === 'object' ? brand.name : brand)?.toUpperCase() || '';
     const logoUrl = (typeof brand === 'object' && brand.logo) ? brand.logo : logoMap[name];
@@ -51,7 +46,7 @@ export function Marcas({ brands }: { brands: any[] }) {
     window.addEventListener('resize', handleResize)
 
     const animate = () => {
-      const speed = isSlowed ? 0.01 : 0.085; // Velocidad lenta vs normal (aumentada 7%)
+      const speed = isSlowed ? 0.01 : 0.085;
       setRotation(prev => prev - speed)
       requestRef.current = requestAnimationFrame(animate)
     }
@@ -61,7 +56,7 @@ export function Marcas({ brands }: { brands: any[] }) {
       window.removeEventListener('resize', handleResize)
       if (requestRef.current) cancelAnimationFrame(requestRef.current)
     }
-  }, [isSlowed]) // Re-ejecutar el efecto si 'isSlowed' cambia
+  }, [isSlowed])
 
   if (!brandsWithData || brandsWithData.length === 0) {
     return null;
@@ -70,7 +65,7 @@ export function Marcas({ brands }: { brands: any[] }) {
   return (
     <section
       id="alianzas"
-      onClick={() => setIsSlowed(prev => !prev)} // Alterna la velocidad al hacer clic
+      onClick={() => setIsSlowed(prev => !prev)}
       className="relative z-10 overflow-hidden border-y border-border pt-12 md:pt-20 pb-20 bg-secondary dark:bg-background cursor-pointer"
     >
       <div className="text-center mb-4 md:mb-8 relative z-20">
@@ -96,9 +91,6 @@ export function Marcas({ brands }: { brands: any[] }) {
           className="absolute w-full h-full"
           style={{
             transformStyle: "preserve-3d",
-            // ==================================================================
-            // AJUSTE MANUAL: Inclinación del anillo
-            // ==================================================================
             transform: `rotateX(-13deg) rotateY(${rotation}deg)`
           }}
         >
@@ -115,16 +107,17 @@ export function Marcas({ brands }: { brands: any[] }) {
                            backface-visible transition-all duration-300 bg-background/80 border-border"
                 style={{
                   // ==================================================================
-                  // AJUSTE MANUAL: Ancho de las etiquetas (PC y Móvil)
+                  // AJUSTE MANUAL: Ancho de las tarjetas (PC y Móvil)
                   // ==================================================================
-                  width: isMobile ? "110px" : "140px",
-                  height: isMobile ? "45px" : "65px",
-                  marginLeft: isMobile ? "-55px" : "-70px",
-                  marginTop: isMobile ? "-22.5px" : "-32.5px",
+                  width: isMobile ? "120px" : "160px",
+                  height: isMobile ? "50px" : "70px",
+                  marginLeft: isMobile ? "-60px" : "-80px",
+                  marginTop: isMobile ? "-25px" : "-35px",
                   transform: `rotateY(${angle}deg) translateZ(${radius}px)`
                 }}
               >
-                <div className="relative w-full h-full p-3 md:p-4">
+                {/* Contenedor de la imagen con PADDING */}
+                <div className="relative w-full h-full p-3">
                     <Image
                         src={brand.logoUrl}
                         alt={`${brand.name} Logo`}
