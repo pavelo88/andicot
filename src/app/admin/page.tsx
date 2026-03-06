@@ -238,6 +238,15 @@ export default function AdminPage() {
     setConfigForm({ ...configForm, marcas: updatedMarcas });
   };
 
+  const handleRemoveBrandImage = (index: number) => {
+    if (!configForm) return;
+    const updatedMarcas = [...configForm.marcas];
+    updatedMarcas[index].logo = '';
+    updatedMarcas[index].previewUrl = null;
+    updatedMarcas[index].newFile = null;
+    setConfigForm({ ...configForm, marcas: updatedMarcas });
+  };
+
   if (!isLogged) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
@@ -388,13 +397,17 @@ export default function AdminPage() {
                 <h3 className="text-xl font-bold text-secondary">Aliados Estratégicos</h3>
                 <button onClick={handleAddBrand} className="bg-secondary text-white px-6 py-3 rounded-xl flex items-center gap-2 text-sm font-bold hover:bg-opacity-90 shadow-lg"><Plus size={18} /> Nueva Marca</button>
               </div>
-              {/* IMPROVEMENT: Adjusted grid for better responsiveness */}
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
                 {configForm.marcas.map((b: any, i: number) => (
                   <div key={i} className="bg-white p-6 rounded-2xl border relative flex flex-col items-center gap-4 shadow-sm group hover:border-primary/50 transition-all">
-                    <button onClick={() => handleRemoveBrand(i)} className="absolute top-2 right-2 text-red-300 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100"><Trash2 size={16}/></button>
-                    <div className="h-28 flex items-center justify-center p-2 bg-slate-50 w-full rounded-xl border border-slate-100 overflow-hidden">
+                    <button onClick={() => handleRemoveBrand(i)} className="absolute top-2 right-2 text-red-300 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100 z-10"><Trash2 size={16}/></button>
+                    <div className="h-28 flex items-center justify-center p-2 bg-slate-50 w-full rounded-xl border border-slate-100 overflow-hidden relative">
                        <BrandPreview src={b.previewUrl || b.logo} name={b.name} />
+                       {(b.previewUrl || b.logo) &&
+                          <button onClick={() => handleRemoveBrandImage(i)} className="absolute top-1 right-1 p-1.5 bg-black/40 text-white/80 rounded-full hover:bg-red-600 hover:text-white transition-all opacity-0 group-hover:opacity-100" aria-label="Eliminar logo">
+                              <Trash2 size={14}/>
+                          </button>
+                       }
                     </div>
                     <input value={b.name} onChange={e => { const items = [...configForm.marcas]; items[i].name = e.target.value; setConfigForm({...configForm, marcas: items}); }} className="w-full text-center font-bold text-xs p-2 border rounded-lg focus:ring-1 focus:ring-primary outline-none" />
                     <label className="cursor-pointer bg-secondary text-white px-6 py-2 rounded-full text-[10px] font-bold hover:bg-opacity-90 transition-all w-full text-center">Subir Logo<input type="file" accept="image/*" className="hidden" onChange={e => e.target.files && handleBrandImageFile(i, e.target.files[0])} /></label>
