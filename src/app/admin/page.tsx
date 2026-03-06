@@ -302,23 +302,23 @@ export default function AdminPage() {
         </div>
 
         <SectionCard title="Gestión de Aliados (Marcas)" icon={<Award />}>
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {configForm.marcas.map((marca: any, i: number) => (
-                <div key={i} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 bg-background/30 p-3 rounded-lg border border-border">
+                <div key={i} className="bg-background/30 p-4 rounded-lg border border-border flex flex-col gap-4">
                   <input 
                     value={marca.name}
                     onChange={(e) => handleBrandChange(i, e.target.value)}
-                    className="flex-1 bg-transparent border-b sm:border-b-0 border-border pb-1 font-bold text-foreground outline-none focus:border-accent transition-colors w-full"
+                    className="w-full bg-transparent border-b border-border pb-2 font-bold text-foreground outline-none focus:border-accent transition-colors"
                     placeholder="Nombre de la marca"
                   />
-                  <div className="flex items-center gap-2">
-                    <div className="relative w-24 h-12 bg-background/50 rounded flex-shrink-0 flex items-center justify-center overflow-hidden border border-border">
-                      <img src={marca.previewUrl || marca.logo || `https://placehold.co/100x40/242853/a4c851?text=LOGO`} alt={marca.name} className="w-full h-full object-contain" />
-                      <label className="absolute inset-0 flex items-center justify-center bg-black/70 opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
-                        <Upload className="w-5 h-5 text-accent" />
-                        <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleBrandImageFile(i, e.target.files[0])} />
-                      </label>
-                    </div>
+                  <div className="relative w-full h-20 bg-background/50 rounded flex items-center justify-center overflow-hidden border border-border">
+                    <img src={marca.previewUrl || marca.logo || `https://placehold.co/120x60/242853/a4c851?text=LOGO`} alt={marca.name} className="max-w-full max-h-full object-contain" />
+                    <label className="absolute inset-0 flex items-center justify-center bg-black/70 opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
+                      <Upload className="w-5 h-5 text-accent" />
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleBrandImageFile(i, e.target.files[0])} />
+                    </label>
+                  </div>
+                  <div className="flex items-center justify-end gap-2">
                     {(marca.logo || marca.previewUrl) && (
                       <button onClick={() => handleDeleteBrandImage(i)} className="p-2 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors" title="Eliminar Logo">
                         <Trash2 className="w-4 h-4" />
@@ -331,7 +331,7 @@ export default function AdminPage() {
                 </div>
               ))}
             </div>
-            <button onClick={handleAddBrand} className="mt-4 w-full flex items-center justify-center gap-2 bg-foreground/5 border border-accent/30 text-accent p-3 rounded-lg text-xs font-bold uppercase hover:bg-accent/10 transition-all">
+            <button onClick={handleAddBrand} className="mt-6 w-full flex items-center justify-center gap-2 bg-foreground/5 border border-accent/30 text-accent p-3 rounded-lg text-xs font-bold uppercase hover:bg-accent/10 transition-all">
                 <Plus className="w-4 h-4" /> Añadir Marca
             </button>
         </SectionCard>

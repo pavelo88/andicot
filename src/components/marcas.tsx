@@ -8,7 +8,6 @@ const BrandCard = ({ brand, isMobile, angle, radius }: { brand: { name: string, 
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    // Resetear el estado de error si la URL del logo cambia
     setHasError(false);
   }, [brand.logoUrl]);
 
@@ -65,7 +64,6 @@ export function Marcas({ brands }: { brands: any[] }) {
   const [radius, setRadius] = useState(260)
   const requestRef = useRef<number>()
 
-  // Usamos las marcas por defecto que nos pasaste
   const defaultBrands = [
     { id: 1, name: 'PELCO', url: 'https://upload.wikimedia.org/wikipedia/commons/8/8b/Pelco_wordmark_tm_Clean_PMS300C.png' },
     { id: 2, name: 'AVIGILON', url: 'https://www.groupeclr.com/wp-content/uploads/2023/10/Avigilon-Logo-White-1024x292.png' },
@@ -77,20 +75,25 @@ export function Marcas({ brands }: { brands: any[] }) {
     { id: 8, name: 'HONEYWELL', url: 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Honeywell_logo.svg' },
     { id: 9, name: 'APC', url: 'https://upload.wikimedia.org/wikipedia/commons/b/b4/LogoAPC.svg' }
   ];
+  
+  // Lógica de procesamiento de marcas mejorada
+  const brandsWithData = (brands && brands.length > 0 ? brands : defaultBrands.map(b => b.name)).map(brand => {
+    let brandName: string;
+    let logoFromDb: string | undefined;
 
-  // Lógica para procesar los datos de las marcas
-  const brandsWithData = (brands && brands.length > 0 ? brands : defaultBrands).map(brand => {
     if (typeof brand === 'object' && brand.name) {
-      const logoUrl = brand.logo || brand.url;
-      if (logoUrl) {
-        return { name: brand.name.toUpperCase(), logoUrl };
-      }
+      brandName = brand.name.toUpperCase();
+      logoFromDb = brand.logo;
+    } else {
+      brandName = String(brand).toUpperCase();
     }
-    if (typeof brand === 'string') {
-        return { name: brand.toUpperCase(), logoUrl: '' };
-    }
-    return null;
+    
+    const defaultBrand = defaultBrands.find(db => db.name === brandName);
+    const logoUrl = logoFromDb || defaultBrand?.url || '';
+
+    return { name: brandName, logoUrl };
   }).filter(Boolean) as { name: string, logoUrl: string }[];
+
 
   useEffect(() => {
     const handleResize = () => {
@@ -100,7 +103,6 @@ export function Marcas({ brands }: { brands: any[] }) {
     window.addEventListener('resize', handleResize)
 
     const animate = () => {
-      // Incrementada la velocidad en ~7% y lógica de ralentización al hacer clic
       const speed = isSlowed ? 0.01 : 0.091;
       setRotation(prev => prev - speed)
       requestRef.current = requestAnimationFrame(animate)
@@ -121,7 +123,7 @@ export function Marcas({ brands }: { brands: any[] }) {
     <section
       id="alianzas"
       onClick={() => setIsSlowed(prev => !prev)}
-      className="relative z-10 overflow-hidden border-b border-t border-border pt-12 md:pt-20 pb-20 bg-secondary cursor-pointer"
+      className="relative z-10 overflow-hidden border-b border-t border-border pt-12 md:pt-20 pb-20 bg-background cursor-pointer"
     >
       <div className="text-center mb-4 md:mb-8 relative z-20">
         <h2 className="font-headline font-black uppercase leading-tight">
