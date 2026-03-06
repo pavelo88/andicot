@@ -25,12 +25,8 @@ export function Marcas({ brands }: { brands: any[] }) {
 
   useEffect(() => {
     const handleResize = () => {
-      // ==================================================================
-      // AQUÍ PUEDES CAMBIAR EL RADIO DEL ANILLO (qué tan juntas están las etiquetas)
-      // El primer valor (165) es para móviles.
-      // El segundo valor (216) es para PC. Un número más bajo junta más las etiquetas.
-      // ==================================================================
-      setRadius(window.innerWidth < 768 ? 165 : 216) 
+       // ==================================================================
+      setRadius(window.innerWidth < 768 ? 165 : 260) 
     }
 
     handleResize()
@@ -75,7 +71,7 @@ export function Marcas({ brands }: { brands: any[] }) {
         className="relative flex justify-center items-center"
         style={{
           perspective: "1200px",
-          height: radius < 200 ? "250px" : "320px"
+          height: radius < 200 ? "230px" : "320px"
         }}
       >
         <div
@@ -86,7 +82,7 @@ export function Marcas({ brands }: { brands: any[] }) {
             // AQUÍ PUEDES CAMBIAR LA INCLINACIÓN ("lo tumbado") DEL ANILLO
             // El valor actual es -13deg. Un número más negativo (ej: -15deg) lo inclina más.
             // ==================================================================
-            transform: `rotateX(-13deg) rotateY(${rotation}deg)`
+            transform: `rotateX(-15deg) rotateY(${rotation}deg)`
           }}
         >
           {brandNames.map((brandName, i) => {

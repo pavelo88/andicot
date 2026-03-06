@@ -12,7 +12,7 @@ const logoMap: { [key: string]: string } = {
   'TYCO': 'https://upload.wikimedia.org/wikipedia/commons/9/93/Tyco-Logo.svg',
   'HIKVISION': 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Hikvision_logo.svg',
   'CISCO': 'https://upload.wikimedia.org/wikipedia/commons/6/64/Cisco_logo.svg',
-  'HONEYWELL': 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Honeywell_logo.svg',
+  'HONEYWELL': 'https://www.security.honeywell.com/etc.clientlibs/honeywell/clientlibs/secure/resources/images/notifier-logo.svg',
   'APC': 'https://upload.wikimedia.org/wikipedia/commons/b/b4/LogoAPC.svg',
   'LENEL': 'https://www.lenels2.com/wp-content/themes/lenels2/assets/images/logo.svg',
   'EDWARDS': 'https://www.edwardsfiresafety.com/wp-content/uploads/carrier-edwards-logo.svg',
@@ -22,7 +22,6 @@ const logoMap: { [key: string]: string } = {
 
 export function Marcas2({ brands }: { brands: any[] }) {
   const [rotation, setRotation] = useState(0)
-  // Valor por defecto para PC, ajustado según tu petición.
   const [radius, setRadius] = useState(216)
   const requestRef = useRef<number>()
 
@@ -30,11 +29,9 @@ export function Marcas2({ brands }: { brands: any[] }) {
     .map(brand => {
       const name = (typeof brand === 'object' ? brand.name : brand)?.toUpperCase() || '';
       
-      // Prioridad 1: Usar el logo del admin si existe
       if (typeof brand === 'object' && brand.logo && brand.logo.startsWith('http')) {
         return { name: brand.name, logoUrl: brand.logo };
       }
-      // Prioridad 2: Usar el logo de respaldo si no hay logo del admin
       if (logoMap[name]) {
         return { name: name, logoUrl: logoMap[name] };
       }
@@ -44,11 +41,6 @@ export function Marcas2({ brands }: { brands: any[] }) {
 
   useEffect(() => {
     const handleResize = () => {
-      // ==================================================================
-      // AQUÍ PUEDES CAMBIAR EL RADIO DEL ANILLO (qué tan juntos están los logos)
-      // El primer valor (165) es para móviles.
-      // El segundo valor (216) es para PC. Un número más bajo junta más los logos.
-      // ==================================================================
       setRadius(window.innerWidth < 768 ? 165 : 216)
     }
 
@@ -75,9 +67,10 @@ export function Marcas2({ brands }: { brands: any[] }) {
     <section
       id="alianzas2"
       className="relative z-10 pt-6 md:pt-12 pb-8 md:pb-24 overflow-hidden border-y border-border transition-all duration-500
-                 bg-secondary/10 dark:bg-[radial-gradient(circle_at_center,theme(colors.accent/0.08)_0%,transparent_70%)]"
+                 bg-gradient-to-b from-secondary/70 to-transparent
+                 dark:bg-[radial-gradient(circle_at_center,theme(colors.accent/0.08)_0%,transparent_70%)]"
     >
-       <div className="text-center mb-4 md:mb-8 relative z-20">
+       <div className="text-center mb-8 md:mb-12 relative z-20">
         <h2 className="font-headline font-black uppercase leading-tight">
           <span className="text-foreground text-2xl md:text-5xl block md:inline md:mr-3">
             LOGOS
@@ -93,17 +86,13 @@ export function Marcas2({ brands }: { brands: any[] }) {
         className="relative flex justify-center items-center"
         style={{
           perspective: "1200px",
-          height: radius < 200 ? "150px" : "180px"
+          height: radius < 200 ? "230px" : "380px"
         }}
       >
         <div
           className="absolute w-full h-full"
           style={{
             transformStyle: "preserve-3d",
-            // ==================================================================
-            // AQUÍ PUEDES CAMBIAR LA INCLINACIÓN ("lo tumbado") DEL ANILLO
-            // El valor actual es -13deg. Un número más negativo (ej: -15deg) lo inclina más.
-            // ==================================================================
             transform: `rotateX(-13deg) rotateY(${rotation}deg)`
           }}
         >
