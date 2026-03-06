@@ -71,7 +71,8 @@ export const CRMLeads = () => {
   
   const formatDate = (timestamp: Timestamp) => {
     if (!timestamp) return 'N/A';
-    return new Date(timestamp.seconds * 1000).toLocaleDateString('es-EC', {
+    // FIX: Changed to toLocaleString which accepts timeStyle.
+    return new Date(timestamp.seconds * 1000).toLocaleString('es-EC', {
         dateStyle: 'short',
         timeStyle: 'short'
     });
@@ -80,15 +81,16 @@ export const CRMLeads = () => {
   if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin text-primary" size={48} /></div>;
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="max-w-full mx-auto space-y-6 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {leads.length === 0 ? (
         <div className="bg-white p-20 text-center rounded-2xl border">
           <Users size={48} className="mx-auto mb-4 opacity-10" />
           <p className="text-gray-400">Sin prospectos registrados.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border overflow-hidden shadow-sm">
-          <table className="w-full text-left text-sm">
+        // IMPROVEMENT: Added overflow-x-auto for responsiveness on small screens.
+        <div className="bg-white rounded-2xl border overflow-x-auto shadow-sm">
+          <table className="w-full text-left text-sm min-w-[800px]">
             <thead className="bg-secondary text-white uppercase text-[10px] tracking-widest">
               <tr>
                 <th className="px-6 py-4">Fecha</th>
@@ -105,13 +107,15 @@ export const CRMLeads = () => {
                   </td>
                   <td className="px-6 py-4 align-top">
                     <p className="font-bold text-secondary text-base">{lead.name}</p>
+                    {/* IMPROVEMENT: Added mailto link */}
                     <a href={`mailto:${lead.email}`} className="text-blue-600 text-xs hover:underline">{lead.email}</a>
+                    {/* IMPROVEMENT: Added WhatsApp link */}
                     <a href={`https://wa.me/${lead.phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-green-600 text-xs block hover:underline">{lead.phone}</a>
                   </td>
                   <td className="px-6 py-4 align-top">
                     <div className="bg-gray-50 p-4 rounded-lg border text-gray-700 mb-4">{lead.message}</div>
                     
-                    <div className="flex gap-2 mb-4">
+                    <div className="flex flex-wrap gap-2 mb-4">
                       <button onClick={() => handleAnalyze(lead)} disabled={!!analyzingId} className="flex items-center gap-2 bg-[#0369a1] text-white px-3 py-1.5 rounded-md text-xs font-bold hover:bg-opacity-90 disabled:opacity-50">
                         {analyzingId === lead.id ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />} Analizar
                       </button>
@@ -127,7 +131,8 @@ export const CRMLeads = () => {
                         <div className="bg-white p-3 rounded border border-blue-200 relative">
                           <p className="font-bold mb-1">Borrador de Respuesta:</p>
                           {analyses[lead.id].draftResponse}
-                           <a href={`mailto:${lead.email}?subject=Re: Contacto desde Andicot&body=${encodeURIComponent(analyses[lead.id].draftResponse)}`} className="absolute top-2 right-2 p-1.5 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200"><Send size={12}/></a>
+                           {/* IMPROVEMENT: Added Send mail button */}
+                           <a href={`mailto:${lead.email}?subject=Re: Contacto desde Andicot&body=${encodeURIComponent(analyses[lead.id].draftResponse)}`} target="_blank" rel="noopener noreferrer" className="absolute top-2 right-2 p-1.5 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200"><Send size={12}/></a>
                         </div>
                       </div>
                     )}

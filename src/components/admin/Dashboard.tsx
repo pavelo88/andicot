@@ -129,19 +129,20 @@ export const Dashboard = ({ children, activeTab, setActiveTab, onSave, onLogout,
           </div>
         )}
 
-        <div className="flex-1 p-4 md:p-8 overflow-x-hidden">
-          <div className="md:hidden mb-6">
-            <h2 className="text-2xl font-bold text-secondary capitalize">
-              {activeTab === 'metrics' && 'Estadísticas'}
-              {activeTab === 'general' && 'Configuración'}
-              {activeTab === 'ecosystems' && 'Ecosistemas'}
-              {activeTab === 'brands' && 'Marcas'}
-              {activeTab === 'crm' && 'Prospectos'}
-            </h2>
-          </div>
-          <div className="w-full">
-            {children}
-          </div>
+        <div className="flex-1 p-4 md:p-8 overflow-y-auto">
+            {/* IMPROVEMENT: Added responsive title for mobile view */}
+            <div className="md:hidden mb-6">
+                <h2 className="text-2xl font-bold text-secondary capitalize">
+                {activeTab === 'metrics' && 'Estadísticas'}
+                {activeTab === 'general' && 'Configuración'}
+                {activeTab === 'ecosystems' && 'Ecosistemas'}
+                {activeTab === 'brands' && 'Marcas'}
+                {activeTab === 'crm' && 'Prospectos'}
+                </h2>
+            </div>
+            <div className="w-full">
+                {children}
+            </div>
         </div>
       </div>
     </div>

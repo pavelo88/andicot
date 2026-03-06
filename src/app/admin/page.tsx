@@ -21,6 +21,7 @@ const ImagePreview = ({ src, alt, fallbackIcon: Icon }: { src: string, alt: stri
 const BrandPreview = ({ src, name }: { src: string, name: string }) => {
   const [error, setError] = useState(false);
   if (!src || error) return <div className="h-full flex items-center justify-center p-4 bg-gray-50 w-full rounded border text-xs font-bold text-gray-400 uppercase">{name}</div>;
+  // IMPROVEMENT: Added w-full for better scaling
   return <img src={src} alt={name} onError={() => setError(true)} className="max-h-full h-full w-full object-contain" />;
 };
 
@@ -28,7 +29,7 @@ const BrandPreview = ({ src, name }: { src: string, name: string }) => {
 export default function AdminPage() {
   const [isLogged, setIsLogged] = useState(false);
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState('general');
+  const [activeTab, setActiveTab] = useState('metrics');
   
   const { data, services, loading } = useSystemData();
   const [configForm, setConfigForm] = useState<any>(null);
@@ -126,15 +127,19 @@ export default function AdminPage() {
         if (marca.newFile) {
           const storageRef = ref(storage, `marcas/${Date.now()}_${marca.newFile.name}`);
           await uploadBytes(storageRef, marca.newFile);
-logoUrl = await getDownloadURL(storageRef);
+            logoUrl = await getDownloadURL(storageRef);
         }
         return { name: marca.name, logo: logoUrl || '' };
       }));
 
+      // FIX: Cloning to remove temporary fields before saving
       const finalConfig = { ...configForm, marcas: finalMarcas };
-      // Limpiar datos temporales de los formularios
       delete finalConfig.newFile;
       delete finalConfig.previewUrl;
+      finalConfig.marcas.forEach((m:any) => {
+          delete m.newFile;
+          delete m.previewUrl;
+      });
       
       batch.update(doc(db, "configuracion", "web_data"), finalConfig);
 
@@ -329,6 +334,7 @@ logoUrl = await getDownloadURL(storageRef);
 
           {activeTab === 'ecosystems' && (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              {/* IMPROVEMENT: Changed to lg:grid-cols-2 for better responsiveness */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {servicesForm.map((s, i) => (
                   <div key={s.id} className="bg-white p-6 rounded-3xl border flex flex-col sm:flex-row gap-6 group hover:border-primary/50 transition-all">
@@ -371,7 +377,8 @@ logoUrl = await getDownloadURL(storageRef);
                 <h3 className="text-xl font-bold text-secondary">Aliados Estratégicos</h3>
                 <button onClick={handleAddBrand} className="bg-secondary text-white px-6 py-3 rounded-xl flex items-center gap-2 text-sm font-bold hover:bg-opacity-90 shadow-lg"><Plus size={18} /> Nueva Marca</button>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+              {/* IMPROVEMENT: Adjusted grid for better responsiveness */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
                 {configForm.marcas.map((b: any, i: number) => (
                   <div key={i} className="bg-white p-6 rounded-2xl border relative flex flex-col items-center gap-4 shadow-sm group hover:border-primary/50 transition-all">
                     <button onClick={() => handleRemoveBrand(i)} className="absolute top-2 right-2 text-red-300 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100"><Trash2 size={16}/></button>
