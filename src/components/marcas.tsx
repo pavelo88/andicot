@@ -4,9 +4,13 @@ import { useEffect, useState, useRef } from "react"
 import Image from "next/image"
 
 // --- SUBCOMPONENTE PARA CADA TARJETA DE MARCA ---
-function BrandCard({ brand, isMobile, angle, radius }: { brand: { name: string, logoUrl: string }, isMobile: boolean, angle: number, radius: number }) {
-  // Estado para controlar si la imagen falló al cargar
-  const [imageError, setImageError] = useState(false);
+const BrandCard = ({ brand, isMobile, angle, radius }: { brand: { name: string, logoUrl: string }, isMobile: boolean, angle: number, radius: number }) => {
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    // Resetear el estado de error si la URL del logo cambia
+    setHasError(false);
+  }, [brand.logoUrl]);
 
   return (
     <div
@@ -27,7 +31,7 @@ function BrandCard({ brand, isMobile, angle, radius }: { brand: { name: string, 
         transform: `rotateY(${angle}deg) translateZ(${radius}px)`
       }}
     >
-      {imageError ? (
+      {hasError ? (
         // Si hay un error, muestra el nombre de la marca con efecto hover
         <span className="text-muted-foreground transition-colors duration-300 group-hover:text-accent font-code text-xs md:text-sm uppercase">
           {brand.name}
@@ -41,15 +45,13 @@ function BrandCard({ brand, isMobile, angle, radius }: { brand: { name: string, 
         // Menos padding (p-6, p-4) = logo más grande.
         // ================================================
         <div className="relative w-full h-full p-10">
-        {/* === FIN: TAMAÑO DE IMAGEN (logo) === */}
           <Image
             src={brand.logoUrl}
             alt={`${brand.name} Logo`}
             fill
             className="object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
             sizes="(max-width: 768px) 110px, 140px"
-            // Aquí está la magia: si la imagen falla, actualizamos el estado
-            onError={() => setImageError(true)}
+            onError={() => setHasError(true)}
           />
         </div>
       )}
@@ -57,40 +59,48 @@ function BrandCard({ brand, isMobile, angle, radius }: { brand: { name: string, 
   );
 }
 
-
 export function Marcas({ brands }: { brands: any[] }) {
   const [rotation, setRotation] = useState(0)
   const [isSlowed, setIsSlowed] = useState(false)
-  const [radius, setRadius] = useState(260) // Aumentado para separar etiquetas
+  const [radius, setRadius] = useState(260)
   const requestRef = useRef<number>()
 
-  // Lógica unificada para procesar los datos de las marcas vengan de donde vengan (Firebase o data.ts)
-  const brandsWithData = (brands || []).map(brand => {
+  // Usamos las marcas por defecto que nos pasaste
+  const defaultBrands = [
+    { id: 1, name: 'PELCO', url: 'https://upload.wikimedia.org/wikipedia/commons/8/8b/Pelco_wordmark_tm_Clean_PMS300C.png' },
+    { id: 2, name: 'AVIGILON', url: 'https://www.groupeclr.com/wp-content/uploads/2023/10/Avigilon-Logo-White-1024x292.png' },
+    { id: 3, name: 'MOTOROLA', url: 'https://upload.wikimedia.org/wikipedia/commons/4/45/Motorola-logo-black-and-white.png' },
+    { id: 4, name: 'BOSCH', url: 'https://upload.wikimedia.org/wikipedia/commons/1/16/Bosch-logo.svg' },
+    { id: 5, name: 'TYCO', url: 'https://upload.wikimedia.org/wikipedia/commons/9/93/Tyco-Logo.svg' },
+    { id: 6, name: 'HIKVISION', url: 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Hikvision_logo.svg' },
+    { id: 7, name: 'CISCO', url: 'https://upload.wikimedia.org/wikipedia/commons/6/64/Cisco_logo.svg' },
+    { id: 8, name: 'HONEYWELL', url: 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Honeywell_logo.svg' },
+    { id: 9, name: 'APC', url: 'https://upload.wikimedia.org/wikipedia/commons/b/b4/LogoAPC.svg' }
+  ];
+
+  // Lógica para procesar los datos de las marcas
+  const brandsWithData = (brands && brands.length > 0 ? brands : defaultBrands).map(brand => {
     if (typeof brand === 'object' && brand.name) {
-      // El formato de Firebase es { name, logo }
-      // El formato de data.ts puede ser { id, name, url } o string
       const logoUrl = brand.logo || brand.url;
       if (logoUrl) {
         return { name: brand.name.toUpperCase(), logoUrl };
       }
     }
-    // Fallback para el array de strings original
     if (typeof brand === 'string') {
-        // En este caso, no tenemos una URL de logo definida, así que la lógica de error se activará.
         return { name: brand.toUpperCase(), logoUrl: '' };
     }
     return null;
   }).filter(Boolean) as { name: string, logoUrl: string }[];
 
-
   useEffect(() => {
     const handleResize = () => {
-      setRadius(window.innerWidth < 768 ? 144 : 260)
+      setRadius(window.innerWidth < 768 ? 160 : 280) // Aumentado para separar más
     }
     handleResize()
     window.addEventListener('resize', handleResize)
 
     const animate = () => {
+      // Incrementada la velocidad en ~7% y lógica de ralentización al hacer clic
       const speed = isSlowed ? 0.01 : 0.091;
       setRotation(prev => prev - speed)
       requestRef.current = requestAnimationFrame(animate)
@@ -111,7 +121,7 @@ export function Marcas({ brands }: { brands: any[] }) {
     <section
       id="alianzas"
       onClick={() => setIsSlowed(prev => !prev)}
-      className="relative z-10 overflow-hidden border-y border-border pt-12 md:pt-20 pb-20 bg-background cursor-pointer"
+      className="relative z-10 overflow-hidden border-b border-t border-border pt-12 md:pt-20 pb-20 bg-secondary cursor-pointer"
     >
       <div className="text-center mb-4 md:mb-8 relative z-20">
         <h2 className="font-headline font-black uppercase leading-tight">

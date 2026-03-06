@@ -206,9 +206,9 @@ export default function AdminPage() {
   if (loading || !configForm) return <div className="h-screen bg-background flex items-center justify-center text-accent font-code text-lg animate-pulse">SINCRONIZANDO SISTEMA...</div>
 
   return (
-    <main className="min-h-screen bg-background text-foreground p-6 md:p-12 pb-40 font-sans">
+    <main className="min-h-screen bg-background text-foreground p-4 sm:p-6 md:p-12 pb-40 font-sans">
       
-      <header className="flex flex-col md:flex-row justify-between items-center mb-16 gap-6 sticky top-4 bg-background/80 backdrop-blur-xl z-50 py-4 px-6 border border-border rounded-2xl shadow-2xl">
+      <header className="flex flex-col md:flex-row justify-between items-center mb-12 md:mb-16 gap-6 sticky top-4 bg-background/80 backdrop-blur-xl z-50 py-4 px-6 border border-border rounded-2xl shadow-2xl">
         <div className="flex items-center gap-4">
             <div className="bg-accent/10 p-2 rounded-lg border border-accent/20">
                 <Database className="w-6 h-6 text-accent" />
@@ -221,14 +221,14 @@ export default function AdminPage() {
             </div>
         </div>
         
-        <div className="flex gap-4">
+        <div className="flex gap-4 w-full md:w-auto">
             <button onClick={() => setIsAuthenticated(false)} className="p-3 rounded-lg border border-destructive/30 text-destructive hover:bg-destructive/10 transition-all">
                 <LogOut className="w-5 h-5" />
             </button>
             <button 
                 onClick={saveAllChanges} 
                 disabled={isSaving} 
-                className={`px-8 py-3 font-bold uppercase text-sm flex items-center gap-3 transition-all rounded-lg border ${
+                className={`flex-1 md:flex-none px-8 py-3 font-bold uppercase text-sm flex items-center justify-center gap-3 transition-all rounded-lg border ${
                     isSaving ? "bg-amber-500 border-amber-400 text-white animate-pulse" :
                     saveStatus === "success" 
                     ? "bg-green-600 border-green-500 text-white shadow-[0_0_20px_rgba(34,197,94,0.4)]" 
@@ -256,7 +256,7 @@ export default function AdminPage() {
             </SectionCard>
 
             <SectionCard title="Estadísticas (Hero)" icon={<BarChart3 />}>
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <InputField label="Proyectos (ej: 500+)" value={configForm.estadisticas.proyectos} onChange={(v) => handleConfigChange("estadisticas", "proyectos", v)} />
                     <InputField label="Años Exp. (ej: 15+)" value={configForm.estadisticas.años} onChange={(v) => handleConfigChange("estadisticas", "años", v)} />
                     <InputField label="Uptime (ej: 99.9%)" value={configForm.estadisticas.uptime} onChange={(v) => handleConfigChange("estadisticas", "uptime", v)} />
@@ -276,7 +276,7 @@ export default function AdminPage() {
                 </div>
                 <div className="p-4 border border-border rounded-lg bg-emerald-500/5">
                     <h4 className="text-emerald-400 text-xs font-bold uppercase mb-4 flex items-center gap-2"><Tag className="w-4 h-4"/> Configuración Cotizador</h4>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <InputField label="IVA (%)" value={configForm.finanzas.iva} onChange={(v) => handleConfigChange("finanzas", "iva", v)} />
                         <InputField label="Descuento Global (%)" value={configForm.finanzas.descuento} onChange={(v) => handleConfigChange("finanzas", "descuento", v)} />
                     </div>
@@ -304,28 +304,30 @@ export default function AdminPage() {
         <SectionCard title="Gestión de Aliados (Marcas)" icon={<Award />}>
             <div className="space-y-4">
               {configForm.marcas.map((marca: any, i: number) => (
-                <div key={i} className="flex items-center gap-4 bg-background/30 p-3 rounded-lg border border-border">
+                <div key={i} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 bg-background/30 p-3 rounded-lg border border-border">
                   <input 
                     value={marca.name}
                     onChange={(e) => handleBrandChange(i, e.target.value)}
-                    className="flex-1 bg-transparent border-b border-border pb-1 font-bold text-foreground outline-none focus:border-accent transition-colors"
+                    className="flex-1 bg-transparent border-b sm:border-b-0 border-border pb-1 font-bold text-foreground outline-none focus:border-accent transition-colors w-full"
                     placeholder="Nombre de la marca"
                   />
-                  <div className="relative w-24 h-12 bg-background/50 rounded flex items-center justify-center overflow-hidden border border-border">
-                    <img src={marca.previewUrl || marca.logo || `https://placehold.co/100x40/242853/a4c851?text=LOGO`} alt={marca.name} className="w-full h-full object-contain" />
-                    <label className="absolute inset-0 flex items-center justify-center bg-black/70 opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
-                      <Upload className="w-5 h-5 text-accent" />
-                      <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleBrandImageFile(i, e.target.files[0])} />
-                    </label>
-                  </div>
-                  {(marca.logo || marca.previewUrl) && (
-                    <button onClick={() => handleDeleteBrandImage(i)} className="p-2 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors" title="Eliminar Logo">
+                  <div className="flex items-center gap-2">
+                    <div className="relative w-24 h-12 bg-background/50 rounded flex-shrink-0 flex items-center justify-center overflow-hidden border border-border">
+                      <img src={marca.previewUrl || marca.logo || `https://placehold.co/100x40/242853/a4c851?text=LOGO`} alt={marca.name} className="w-full h-full object-contain" />
+                      <label className="absolute inset-0 flex items-center justify-center bg-black/70 opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
+                        <Upload className="w-5 h-5 text-accent" />
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleBrandImageFile(i, e.target.files[0])} />
+                      </label>
+                    </div>
+                    {(marca.logo || marca.previewUrl) && (
+                      <button onClick={() => handleDeleteBrandImage(i)} className="p-2 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors" title="Eliminar Logo">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                    <button onClick={() => handleRemoveBrand(i)} className="p-2 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors" title="Eliminar Marca">
                       <Trash2 className="w-4 h-4" />
                     </button>
-                  )}
-                  <button onClick={() => handleRemoveBrand(i)} className="p-2 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors" title="Eliminar Marca">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -409,7 +411,7 @@ export default function AdminPage() {
 
 function SectionCard({ title, icon, children }: any) {
     return (
-        <section className="tech-glass p-8 border-border bg-background/20 hover:bg-background/40 transition-colors">
+        <section className="tech-glass p-6 sm:p-8 border-border bg-background/20 hover:bg-background/40 transition-colors">
             <h3 className="text-accent font-bold font-code text-sm mb-6 flex items-center gap-3 uppercase tracking-[0.15em] border-b border-accent/10 pb-4">
                 {icon} {title}
             </h3>
