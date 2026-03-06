@@ -1,25 +1,25 @@
 'use server';
 
 /**
- * @fileOverview This file defines a Genkit flow for generating service descriptions based on the service title.
+ * @fileOverview Este archivo define un flujo de Genkit para generar descripciones de servicios basadas en el título del servicio.
  *
- * It exports:
- * - `generateServiceDescription`: An asynchronous function that takes `GenerateServiceDescriptionInput` and returns `GenerateServiceDescriptionOutput`.
- * - `GenerateServiceDescriptionInput`: The input type for the `generateServiceDescription` function.
- * - `GenerateServiceDescriptionOutput`: The output type for the `generateServiceDescription` function.
+ * Exporta:
+ * - `generateServiceDescription`: Una función asíncrona que toma `GenerateServiceDescriptionInput` y retorna `GenerateServiceDescriptionOutput`.
+ * - `GenerateServiceDescriptionInput`: El tipo de entrada para la función `generateServiceDescription`.
+ * - `GenerateServiceDescriptionOutput`: El tipo de salida para la función `generateServiceDescription`.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateServiceDescriptionInputSchema = z.object({
-  title: z.string().describe('The title of the service.'),
+  title: z.string().describe('El título del servicio.'),
 });
 
 export type GenerateServiceDescriptionInput = z.infer<typeof GenerateServiceDescriptionInputSchema>;
 
 const GenerateServiceDescriptionOutputSchema = z.object({
-  description: z.string().describe('A compelling, commercial description for the service.'),
+  description: z.string().describe('Una descripción comercial, atractiva y convincente para el servicio.'),
 });
 export type GenerateServiceDescriptionOutput = z.infer<typeof GenerateServiceDescriptionOutputSchema>;
 
@@ -32,13 +32,13 @@ const generateServiceDescriptionPrompt = ai.definePrompt({
   name: 'generateServiceDescriptionPrompt',
   input: {schema: GenerateServiceDescriptionInputSchema},
   output: {schema: GenerateServiceDescriptionOutputSchema},
-  prompt: `You are an expert copywriter specializing in creating compelling service descriptions for technology and security companies.
+  prompt: `Eres un redactor publicitario experto, especializado en crear descripciones de servicios atractivas para empresas de tecnología y seguridad.
 
-  Based on the service title provided, generate a concise and engaging commercial description for the service.
+  Basado en el título del servicio proporcionado, genera una descripción comercial concisa y cautivadora para el servicio.
 
-  Title: {{{title}}}
+  Título: {{{title}}}
 
-  Generate the response in the required JSON format.`,
+  Genera la respuesta en el formato JSON requerido.`,
 });
 
 const generateServiceDescriptionFlow = ai.defineFlow(

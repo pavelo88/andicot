@@ -1,25 +1,25 @@
 'use server';
 
 /**
- * @fileOverview Generates SEO metadata (meta description and keywords) based on hero section content.
+ * @fileOverview Genera metadatos SEO (meta descripción y palabras clave) basados en el contenido de la sección principal (hero).
  *
- * - generateSeoMetadata - A function that generates the SEO metadata.
- * - GenerateSeoMetadataInput - The input type for the generateSeoMetadata function.
- * - GenerateSeoMetadataOutput - The return type for the generateSeoMetadata function.
+ * - generateSeoMetadata - Una función que genera los metadatos SEO.
+ * - GenerateSeoMetadataInput - El tipo de entrada para la función generateSeoMetadata.
+ * - GenerateSeoMetadataOutput - El tipo de retorno para la función generateSeoMetadata.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateSeoMetadataInputSchema = z.object({
-  heroTitle: z.string().describe('The main title from the hero section of the website.'),
-  heroSubtitle: z.string().describe('The subtitle or descriptive text from the hero section.'),
+  heroTitle: z.string().describe('El título principal de la sección hero del sitio web.'),
+  heroSubtitle: z.string().describe('El subtítulo o texto descriptivo de la sección hero.'),
 });
 export type GenerateSeoMetadataInput = z.infer<typeof GenerateSeoMetadataInputSchema>;
 
 const GenerateSeoMetadataOutputSchema = z.object({
-  metaDescription: z.string().describe('A concise and compelling meta description for SEO, under 160 characters.'),
-  keywords: z.array(z.string()).describe('A list of 5-10 relevant SEO keywords.'),
+  metaDescription: z.string().describe('Una meta descripción concisa y atractiva para SEO, de menos de 160 caracteres.'),
+  keywords: z.array(z.string()).describe('Una lista de 5 a 10 palabras clave relevantes para SEO.'),
 });
 export type GenerateSeoMetadataOutput = z.infer<typeof GenerateSeoMetadataOutputSchema>;
 
@@ -33,13 +33,13 @@ const prompt = ai.definePrompt({
   name: 'generateSeoMetadataPrompt',
   input: {schema: GenerateSeoMetadataInputSchema},
   output: {schema: GenerateSeoMetadataOutputSchema},
-  prompt: `You are an SEO expert specializing in websites for technology and security companies.
-Based on the provided hero title and subtitle, generate an optimized meta description (under 160 characters) and a list of 5-10 relevant keywords.
+  prompt: `Eres un experto en SEO especializado en sitios web para empresas de tecnología y seguridad.
+Basado en el título y subtítulo proporcionados, genera una meta descripción optimizada (menos de 160 caracteres) y una lista de 5 a 10 palabras clave relevantes.
 
-Hero Title: {{{heroTitle}}}
-Hero Subtitle: {{{heroSubtitle}}}
+Título Principal: {{{heroTitle}}}
+Subtítulo: {{{heroSubtitle}}}
 
-Generate the response in the required JSON format.`,
+Genera la respuesta en el formato JSON requerido.`,
 });
 
 

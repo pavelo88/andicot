@@ -1,23 +1,23 @@
 'use server';
 
 /**
- * @fileOverview Generates a commercial proposal based on a lead's message.
+ * @fileOverview Genera una propuesta comercial basada en el mensaje de un prospecto.
  *
- * - generateProposal - A function that generates the proposal text.
- * - GenerateProposalInput - The input type for the generateProposal function.
- * - GenerateProposalOutput - The return type for the generateProposal function.
+ * - generateProposal - Una función que genera el texto de la propuesta.
+ * - GenerateProposalInput - El tipo de entrada para la función generateProposal.
+ * - GenerateProposalOutput - El tipo de retorno para la función generateProposal.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateProposalInputSchema = z.object({
-  leadMessage: z.string().describe("The user's original contact message or requirement."),
+  leadMessage: z.string().describe("El mensaje de contacto o requerimiento original del usuario."),
 });
 export type GenerateProposalInput = z.infer<typeof GenerateProposalInputSchema>;
 
 const GenerateProposalOutputSchema = z.object({
-  proposal: z.string().describe('A well-structured commercial proposal in plain text, ready to be sent to the client. Use markdown for formatting.'),
+  proposal: z.string().describe('Una propuesta comercial bien estructurada en texto plano, lista para ser enviada al cliente. Usa markdown para el formato.'),
 });
 export type GenerateProposalOutput = z.infer<typeof GenerateProposalOutputSchema>;
 
@@ -31,24 +31,24 @@ const prompt = ai.definePrompt({
   name: 'generateProposalPrompt',
   input: {schema: GenerateProposalInputSchema},
   output: {schema: GenerateProposalOutputSchema},
-  prompt: `You are an expert proposal writer for Andicot Solutions, a top-tier security and automation company in Ecuador.
+  prompt: `Eres un redactor experto de propuestas para Andicot Solutions, una empresa de primer nivel en seguridad y automatización en Ecuador.
 
-Your task is to create a compelling, professional, and well-structured commercial proposal based on the lead's message.
+Tu tarea es crear una propuesta comercial convincente, profesional y bien estructurada basada en el mensaje del cliente potencial.
 
-The proposal should:
-1.  Start with a polite and professional greeting.
-2.  Acknowledge and summarize the client's needs from their message.
-3.  Propose a clear solution, suggesting 1-3 relevant Andicot services (e.g., CCTV con IA, Control de Acceso, Detección de Incendios, Cableado Estructurado).
-4.  Briefly state the benefits of the proposed solution.
-5.  Include a call to action, suggesting a meeting or a call to discuss details.
-6.  End with a professional closing.
+La propuesta debe:
+1.  Comenzar con un saludo cortés y profesional.
+2.  Reconocer y resumir las necesidades del cliente a partir de su mensaje.
+3.  Proponer una solución clara, sugiriendo 1-3 servicios relevantes de Andicot (ej: CCTV con IA, Control de Acceso, Detección de Incendios, Cableado Estructurado).
+4.  Exponer brevemente los beneficios de la solución propuesta.
+5.  Incluir una llamada a la acción, sugiriendo una reunión o una llamada para discutir detalles.
+6.  Terminar con un cierre profesional.
 
-Format the output as a single block of text (plain text or markdown), not JSON.
+Formatea la salida como un único bloque de texto (texto plano o markdown), no JSON.
 
-Lead Message:
+Mensaje del Prospecto:
 "{{{leadMessage}}}"
 
-Generate the proposal.`,
+Genera la propuesta.`,
 });
 
 

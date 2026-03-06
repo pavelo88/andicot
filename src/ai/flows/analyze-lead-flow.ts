@@ -1,25 +1,25 @@
 'use server';
 
 /**
- * @fileOverview Analyzes a lead's message to suggest a category, evaluate intent, and draft a response.
+ * @fileOverview Analiza el mensaje de un prospecto para sugerir una categoría, evaluar la intención y redactar una respuesta.
  *
- * - analyzeLead - A function that performs the lead analysis.
- * - AnalyzeLeadInput - The input type for the analyzeLead function.
- * - AnalyzeLeadOutput - The return type for the analyzeLead function.
+ * - analyzeLead - Una función que realiza el análisis del prospecto.
+ * - AnalyzeLeadInput - El tipo de entrada para la función analyzeLead.
+ * - AnalyzeLeadOutput - El tipo de retorno para la función analyzeLead.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const AnalyzeLeadInputSchema = z.object({
-  message: z.string().describe("The user's contact message or requirement."),
+  message: z.string().describe("El mensaje de contacto o requerimiento del usuario."),
 });
 export type AnalyzeLeadInput = z.infer<typeof AnalyzeLeadInputSchema>;
 
 const AnalyzeLeadOutputSchema = z.object({
-  suggestedCategory: z.string().describe('A suggested category for the lead (e.g., "CCTV Installation", "General Inquiry").'),
-  intentEvaluation: z.string().describe('A brief evaluation of the lead\'s intent (e.g., "High-intent, requires immediate quote").'),
-  draftResponse: z.string().describe('A concise, professional draft response to the lead.'),
+  suggestedCategory: z.string().describe('Una categoría sugerida para el prospecto (ej: "Instalación de CCTV", "Consulta General").'),
+  intentEvaluation: z.string().describe('Una breve evaluación de la intención del prospecto (ej: "Alta intención, requiere cotización inmediata").'),
+  draftResponse: z.string().describe('Un borrador de respuesta conciso y profesional para el prospecto.'),
 });
 export type AnalyzeLeadOutput = z.infer<typeof AnalyzeLeadOutputSchema>;
 
@@ -33,15 +33,15 @@ const prompt = ai.definePrompt({
   name: 'analyzeLeadPrompt',
   input: {schema: AnalyzeLeadInputSchema},
   output: {schema: AnalyzeLeadOutputSchema},
-  prompt: `You are a sales assistant for Andicot, a security and technology solutions company.
-Your task is to analyze an incoming lead message.
+  prompt: `Eres un asistente de ventas para Andicot, una empresa de soluciones de seguridad y tecnología en Ecuador.
+Tu tarea es analizar un mensaje de un cliente potencial entrante.
 
-Based on the message, provide a suggested category, evaluate the customer's intent, and draft a short, polite initial response.
+Basado en el mensaje, proporciona una categoría sugerida, evalúa la intención del cliente y redacta una respuesta inicial corta y educada.
 
-Lead Message:
+Mensaje del Prospecto:
 "{{{message}}}"
 
-Generate the response in the required JSON format.`,
+Genera la respuesta en el formato JSON requerido.`,
 });
 
 
